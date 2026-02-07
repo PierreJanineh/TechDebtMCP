@@ -52,8 +52,6 @@ code --add-mcp '{"name":"tech-debt-mcp","command":"npx","args":["-y","tech-debt-
 <details>
 <summary><img src="https://img.shields.io/badge/Cursor-Install%20Server-26251E?logo=cursor&logoColor=F7F7F4" alt="Cursor: Install Server"></summary>
 
-**<a href="cursor://anysphere.cursor-deeplink/mcp/install?name=tech-debt-mcp&config=eyJjb21tYW5kIjoibnB4IC15IHRlY2gtZGVidC1tY3AifQ==">One-Click Install</a>**
-
 **Cursor** (via Terminal):
 
 ```sh
