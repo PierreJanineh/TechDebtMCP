@@ -38,26 +38,39 @@ A Model Context Protocol (MCP) server for analyzing technical debt across multip
 
 ## Installation
 
-### One-Click Install
+<details>
+<summary><img src="https://raw.githubusercontent.com/PierreJanineh/TechDebtMCP/develop/.github/badges/vscode-install.svg" alt="VS Code: Install Server"></summary>
 
-[![VS Code](https://raw.githubusercontent.com/PierreJanineh/TechDebtMCP/develop/.github/badges/vscode-install.svg)](https://insiders.vscode.dev/redirect/mcp/install?name=tech-debt-mcp&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22tech-debt-mcp%22%5D%7D)
-[![Cursor](https://raw.githubusercontent.com/PierreJanineh/TechDebtMCP/develop/.github/badges/cursor-install.svg)](cursor://anysphere.cursor-deeplink/mcp/install?name=tech-debt-mcp&config=eyJjb21tYW5kIjoibnB4IC15IHRlY2gtZGVidC1tY3AifQ==)
+[One-Click Install](https://insiders.vscode.dev/redirect/mcp/install?name=tech-debt-mcp&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22tech-debt-mcp%22%5D%7D)
 
-### Via Terminal
+Via Terminal:
 
 ```sh
-# For VS Code
 code --add-mcp '{"name":"tech-debt-mcp","command":"npx","args":["-y","tech-debt-mcp"]}'
-
-# For VS Code Insiders
-code-insiders --add-mcp '{"name":"tech-debt-mcp","command":"npx","args":["-y","tech-debt-mcp"]}'
 ```
+</details>
 
-![Claude Code](https://raw.githubusercontent.com/PierreJanineh/TechDebtMCP/develop/.github/badges/claude-code-install.svg)
+<details>
+<summary><img src="https://raw.githubusercontent.com/PierreJanineh/TechDebtMCP/develop/.github/badges/cursor-install.svg" alt="Cursor: Install Server"></summary>
+
+[One-Click Install](cursor://anysphere.cursor-deeplink/mcp/install?name=tech-debt-mcp&config=eyJjb21tYW5kIjoibnB4IC15IHRlY2gtZGVidC1tY3AifQ==)
+
+Via Terminal:
+
+```sh
+cursor --add-mcp '{"name":"tech-debt-mcp","command":"npx -y tech-debt-mcp"}'
+```
+</details>
+
+<details>
+<summary><img src="https://raw.githubusercontent.com/PierreJanineh/TechDebtMCP/develop/.github/badges/claude-code-install.svg" alt="Claude Code: Add Server"></summary>
+
+Via Terminal:
 
 ```sh
 claude mcp add tech-debt-mcp -- npx -y tech-debt-mcp
 ```
+</details>
 
 ### Manual Setup
 
