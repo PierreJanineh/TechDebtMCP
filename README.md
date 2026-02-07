@@ -72,54 +72,67 @@ claude mcp add tech-debt-mcp -- npx -y tech-debt-mcp
 ```
 </details>
 
-### Manual Setup
-
-#### VS Code / GitHub Copilot
-
-Add to your VS Code settings (<kbd>Ctrl+Shift+P</kbd> > `Preferences: Open User Settings (JSON)`):
-
-```json
-{
-  "mcp": {
-    "servers": {
-      "tech-debt-mcp": {
-        "type": "stdio",
-        "command": "npx",
-        "args": ["-y", "tech-debt-mcp"]
-      }
-    }
-  }
-}
-```
-
-> **Note:** The `-y` flag auto-accepts the npx install prompt. This is required because MCP servers run as background processes with no interactive terminal.
-
-#### Other MCP Clients
-
-Use the same configuration format above for any MCP-compatible client.
-
-### Local Development
-
-If you want to develop or modify the server locally:
+### Option 1: From npm (Recommended)
 
 ```bash
-npm install
-npm run build
+npm install -g tech-debt-mcp
 ```
 
-Then add to your MCP settings:
+### Option 2: From GitHub Packages
+
+Create or update `~/.npmrc`:
+```
+@PierreJanineh:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
+```
+
+Then install:
+```bash
+npm install -g @PierreJanineh/tech-debt-mcp
+```
+
+For detailed setup instructions, see [GITHUB_PACKAGES.md](./GITHUB_PACKAGES.md).
+
+### Option 3: Build from Source
+
+```bash
+git clone https://github.com/PierreJanineh/TechDebtMCP.git
+cd TechDebtMCP
+npm install
+npm run build
+npm link  # Makes available globally as 'tech-debt-mcp'
+```
+
+## Usage
+
+Start the MCP server:
+
+```bash
+tech-debt-mcp
+```
+
+Or for development:
+
+```bash
+npm run dev
+```
+
+## Usage with GitHub Copilot
+
+After installing globally, add to your MCP settings configuration:
 
 ```json
 {
-  "servers": {
-    "tech-debt-mcp": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["/absolute/path/to/TechDebtMCP/dist/index.js"]
+  "mcpServers": {
+    "tech-debt": {
+      "command": "tech-debt-mcp",
+      "args": []
     }
   }
 }
 ```
+
+The MCP server will start on stdio and be ready to communicate with GitHub Copilot or other MCP clients.
 
 ## Available Tools
 
