@@ -101,6 +101,7 @@ export interface TechDebtReport {
   timestamp: string;
   project: ProjectInfo;
   summary: DebtSummary;
+  sqale: SQALEMetrics;
   issues: TechDebtIssue[];
   recommendations: Recommendation[];
 }

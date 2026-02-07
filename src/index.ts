@@ -115,6 +115,24 @@ class TechDebtServer {
           },
         },
         {
+          name: 'get_sqale_metrics',
+          description: 'Get SQALE technical debt metrics including remediation time, debt ratio, and rating.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              path: {
+                type: 'string',
+                description: 'Absolute path to the project root directory',
+              },
+              developmentTime: {
+                type: 'number',
+                description: 'Optional: estimated development time in hours (for debt ratio calculation)',
+              },
+            },
+            required: ['path'],
+          },
+        },
+        {
           name: 'list_supported_languages',
           description: 'List all programming languages supported by the analyzer with their file extensions and specific checks.',
           inputSchema: {
@@ -320,6 +338,8 @@ class TechDebtServer {
             return await this.handleAnalyzeFile(args);
           case 'get_debt_summary':
             return await this.handleGetDebtSummary(args);
+          case 'get_sqale_metrics':
+            return await this.handleGetSqaleMetrics(args);
           case 'list_supported_languages':
             return this.handleListSupportedLanguages();
           case 'get_recommendations':
@@ -423,6 +443,80 @@ class TechDebtServer {
     return {
       content: [{ type: 'text', text: summary }],
     };
+  }
+
+  private async handleGetSqaleMetrics(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
+    const path = args.path as string;
+    const developmentTimeHours = args.developmentTime as number | undefined;
+
+    const report = await this.engine.analyzeProject({ path, maxFiles: 100 });
+    const sqale = report.sqale;
+
+    // Calculate debt ratio if development time provided
+    let debtRatioText = 'N/A (provide developmentTime parameter to calculate)';
+    if (developmentTimeHours !== undefined) {
+      const debtRatioWithTime = (sqale.totalRemediationTime / (developmentTimeHours * 60)) * 100;
+      debtRatioText = `${debtRatioWithTime.toFixed(1)}%`;
+    }
+
+    // Get star rating for visual representation
+    const ratingStars = {
+      'A': '⭐⭐⭐⭐⭐',
+      'B': '⭐⭐⭐⭐',
+      'C': '⭐⭐⭐',
+      'D': '⭐⭐',
+      'E': '⭐',
+    };
+
+    const sqaleReport = `# SQALE Technical Debt Metrics
+
+**Project:** ${path}
+
+## Overall Rating: ${sqale.rating} ${ratingStars[sqale.rating]}
+
+**Total Remediation Time:** ${sqale.formattedTime}
+**Debt Ratio:** ${debtRatioText}
+
+## Breakdown by Severity
+| Severity | Time |
+|----------|------|
+| Critical | ${this.formatMinutes(sqale.bySeverity.critical)} |
+| High | ${this.formatMinutes(sqale.bySeverity.high)} |
+| Medium | ${this.formatMinutes(sqale.bySeverity.medium)} |
+| Low | ${this.formatMinutes(sqale.bySeverity.low)} |
+
+## Breakdown by Category
+| Category | Time |
+|----------|------|
+| code-quality | ${this.formatMinutes(sqale.byCategory['code-quality'])} |
+| security | ${this.formatMinutes(sqale.byCategory.security)} |
+| maintainability | ${this.formatMinutes(sqale.byCategory.maintainability)} |
+| testing | ${this.formatMinutes(sqale.byCategory.testing)} |
+| documentation | ${this.formatMinutes(sqale.byCategory.documentation)} |
+| architecture | ${this.formatMinutes(sqale.byCategory.architecture)} |
+| performance | ${this.formatMinutes(sqale.byCategory.performance)} |
+| dependency | ${this.formatMinutes(sqale.byCategory.dependency)} |
+
+## SQALE Rating Scale
+- **A:** ≤ 5% debt ratio - Excellent
+- **B:** 6-10% debt ratio - Good
+- **C:** 11-20% debt ratio - Fair
+- **D:** 21-50% debt ratio - Poor
+- **E:** > 50% debt ratio - Critical
+`;
+
+    return {
+      content: [{ type: 'text', text: sqaleReport }],
+    };
+  }
+
+  private formatMinutes(minutes: number): string {
+    if (minutes === 0) return '0m';
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours === 0) return `${mins}m`;
+    if (mins === 0) return `${hours}h`;
+    return `${hours}h ${mins}m`;
   }
 
   private handleListSupportedLanguages(): { content: Array<{ type: string; text: string }> } {

@@ -225,7 +225,39 @@ Use conventional commits:
 
 ## Pull Request Workflow
 
-1. Create branch from `develop`
+### ⚠️ CRITICAL: Git Workflow Rules
+
+**NEVER commit directly to `master` branch!**
+
+1. ✅ **Always create a feature branch** from `develop`
+2. ✅ **Branch naming:** `feature/issue-{number}-short-description`
+3. ✅ **Commit to feature branch** (NOT master/main)
+4. ✅ **Create PR** targeting `develop` (NOT master)
+5. ✅ **After merge to develop**, only then release to master via version tag
+
+**Workflow:**
+```bash
+# 1. Ensure on develop
+git checkout develop
+git pull origin develop
+
+# 2. Create feature branch (from issue number)
+git checkout -b feature/issue-16-add-sqale-metrics
+
+# 3. Make changes, commit to feature branch
+git add .
+git commit -m "feat: add get_sqale_metrics MCP tool"
+
+# 4. Push feature branch
+git push origin feature/issue-16-add-sqale-metrics
+
+# 5. Create PR on GitHub (target: develop)
+# Do NOT target master!
+```
+
+### Standard Pull Request Steps
+
+1. Create branch from `develop` (NOT master)
 2. Make changes and write tests
 3. **Update documentation** — Update README.md if:
    - Adding new features
@@ -240,7 +272,7 @@ Use conventional commits:
    - `Tests: Y passed, Y total`
 5. **Fix any failing tests BEFORE committing** — Do not proceed if any tests fail
 6. **Verify build succeeds** — Run `npm run build` with no errors
-7. Create PR targeting `develop`
+7. Create PR targeting `develop` (NOT master)
 8. **Wait for Copilot review** — GitHub will automatically run Copilot code review
    - Wait 30-60 seconds for Copilot to analyze the PR
    - Check the PR page for review comments

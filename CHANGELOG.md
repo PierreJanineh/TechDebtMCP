@@ -15,12 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Language-specific tech debt detection patterns
 - Comprehensive test coverage for all analyzers
 
-#### Phase 1: SQALE Metrics
+#### Phase 1: SQALE Metrics ✅
 - SQALE Engine with A-E rating system
 - Remediation time calculations
 - Debt ratio metrics (percentage of development time)
 - Category and severity breakdowns
 - Human-readable time formatting
+- **NEW:** `get_sqale_metrics` MCP tool for dedicated SQALE reporting
+- **NEW:** SQALE metrics integrated into all analysis reports
 
 #### Phase 5: Custom Rules
 - CustomRulesEngine for pattern-based checks
@@ -35,19 +37,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multiple matches per line
 - Cross-platform line ending support (\r\n and \n)
 
-#### MCP Tools (13 total)
+#### MCP Tools (14 total)
 1. `analyze_project` - Full project technical debt analysis
 2. `analyze_file` - Single file analysis
 3. `get_debt_summary` - Quick debt summary
-4. `list_supported_languages` - Show supported languages
-5. `get_recommendations` - Prioritized suggestions
-6. `get_issues_by_severity` - Filter issues by severity
-7. `get_issues_by_category` - Filter issues by category
-8. `add_custom_rule` - Add custom pattern rules
-9. `remove_custom_rule` - Remove custom rules
-10. `list_custom_rules` - List all custom rules
-11. `execute_custom_rules` - Execute custom rules
-12. `validate_custom_pattern` - Validate custom patterns
+4. `get_sqale_metrics` - SQALE metrics with rating and remediation time
+5. `list_supported_languages` - Show supported languages
+6. `get_recommendations` - Prioritized suggestions
+7. `get_issues_by_severity` - Filter issues by severity
+8. `get_issues_by_category` - Filter issues by category
+9. `add_custom_rule` - Add custom pattern rules
+10. `remove_custom_rule` - Remove custom rules
+11. `list_custom_rules` - List all custom rules
+12. `execute_custom_rules` - Execute custom rules
+13. `validate_custom_pattern` - Validate custom patterns
 
 ### Documentation
 - Comprehensive README with installation and usage instructions

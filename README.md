@@ -76,6 +76,42 @@ Get a quick summary of technical debt in a project.
 **Parameters:**
 - `path` (required): Absolute path to the project root
 
+### `get_sqale_metrics`
+Get SQALE technical debt metrics including remediation time, debt ratio, and rating.
+
+**Parameters:**
+- `path` (required): Absolute path to the project root
+- `developmentTime` (optional): Estimated development time in hours (for debt ratio calculation)
+
+**Output includes:**
+- SQALE rating (A-E) with star visualization
+- Total remediation time in human-readable format
+- Debt ratio (if development time provided)
+- Breakdown by severity (Critical, High, Medium, Low)
+- Breakdown by category (code-quality, security, maintainability, etc.)
+
+**Example:**
+```bash
+get_sqale_metrics --path=/path/to/project --developmentTime=2080
+```
+
+Returns:
+```
+# SQALE Technical Debt Metrics
+
+**Overall Rating:** B ⭐⭐⭐⭐
+**Total Remediation Time:** 4 hours 30 minutes
+**Debt Ratio:** 8.5%
+
+## Breakdown by Severity
+| Severity | Time |
+|----------|------|
+| Critical | 30m |
+| High | 1h 45m |
+| Medium | 2h |
+| Low | 15m |
+```
+
 ### `list_supported_languages`
 List all supported programming languages with their checks.
 

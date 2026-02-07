@@ -11,6 +11,7 @@ import {
   DebtCategory,
 } from '../types/index.js';
 import { analyzeFile } from '../analyzers/index.js';
+import { SQALEEngine } from './sqaleEngine.js';
 import {
   getProjectFiles,
   loadConfig,
@@ -128,6 +129,10 @@ export class AnalysisEngine {
     // Calculate summary
     const summary = this.calculateSummary(allIssues);
 
+    // Calculate SQALE metrics
+    const sqaleEngine = new SQALEEngine();
+    const sqale = sqaleEngine.calculateMetrics(allIssues);
+
     // Generate recommendations
     const recommendations = this.generateRecommendations(allIssues, summary);
 
@@ -135,6 +140,7 @@ export class AnalysisEngine {
       timestamp: new Date().toISOString(),
       project: projectInfo,
       summary,
+      sqale,
       issues: allIssues,
       recommendations,
     };
