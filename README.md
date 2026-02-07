@@ -87,7 +87,7 @@ claude mcp add tech-debt-mcp -- npx -y tech-debt-mcp
 </details>
 
 <details>
-<summary><img src="https://img.shields.io/badge/GitHub_Copilot-Install%20Server-000?logo=githubcopilot&logoColor=f5f5f5" alt="GitHub Copilot: Install Server"></summary>
+<summary><img src="https://img.shields.io/badge/GitHub_Copilot-Install%20Server-24292E?logo=githubcopilot&logoColor=f5f5f5" alt="GitHub Copilot: Install Server"></summary>
 
 Add to your MCP settings configuration (e.g. `mcp.json`):
 
@@ -105,7 +105,7 @@ Add to your MCP settings configuration (e.g. `mcp.json`):
 </details>
 
 <details>
-<summary><img src="https://img.shields.io/badge/Windsurf-Install%20Server-5D2D91?logo=Windsurf&logoColor=f5f5f5" alt="Windsurf: Install Server"></summary>
+<summary><img src="https://img.shields.io/badge/Windsurf-Install%20Server-0B100F?logo=Windsurf&logoColor=f5f5f5" alt="Windsurf: Install Server"></summary>
 
 Add to your Windsurf MCP configuration (`~/.codeium/windsurf/mcp_config.json`):
 
@@ -123,7 +123,7 @@ Add to your Windsurf MCP configuration (`~/.codeium/windsurf/mcp_config.json`):
 </details>
 
 <details>
-<summary><img src="https://img.shields.io/badge/JetBrains-Install%20Server-000?logo=jetbrains&logoColor=f5f5f5" alt="JetBrains: Install Server"></summary>
+<summary><img src="https://img.shields.io/badge/JetBrains-Install%20Server-FF0007?logo=jetbrains&logoColor=f5f5f5" alt="JetBrains: Install Server"></summary>
 
 Add to your project's `.mcp.json`:
 
