@@ -10,6 +10,10 @@ import { ObjectiveCAnalyzer } from './objectivecAnalyzer.js';
 import { CppAnalyzer } from './cppAnalyzer.js';
 import { CAnalyzer } from './cAnalyzer.js';
 import { CSharpAnalyzer } from './csharpAnalyzer.js';
+import { GoAnalyzer } from './goAnalyzer.js';
+import { RustAnalyzer } from './rustAnalyzer.js';
+import { RubyAnalyzer } from './rubyAnalyzer.js';
+import { PhpAnalyzer } from './phpAnalyzer.js';
 import { detectLanguageFromExtension } from '../config/languages.js';
 import { readFile } from '../utils/fileUtils.js';
 
@@ -41,14 +45,17 @@ export function createAnalyzer(
       return new CAnalyzer(config);
     case 'csharp':
       return new CSharpAnalyzer(config);
-    // For languages without specific analyzers yet, use a generic approach
     case 'go':
+      return new GoAnalyzer(config);
     case 'rust':
+      return new RustAnalyzer(config);
     case 'ruby':
+      return new RubyAnalyzer(config);
     case 'php':
+      return new PhpAnalyzer(config);
     default:
-      // Return a basic analyzer that does common checks
-      return new JavaScriptAnalyzer(config); // Fallback with basic checks
+      // For truly unknown languages, return a basic analyzer with common checks
+      return new JavaScriptAnalyzer(config);
   }
 }
 
@@ -106,3 +113,7 @@ export { ObjectiveCAnalyzer } from './objectivecAnalyzer.js';
 export { CppAnalyzer } from './cppAnalyzer.js';
 export { CAnalyzer } from './cAnalyzer.js';
 export { CSharpAnalyzer } from './csharpAnalyzer.js';
+export { GoAnalyzer } from './goAnalyzer.js';
+export { RustAnalyzer } from './rustAnalyzer.js';
+export { RubyAnalyzer } from './rubyAnalyzer.js';
+export { PhpAnalyzer } from './phpAnalyzer.js';
