@@ -10,6 +10,9 @@ This document describes the architecture, design patterns, and data flow of the 
 - [Data Flow](#data-flow)
 - [Core Components](#core-components)
 - [Extending the System](#extending-the-system)
+- [Dependency Graph](#dependency-graph)
+- [Performance Considerations](#performance-considerations)
+- [Future Enhancements](#future-enhancements)
 
 ## Overview
 
@@ -42,7 +45,7 @@ TechDebtMCP/
 │   ├── analyzers/
 │   │   ├── baseAnalyzer.ts      # Abstract base class for all language analyzers
 │   │   ├── index.ts             # Analyzer factory
-│   │   ├── [language]Analyzer.ts # Language-specific analyzers (10 files)
+│   │   ├── [language]Analyzer.ts # Language-specific analyzers (one per supported language)
 │   │   └── dependencies/        # Dependency parsers (Phase 2, future)
 │   │       ├── baseParser.ts
 │   │       └── [ecosystem]Parser.ts
@@ -50,7 +53,7 @@ TechDebtMCP/
 │   │   └── vulnerabilityService.ts # External API integration (Phase 2b, future)
 │   └── utils/
 │       └── fileUtils.ts         # File system utilities
-├── __tests__/                   # Test files alongside source
+├── __tests__/                   # Repository-level test suite
 ├── dist/                        # Compiled output
 ├── package.json
 ├── tsconfig.json
@@ -357,9 +360,9 @@ index.ts (MCP Server)
   ├─ AnalysisEngine
   │   ├─ Analyzer (via factory)
   │   │   └─ BaseAnalyzer
-  │   │       └─ languages.config
+  │   │       └─ src/config/languages.ts
   │   └─ fileUtils
-  ├─ languages.config
+  ├─ src/config/languages.ts
   └─ fileUtils
 
 Future additions:
@@ -384,4 +387,3 @@ Future additions:
 - **Plugin system** — Load analyzers dynamically
 - **Custom severity weights** — User-configurable issue scoring
 - **Integration with CI/CD** — GitHub Actions, GitLab CI, etc.
-
