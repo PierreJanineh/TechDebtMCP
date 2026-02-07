@@ -165,4 +165,5 @@ Use conventional commits:
 1. Create branch from `develop`
 2. Make changes
 3. Create PR targeting `develop`
-4. Merge after review
+4. **Check Copilot review suggestions** — Review all automated suggestions and address them before merging
+5. Merge after review
