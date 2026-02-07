@@ -1,5 +1,19 @@
 import { TechDebtIssue, SQALEMetrics, SQALERating, Effort, DebtCategory, Severity, EffortTimeMapping } from '../types/index.js';
 
+// Centralized category and severity keys to avoid duplication and drift
+const DEBT_CATEGORIES: DebtCategory[] = [
+  'dependency',
+  'code-quality',
+  'architecture',
+  'documentation',
+  'testing',
+  'security',
+  'performance',
+  'maintainability',
+];
+
+const SEVERITY_LEVELS: Severity[] = ['low', 'medium', 'high', 'critical'];
+
 /**
  * SQALE (Software Quality Assessment based on Lifecycle Expectations) Engine
  * Calculates technical debt metrics and ratings based on issue severity and effort
@@ -70,7 +84,7 @@ export class SQALEEngine {
    * Get remediation time in minutes for an effort level
    */
   getRemediationTime(effort: Effort): number {
-    return this.effortMapping[effort] || this.effortMapping.small;
+    return this.effortMapping[effort] ?? this.effortMapping.small;
   }
 
   /**
@@ -114,16 +128,12 @@ export class SQALEEngine {
    * Break down remediation time by category
    */
   private breakdownByCategory(issues: TechDebtIssue[]): Record<DebtCategory, number> {
-    const categories: Record<DebtCategory, number> = {
-      'dependency': 0,
-      'code-quality': 0,
-      'architecture': 0,
-      'documentation': 0,
-      'testing': 0,
-      'security': 0,
-      'performance': 0,
-      'maintainability': 0,
-    };
+    const categories: Record<DebtCategory, number> = {} as Record<DebtCategory, number>;
+
+    // Initialize all categories to 0
+    DEBT_CATEGORIES.forEach(cat => {
+      categories[cat] = 0;
+    });
 
     issues.forEach(issue => {
       const remediationTime = this.getRemediationTime(issue.effort || 'small');
@@ -137,12 +147,12 @@ export class SQALEEngine {
    * Break down remediation time by severity
    */
   private breakdownBySeverity(issues: TechDebtIssue[]): Record<Severity, number> {
-    const severities: Record<Severity, number> = {
-      'low': 0,
-      'medium': 0,
-      'high': 0,
-      'critical': 0,
-    };
+    const severities: Record<Severity, number> = {} as Record<Severity, number>;
+
+    // Initialize all severity levels to 0
+    SEVERITY_LEVELS.forEach(sev => {
+      severities[sev] = 0;
+    });
 
     issues.forEach(issue => {
       const remediationTime = this.getRemediationTime(issue.effort || 'small');

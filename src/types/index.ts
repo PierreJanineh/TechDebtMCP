@@ -193,7 +193,7 @@ export type SQALERating = 'A' | 'B' | 'C' | 'D' | 'E';
 
 // Effort to time mapping (in minutes)
 export interface EffortTimeMapping {
-  trivial: number;  // < 5 minutes
+  trivial: number;  // ≤ 5 minutes
   small: number;    // 5-30 minutes
   medium: number;   // 30 min - 2 hours
   large: number;    // 2-4 hours
