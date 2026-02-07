@@ -7,6 +7,7 @@ A Model Context Protocol (MCP) server for analyzing technical debt across multip
 - **Multi-language support**: JavaScript, TypeScript, Python, Java, Swift, Kotlin, Objective-C, C++, C, C#, Go, Rust, Ruby, PHP
 - **Comprehensive analysis**: Detects various types of tech debt including code quality issues, security vulnerabilities, and maintainability problems
 - **SQALE Metrics**: Calculate technical debt with SQALE rating system (A-E scale)
+- **SwiftUI Analysis**: Specialized checks for SwiftUI patterns, state management, memory leaks, view nesting, and concurrency issues
 - **Custom Rules**: Define your own pattern-based checks with regex support
 - **Actionable recommendations**: Provides prioritized suggestions for addressing technical debt
 - **Flexible filtering**: Filter results by severity, category, or language
@@ -19,7 +20,7 @@ A Model Context Protocol (MCP) server for analyzing technical debt across multip
 | TypeScript | .ts, .tsx, .mts, .cts | any type, @ts-ignore, non-null assertions, type assertions |
 | Python | .py, .pyw, .pyi | bare except, print statements, global usage, eval/exec |
 | Java | .java | System.out, printStackTrace, empty catch, @SuppressWarnings |
-| Swift | .swift | force unwrap (!), force cast (as!), force try, retain cycles |
+| Swift | .swift | force unwrap (!), force cast (as!), force try, retain cycles, **SwiftUI patterns** |
 | Kotlin | .kt, .kts | !!, lateinit abuse, @Suppress, unchecked casts |
 | Objective-C | .m, .mm, .h | NSLog, retain cycles, deprecated methods, massive view controllers |
 | C++ | .cpp, .cc, .hpp, .h | raw pointers, C-style casts, goto, using namespace std |

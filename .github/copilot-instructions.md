@@ -298,12 +298,21 @@ git push origin feature/issue-16-add-sqale-metrics
 
 1. Create branch from `develop` (NOT master)
 2. Make changes and write tests
-3. **Update documentation** — Update README.md if:
-   - Adding new features
-   - Changing existing behavior
+3. **Update ALL documentation** — Update these files if:
+   - Adding new features / analyzers / checks
+   - Changing existing behavior or APIs
    - Adding new MCP tools
-   - Adding new checks or patterns
+   - Adding language-specific detection patterns
    - Updating configuration options
+   - Changing severity/effort/category definitions
+   
+   **Files to update:**
+   - ✅ **README.md** - Features, language table, usage examples
+   - ✅ **ROADMAP.md** - Current status, phase progress, version notes
+   - ✅ **ARCHITECTURE.md** - Design patterns, module descriptions, data flow
+   - ✅ **CONTRIBUTING.md** - Contribution guidelines (if process changed)
+   - ✅ **CHANGELOG.md** - Version history and changes
+   
 4. **Verify tests pass** — Run `npm test` and check output for:
    - All `PASS` (no `FAIL`)
    - `✓` for each test (no `✕`)
@@ -367,7 +376,10 @@ Example response to Copilot:
 - ❌ Merge a PR without checking Copilot review
 - ❌ Merge a PR with failing tests
 - ❌ Merge a PR with unresolved Copilot suggestions (without comment explaining why)
-- ❌ Merge a PR without updating README if features changed
+- ❌ **Merge a PR without updating ALL relevant documentation files**
+- ❌ Add features without updating README language table or feature list
+- ❌ Add checks without documenting in ARCHITECTURE.md
+- ❌ Change phases without updating ROADMAP.md
 
 **ALWAYS do these:**
 - ✅ Run `npm test` BEFORE staging changes
@@ -378,5 +390,56 @@ Example response to Copilot:
 - ✅ Address all relevant Copilot suggestions before merging
 - ✅ Document why you're skipping irrelevant suggestions
 - ✅ Re-test after addressing Copilot suggestions
-- ✅ Update README.md for new features/changes
+- ✅ **Update README.md for new features/checks**
+- ✅ **Update ROADMAP.md with phase progress**
+- ✅ **Update ARCHITECTURE.md with design changes**
+- ✅ **Update CHANGELOG.md with version notes**
 - ✅ Read and address Copilot review suggestions
+- ✅ **Commit message should reference documentation updates**
+
+### Documentation Checklist
+
+Before creating a PR, verify:
+
+- [ ] **README.md updated:**
+  - [ ] Features list reflects new capabilities
+  - [ ] Language table includes new checks (if language-specific)
+  - [ ] Examples show new functionality
+  - [ ] Installation/setup reflects any new requirements
+
+- [ ] **ROADMAP.md updated:**
+  - [ ] Current status section reflects progress
+  - [ ] Completed phases marked as ✅
+  - [ ] Next phase clearly identified
+  - [ ] Version targets accurate
+
+- [ ] **ARCHITECTURE.md updated:**
+  - [ ] New modules/files documented
+  - [ ] Data flow diagrams updated if applicable
+  - [ ] Design patterns explained
+  - [ ] New check categories explained
+
+- [ ] **CHANGELOG.md updated:**
+  - [ ] Version section created (if applicable)
+  - [ ] Features listed under version
+  - [ ] Bug fixes documented
+  - [ ] Breaking changes noted
+
+- [ ] **Code comments added:**
+  - [ ] JSDoc on all new public methods
+  - [ ] Inline comments on complex logic
+  - [ ] Heuristic limitations documented
+
+### Example Documentation Update Commit
+
+```bash
+# Commit should reference docs along with code
+git commit -m "feat: add SwiftUI checks - update README, ROADMAP, ARCHITECTURE
+
+- Added 14 new SwiftUI-specific checks (Phase 1+2)
+- Updated README language table with SwiftUI checks
+- Updated ROADMAP to mark Phase 2 in progress
+- Updated ARCHITECTURE with SwiftUI check design
+- Added JSDoc comments to all new analyzer methods
+- Fixes #58"
+```

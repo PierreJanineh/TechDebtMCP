@@ -121,22 +121,24 @@ export class SwiftAnalyzer extends BaseAnalyzer {
     }));
 
     // SwiftUI-specific checks (Phase: Issue #58)
-    issues.push(...this.checkExcessiveStateVariables(filePath, content));
-    issues.push(...this.checkStateObjectMisuse(filePath, content));
-    issues.push(...this.checkMissingEnvironmentValidation(filePath, content));
-    issues.push(...this.checkCombineCircularReferences(filePath, content));
-    issues.push(...this.checkMissingTimerCleanup(filePath, content));
-    issues.push(...this.checkMissingTaskCancellation(filePath, content));
-    issues.push(...this.checkMainThreadSafety(filePath, content));
-    issues.push(...this.checkMissingIdModifier(filePath, content));
-    issues.push(...this.checkExpensiveViewBodyCalculations(filePath, content));
+    // Split content once to avoid repeated allocations in each checker
+    const lines = content.split('\n');
+    issues.push(...this.checkExcessiveStateVariables(filePath, lines));
+    issues.push(...this.checkStateObjectMisuse(filePath, lines));
+    issues.push(...this.checkMissingEnvironmentValidation(filePath, lines));
+    issues.push(...this.checkCombineCircularReferences(filePath, lines));
+    issues.push(...this.checkMissingTimerCleanup(filePath, lines));
+    issues.push(...this.checkMissingTaskCancellation(filePath, lines));
+    issues.push(...this.checkMainThreadSafety(filePath, lines));
+    issues.push(...this.checkMissingIdModifier(filePath, lines));
+    issues.push(...this.checkExpensiveViewBodyCalculations(filePath, lines));
 
     // Additional SwiftUI anti-patterns (Phase 2)
-    issues.push(...this.checkAnyViewMisuse(filePath, content));
-    issues.push(...this.checkNavigationLinkIssues(filePath, content));
-    issues.push(...this.checkGeometryReaderMisuse(filePath, content));
-    issues.push(...this.checkRetainCyclesInClosures(filePath, content));
-    issues.push(...this.checkDeepViewNesting(filePath, content));
+    issues.push(...this.checkAnyViewMisuse(filePath, lines));
+    issues.push(...this.checkNavigationLinkIssues(filePath, lines));
+    issues.push(...this.checkGeometryReaderMisuse(filePath, lines));
+    issues.push(...this.checkRetainCyclesInClosures(filePath, lines));
+    issues.push(...this.checkDeepViewNesting(filePath, lines));
 
     return issues;
   }
@@ -253,50 +255,71 @@ export class SwiftAnalyzer extends BaseAnalyzer {
 
   // SwiftUI-Specific Checks (Issue #58)
 
-  private checkExcessiveStateVariables(filePath: string, content: string): TechDebtIssue[] {
+  /**
+   * Detects SwiftUI views with excessive @State variables that should be consolidated into a ViewModel.
+   *
+   * @param filePath - Path to the Swift source file
+   * @param lines - Pre-split content lines for performance
+   * @returns Array of issues when @State count > 5 per view
+   */
+  private checkExcessiveStateVariables(filePath: string, lines: string[]): TechDebtIssue[] {
     const issues: TechDebtIssue[] = [];
-    const lines = content.split('\n');
-    let stateVarCount = 0;
-    const stateVarLines: number[] = [];
+    const viewStateInfo = new Map<string, { count: number; firstLine: number }>();
+    let currentViewName: string | null = null;
 
     for (let i = 0; i < lines.length; i++) {
-      if (lines[i].includes('@State')) {
-        stateVarCount++;
-        stateVarLines.push(i + 1);
+      const line = lines[i];
+
+      // Detect SwiftUI view declarations: struct SomeView: View
+      const viewMatch = line.match(/^\s*struct\s+(\w+)\s*:\s*View\b/);
+      if (viewMatch) {
+        currentViewName = viewMatch[1];
+        viewStateInfo.set(currentViewName, { count: 0, firstLine: i + 1 });
+      }
+
+      // Count @State only within detected views
+      if (currentViewName && line.includes('@State')) {
+        const info = viewStateInfo.get(currentViewName);
+        if (info) {
+          if (info.count === 0) {
+            info.firstLine = i + 1;
+          }
+          info.count += 1;
+        }
       }
     }
 
-    // Flag if more than 5 @State variables in a view
-    if (stateVarCount > 5) {
-      issues.push({
-        id: `excessive-state-${filePath}`,
-        category: 'code-quality',
-        severity: 'medium',
-        file: filePath,
-        line: stateVarLines[0],
-        title: 'Excessive @State variables',
-        description: `Found ${stateVarCount} @State variables in this view. State management is getting complex.`,
-        suggestion: 'Consider extracting state into a @StateObject ViewModel to improve maintainability',
-        effort: 'medium',
-        language: this.language,
-        rule: 'swiftui-excessive-state',
-        tags: ['swiftui', 'architecture', 'maintainability'],
-      });
+    // Flag views with > 5 @State variables
+    for (const [viewName, info] of viewStateInfo.entries()) {
+      if (info.count > 5) {
+        issues.push({
+          id: `excessive-state-${filePath}-${viewName}`,
+          category: 'code-quality',
+          severity: 'medium',
+          file: filePath,
+          line: info.firstLine,
+          title: 'Excessive @State variables',
+          description: `Found ${info.count} @State variables in view '${viewName}'. State management is getting complex.`,
+          suggestion: 'Consider extracting state into a @StateObject ViewModel to improve maintainability',
+          effort: 'medium',
+          language: this.language,
+          rule: 'swiftui-excessive-state',
+          tags: ['swiftui', 'architecture', 'maintainability'],
+        });
+      }
     }
 
     return issues;
   }
 
-  private checkStateObjectMisuse(filePath: string, content: string): TechDebtIssue[] {
+  private checkStateObjectMisuse(filePath: string, lines: string[]): TechDebtIssue[] {
     const issues: TechDebtIssue[] = [];
-    const lines = content.split('\n');
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      // Look for @ObservedObject var viewModel = SomeClass()
       if (line.includes('@ObservedObject') && line.includes('= ') && !line.includes('//')) {
         issues.push({
-          id: `state-object-misuse-${i + 1}`,
+          id: `state-object-misuse-${filePath}-${i + 1}`,
           category: 'code-quality',
           severity: 'high',
           file: filePath,
@@ -315,37 +338,47 @@ export class SwiftAnalyzer extends BaseAnalyzer {
     return issues;
   }
 
-  private checkMissingEnvironmentValidation(filePath: string, content: string): TechDebtIssue[] {
+  private checkMissingEnvironmentValidation(filePath: string, lines: string[]): TechDebtIssue[] {
     const issues: TechDebtIssue[] = [];
-    const lines = content.split('\n');
+    const envDeclarationPattern = /@Environment\s*\([^)]*\)\s*var\s+(\w+)/;
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      // Look for @Environment without nil coalescing
-      if (line.includes('@Environment') && lines[i + 1]?.includes('var') && !line.includes('??')) {
-        issues.push({
-          id: `env-validation-${i + 1}`,
-          category: 'code-quality',
-          severity: 'low',
-          file: filePath,
-          line: i + 1,
-          title: 'Environment value may not be validated',
-          description: 'Environment values might not be available in all contexts',
-          suggestion: 'Consider using nil coalescing (??) or optional binding for safety',
-          effort: 'small',
-          language: this.language,
-          rule: 'swiftui-env-validation',
-          tags: ['swiftui', 'safety'],
-        });
+      const match = line.match(envDeclarationPattern);
+
+      if (!match) continue;
+
+      const envVarName = match[1];
+      // Scan following lines for unsafe force unwrap usage
+      const unsafePattern = new RegExp(`\\b${envVarName}\\s*!`);
+
+      for (let j = i + 1; j < Math.min(lines.length, i + 50); j++) {
+        const usageLine = lines[j].split('//')[0]; // strip comments
+        if (unsafePattern.test(usageLine)) {
+          issues.push({
+            id: `env-validation-${filePath}-${j + 1}`,
+            category: 'code-quality',
+            severity: 'high',
+            file: filePath,
+            line: j + 1,
+            title: 'Environment value force unwrapped',
+            description: '@Environment value is force unwrapped without validation, risking runtime crashes',
+            suggestion: 'Use optional binding (if let/guard let) or nil coalescing (??) to safely handle missing environment values',
+            effort: 'small',
+            language: this.language,
+            rule: 'swiftui-env-validation',
+            tags: ['swiftui', 'safety', 'crash-risk'],
+          });
+          break; // Report first unsafe usage per variable
+        }
       }
     }
 
     return issues;
   }
 
-  private checkCombineCircularReferences(filePath: string, content: string): TechDebtIssue[] {
+  private checkCombineCircularReferences(filePath: string, lines: string[]): TechDebtIssue[] {
     const issues: TechDebtIssue[] = [];
-    const lines = content.split('\n');
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -357,7 +390,7 @@ export class SwiftAnalyzer extends BaseAnalyzer {
 
         if (!context.includes('[weak self]') && !context.includes('[unowned self]')) {
           issues.push({
-            id: `combine-circular-ref-${i + 1}`,
+            id: `combine-circular-ref-${filePath}-${i + 1}`,
             category: 'code-quality',
             severity: 'high',
             file: filePath,
@@ -377,21 +410,26 @@ export class SwiftAnalyzer extends BaseAnalyzer {
     return issues;
   }
 
-  private checkMissingTimerCleanup(filePath: string, content: string): TechDebtIssue[] {
+  private checkMissingTimerCleanup(filePath: string, lines: string[]): TechDebtIssue[] {
     const issues: TechDebtIssue[] = [];
-    const lines = content.split('\n');
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      // Look for Timer.scheduledTimer without onDisappear cleanup
       if (line.includes('Timer.scheduledTimer')) {
-        const hasDisappearCleanup = lines.slice(i, Math.min(lines.length, i + 20)).some(l =>
-          l.includes('.onDisappear') && lines[lines.indexOf(l) + 1]?.includes('invalidate')
-        );
+        // Look ahead for cleanup in onDisappear within same range
+        let hasDisappearCleanup = false;
+        const searchEnd = Math.min(lines.length - 1, i + 19);
+
+        for (let j = i; j <= searchEnd; j++) {
+          if (lines[j].includes('.onDisappear') && lines[j + 1]?.includes('invalidate')) {
+            hasDisappearCleanup = true;
+            break;
+          }
+        }
 
         if (!hasDisappearCleanup) {
           issues.push({
-            id: `timer-cleanup-${i + 1}`,
+            id: `timer-cleanup-${filePath}-${i + 1}`,
             category: 'code-quality',
             severity: 'medium',
             file: filePath,
@@ -411,9 +449,8 @@ export class SwiftAnalyzer extends BaseAnalyzer {
     return issues;
   }
 
-  private checkMissingTaskCancellation(filePath: string, content: string): TechDebtIssue[] {
+  private checkMissingTaskCancellation(filePath: string, lines: string[]): TechDebtIssue[] {
     const issues: TechDebtIssue[] = [];
-    const lines = content.split('\n');
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -424,14 +461,14 @@ export class SwiftAnalyzer extends BaseAnalyzer {
 
         if (!hasMainActor && !hasTaskID) {
           issues.push({
-            id: `task-cancel-${i + 1}`,
+            id: `task-cancel-${filePath}-${i + 1}`,
             category: 'code-quality',
             severity: 'medium',
             file: filePath,
             line: i + 1,
             title: 'Task without cancellation handling',
             description: 'Background tasks should be properly cancelled when the view disappears',
-            suggestion: 'Either track the Task with @State and cancel in onDisappear, or use @MainActor',
+            suggestion: 'Track the Task with @State and cancel in onDisappear, or prefer SwiftUI\'s .task/.task(id:) modifiers which cancel automatically',
             effort: 'medium',
             language: this.language,
             rule: 'swiftui-task-cancellation',
@@ -444,9 +481,8 @@ export class SwiftAnalyzer extends BaseAnalyzer {
     return issues;
   }
 
-  private checkMainThreadSafety(filePath: string, content: string): TechDebtIssue[] {
+  private checkMainThreadSafety(filePath: string, lines: string[]): TechDebtIssue[] {
     const issues: TechDebtIssue[] = [];
-    const lines = content.split('\n');
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -456,7 +492,7 @@ export class SwiftAnalyzer extends BaseAnalyzer {
 
         if (!context.includes('DispatchQueue.main') && !context.includes('@MainActor')) {
           issues.push({
-            id: `main-thread-safety-${i + 1}`,
+            id: `main-thread-safety-${filePath}-${i + 1}`,
             category: 'code-quality',
             severity: 'high',
             file: filePath,
@@ -476,9 +512,8 @@ export class SwiftAnalyzer extends BaseAnalyzer {
     return issues;
   }
 
-  private checkMissingIdModifier(filePath: string, content: string): TechDebtIssue[] {
+  private checkMissingIdModifier(filePath: string, lines: string[]): TechDebtIssue[] {
     const issues: TechDebtIssue[] = [];
-    const lines = content.split('\n');
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -488,7 +523,7 @@ export class SwiftAnalyzer extends BaseAnalyzer {
 
         if (!nextLines.includes('.id(') && !line.includes('id: ')) {
           issues.push({
-            id: `missing-id-${i + 1}`,
+            id: `missing-id-${filePath}-${i + 1}`,
             category: 'code-quality',
             severity: 'medium',
             file: filePath,
@@ -508,9 +543,8 @@ export class SwiftAnalyzer extends BaseAnalyzer {
     return issues;
   }
 
-  private checkExpensiveViewBodyCalculations(filePath: string, content: string): TechDebtIssue[] {
+  private checkExpensiveViewBodyCalculations(filePath: string, lines: string[]): TechDebtIssue[] {
     const issues: TechDebtIssue[] = [];
-    const lines = content.split('\n');
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -521,7 +555,7 @@ export class SwiftAnalyzer extends BaseAnalyzer {
         if (viewBodyLines.includes('.reduce(') || viewBodyLines.includes('.sorted') ||
             (viewBodyLines.includes('.filter') && viewBodyLines.includes('Text('))) {
           issues.push({
-            id: `expensive-calculation-${i + 1}`,
+            id: `expensive-calculation-${filePath}-${i + 1}`,
             category: 'performance',
             severity: 'medium',
             file: filePath,
@@ -541,17 +575,14 @@ export class SwiftAnalyzer extends BaseAnalyzer {
     return issues;
   }
 
-  // Phase 2 SwiftUI Anti-Patterns
-
-  private checkAnyViewMisuse(filePath: string, content: string): TechDebtIssue[] {
+  private checkAnyViewMisuse(filePath: string, lines: string[]): TechDebtIssue[] {
     const issues: TechDebtIssue[] = [];
-    const lines = content.split('\n');
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       if (line.includes('AnyView(') && !line.includes('//')) {
         issues.push({
-          id: `anyview-misuse-${i + 1}`,
+          id: `anyview-misuse-${filePath}-${i + 1}`,
           category: 'code-quality',
           severity: 'medium',
           file: filePath,
@@ -570,16 +601,15 @@ export class SwiftAnalyzer extends BaseAnalyzer {
     return issues;
   }
 
-  private checkNavigationLinkIssues(filePath: string, content: string): TechDebtIssue[] {
+  private checkNavigationLinkIssues(filePath: string, lines: string[]): TechDebtIssue[] {
     const issues: TechDebtIssue[] = [];
-    const lines = content.split('\n');
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       if (line.includes('NavigationLink(') && line.includes('destination:')) {
         if (!line.includes('isActive') && !line.includes('tag:')) {
           issues.push({
-            id: `navigationlink-deprecated-${i + 1}`,
+            id: `navigationlink-deprecated-${filePath}-${i + 1}`,
             category: 'code-quality',
             severity: 'medium',
             file: filePath,
@@ -599,9 +629,8 @@ export class SwiftAnalyzer extends BaseAnalyzer {
     return issues;
   }
 
-  private checkGeometryReaderMisuse(filePath: string, content: string): TechDebtIssue[] {
+  private checkGeometryReaderMisuse(filePath: string, lines: string[]): TechDebtIssue[] {
     const issues: TechDebtIssue[] = [];
-    const lines = content.split('\n');
 
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].includes('var body:') || (i > 0 && lines[i - 1]?.includes('var body:'))) {
@@ -609,7 +638,7 @@ export class SwiftAnalyzer extends BaseAnalyzer {
 
         if (nextLines.includes('GeometryReader') && !nextLines.includes('.frame(')) {
           issues.push({
-            id: `geometryreader-root-${i + 1}`,
+            id: `geometryreader-root-${filePath}-${i + 1}`,
             category: 'performance',
             severity: 'medium',
             file: filePath,
@@ -629,9 +658,8 @@ export class SwiftAnalyzer extends BaseAnalyzer {
     return issues;
   }
 
-  private checkRetainCyclesInClosures(filePath: string, content: string): TechDebtIssue[] {
+  private checkRetainCyclesInClosures(filePath: string, lines: string[]): TechDebtIssue[] {
     const issues: TechDebtIssue[] = [];
-    const lines = content.split('\n');
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -641,7 +669,7 @@ export class SwiftAnalyzer extends BaseAnalyzer {
 
         if (!context.includes('[weak self]') && !context.includes('[unowned self]')) {
           issues.push({
-            id: `retain-cycle-closure-${i + 1}`,
+            id: `retain-cycle-closure-${filePath}-${i + 1}`,
             category: 'code-quality',
             severity: 'high',
             file: filePath,
@@ -661,9 +689,8 @@ export class SwiftAnalyzer extends BaseAnalyzer {
     return issues;
   }
 
-  private checkDeepViewNesting(filePath: string, content: string): TechDebtIssue[] {
+  private checkDeepViewNesting(filePath: string, lines: string[]): TechDebtIssue[] {
     const issues: TechDebtIssue[] = [];
-    const lines = content.split('\n');
 
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].includes('var body:')) {
@@ -692,7 +719,7 @@ export class SwiftAnalyzer extends BaseAnalyzer {
 
         if (maxDepth > 6) {
           issues.push({
-            id: `deep-nesting-${i + 1}`,
+            id: `deep-nesting-${filePath}-${i + 1}`,
             category: 'maintainability',
             severity: 'medium',
             file: filePath,
