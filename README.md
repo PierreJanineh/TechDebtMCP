@@ -6,6 +6,8 @@ A Model Context Protocol (MCP) server for analyzing technical debt across multip
 
 - **Multi-language support**: JavaScript, TypeScript, Python, Java, Swift, Kotlin, Objective-C, C++, C, C#, Go, Rust, Ruby, PHP
 - **Comprehensive analysis**: Detects various types of tech debt including code quality issues, security vulnerabilities, and maintainability problems
+- **SQALE Metrics**: Calculate technical debt with SQALE rating system (A-E scale)
+- **Custom Rules**: Define your own pattern-based checks with regex support
 - **Actionable recommendations**: Provides prioritized suggestions for addressing technical debt
 - **Flexible filtering**: Filter results by severity, category, or language
 
@@ -93,6 +95,72 @@ Get all issues of a specific category.
 **Parameters:**
 - `path` (required): Absolute path to the project root
 - `category` (required): dependency, code-quality, architecture, documentation, testing, security, performance, or maintainability
+
+## Custom Rules
+
+Define your own tech debt checks using regex patterns. Create rules in `.techdebtrc.json`:
+
+```json
+{
+  "customPatterns": [
+    {
+      "id": "no-console-log",
+      "pattern": "console\\.log",
+      "severity": "low",
+      "category": "code-quality",
+      "message": "Remove console.log() statements",
+      "suggestion": "Use proper logging library instead",
+      "languages": ["javascript", "typescript"]
+    },
+    {
+      "id": "no-eval",
+      "pattern": "\\beval\\s*\\(",
+      "severity": "critical",
+      "category": "security",
+      "message": "eval() is dangerous",
+      "suggestion": "Refactor to avoid dynamic code execution",
+      "flags": "g"
+    }
+  ]
+}
+```
+
+### Pattern Options
+
+- `id` (required): Unique identifier for the rule
+- `pattern` (required): Regex pattern to match
+- `message` (required): Issue title/message
+- `severity` (required): low, medium, high, or critical
+- `category` (required): One of the debt categories
+- `suggestion` (optional): How to fix the issue
+- `languages` (optional): Apply only to specific languages
+- `flags` (optional): Regex flags (g, i, m, s, etc.)
+
+### Example: Custom Rules for Your Team
+
+```json
+{
+  "customPatterns": [
+    {
+      "id": "no-magic-numbers",
+      "pattern": "=\\s*\\d{3,}",
+      "severity": "medium",
+      "category": "maintainability",
+      "message": "Magic number detected",
+      "suggestion": "Extract to named constant"
+    },
+    {
+      "id": "forbidden-library",
+      "pattern": "import.*moment.*from",
+      "severity": "medium",
+      "category": "dependency",
+      "message": "moment.js is deprecated",
+      "suggestion": "Use native Date or date-fns instead",
+      "languages": ["javascript", "typescript"]
+    }
+  ]
+}
+```
 
 ## Debt Categories
 
