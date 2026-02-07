@@ -1,4 +1,4 @@
-import { GoAnalyzer } from '../goAnalyzer';
+import { GoAnalyzer } from '../goAnalyzer.js';
 
 describe('GoAnalyzer', () => {
   const analyzer = new GoAnalyzer();

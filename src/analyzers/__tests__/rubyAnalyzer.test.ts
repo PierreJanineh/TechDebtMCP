@@ -1,4 +1,4 @@
-import { RubyAnalyzer } from '../rubyAnalyzer';
+import { RubyAnalyzer } from '../rubyAnalyzer.js';
 
 describe('RubyAnalyzer', () => {
   const analyzer = new RubyAnalyzer();

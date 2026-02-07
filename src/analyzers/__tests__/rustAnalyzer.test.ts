@@ -1,4 +1,4 @@
-import { RustAnalyzer } from '../rustAnalyzer';
+import { RustAnalyzer } from '../rustAnalyzer.js';
 
 describe('RustAnalyzer', () => {
   const analyzer = new RustAnalyzer();
@@ -158,7 +158,7 @@ describe('RustAnalyzer', () => {
       }
     `;
     const result = await analyzer.analyze('test.rs', code);
-    const rustSpecificIssues = result.issues.filter(i => 
+    const rustSpecificIssues = result.issues.filter(i =>
       ['unwrap-usage', 'expect-usage', 'unsafe-block', 'panic-macro', 'todo-macro'].includes(i.rule)
     );
     expect(rustSpecificIssues).toHaveLength(0);

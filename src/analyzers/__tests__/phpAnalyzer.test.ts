@@ -1,4 +1,4 @@
-import { PhpAnalyzer } from '../phpAnalyzer';
+import { PhpAnalyzer } from '../phpAnalyzer.js';
 
 describe('PhpAnalyzer', () => {
   const analyzer = new PhpAnalyzer();

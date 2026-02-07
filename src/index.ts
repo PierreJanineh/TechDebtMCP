@@ -754,12 +754,12 @@ ${issue.description}
   }
 
   private handleValidateCustomPattern(args: Record<string, unknown>): { content: Array<{ type: string; text: string }> } {
-    const customPattern = {
+    const customPattern: CustomPattern = {
       id: args.id as string,
       pattern: args.pattern as string,
       message: args.message as string,
-      severity: args.severity as any,
-      category: args.category as any,
+      severity: args.severity as Severity,
+      category: args.category as DebtCategory,
     };
 
     const validation = CustomRulesEngine.validatePattern(customPattern);

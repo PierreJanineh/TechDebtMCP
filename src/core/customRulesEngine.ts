@@ -1,6 +1,25 @@
 import { TechDebtIssue, CustomPattern, Severity, DebtCategory } from '../types/index.js';
 
 /**
+ * Valid severity levels for validation
+ */
+const VALID_SEVERITIES: Severity[] = ['low', 'medium', 'high', 'critical'];
+
+/**
+ * Valid debt categories for validation
+ */
+const VALID_CATEGORIES: DebtCategory[] = [
+  'dependency',
+  'code-quality',
+  'architecture',
+  'documentation',
+  'testing',
+  'security',
+  'performance',
+  'maintainability',
+];
+
+/**
  * Custom Rules Engine
  * Allows users to define and execute custom pattern-based tech debt checks
  */
@@ -159,18 +178,6 @@ export class CustomRulesEngine {
   static validatePattern(pattern: CustomPattern): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
 
-    const validSeverities: Severity[] = ['low', 'medium', 'high', 'critical'];
-    const validCategories: DebtCategory[] = [
-      'dependency',
-      'code-quality',
-      'architecture',
-      'documentation',
-      'testing',
-      'security',
-      'performance',
-      'maintainability',
-    ];
-
     if (!pattern.id) {
       errors.push('Pattern ID is required');
     }
@@ -192,13 +199,13 @@ export class CustomRulesEngine {
 
     if (!pattern.severity) {
       errors.push('Severity is required');
-    } else if (!validSeverities.includes(pattern.severity)) {
+    } else if (!VALID_SEVERITIES.includes(pattern.severity)) {
       errors.push(`Invalid severity: ${pattern.severity}`);
     }
 
     if (!pattern.category) {
       errors.push('Category is required');
-    } else if (!validCategories.includes(pattern.category)) {
+    } else if (!VALID_CATEGORIES.includes(pattern.category)) {
       errors.push(`Invalid category: ${pattern.category}`);
     }
 
@@ -238,22 +245,8 @@ export class CustomRulesEngine {
     byCategory: Record<DebtCategory, number>;
   } {
     const rules = this.getAllRules();
-    const bySeverity: Record<Severity, number> = {
-      low: 0,
-      medium: 0,
-      high: 0,
-      critical: 0,
-    };
-    const byCategory: Record<DebtCategory, number> = {
-      dependency: 0,
-      'code-quality': 0,
-      architecture: 0,
-      documentation: 0,
-      testing: 0,
-      security: 0,
-      performance: 0,
-      maintainability: 0,
-    };
+    const bySeverity = Object.fromEntries(VALID_SEVERITIES.map(s => [s, 0])) as Record<Severity, number>;
+    const byCategory = Object.fromEntries(VALID_CATEGORIES.map(c => [c, 0])) as Record<DebtCategory, number>;
 
     rules.forEach(rule => {
       bySeverity[rule.severity]++;
