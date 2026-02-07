@@ -206,6 +206,12 @@ graph TD
 
 **Responsibility:** Shared analysis logic for all languages.
 
+**Supported Languages (14 total):**
+- JavaScript, TypeScript, Python, Java, Swift, Kotlin
+- Objective-C, C++, C, C#, Go, Rust, Ruby, PHP
+
+Each language has a dedicated analyzer extending `BaseAnalyzer`.
+
 **Key Methods:**
 - `analyze(filePath, content)` — Main entry point
 - `performLanguageSpecificChecks(filePath, content)` — [Abstract] Override in subclasses
