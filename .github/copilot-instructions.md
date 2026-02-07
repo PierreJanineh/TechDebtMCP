@@ -191,7 +191,7 @@ If ANY test fails:
 
 **CRITICAL: Follow Test-Driven Development (TDD) - Write Tests FIRST**
 
-When implementing features:
+When implementing features or resolving issues:
 1. ✅ **Write tests FIRST** (before any implementation code)
 2. ✅ Create test file in `__tests__/` folder alongside source
 3. ✅ Define test cases that describe the expected behavior
@@ -270,7 +270,7 @@ Use conventional commits:
 
 1. ✅ **Always create a feature branch** from `develop`
 2. ✅ **Branch naming:** `feature/issue-{number}-short-description`
-3. ✅ **Commit to feature branch** (NOT master/main)
+3. ✅ **Commit to feature branch** (NOT master/main/develop)
 4. ✅ **Create PR** targeting `develop` (NOT master)
 5. ✅ **After merge to develop**, only then release to master via version tag
 
