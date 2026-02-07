@@ -50,6 +50,53 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 - **Documentation:** README, ARCHITECTURE, CONTRIBUTING guides
 - **NPM Package:** Published as `tech-debt-mcp@1.0.0`
 
+### v1.1.0 - SwiftUI Analysis (Unreleased)
+
+**Status:** ✅ **READY FOR RELEASE** (tagging/publishing after merge)
+
+Enhanced Swift analyzer with comprehensive SwiftUI-specific technical debt detection.
+
+#### Completed Features
+
+**SwiftUI Analysis (Issue #58 - Phase 1 & 2)**
+- ✅ **14 SwiftUI-specific checks** across 2 phases
+- ✅ **Phase 1 - Core SwiftUI Checks (9 checks):**
+  - Excessive @State variables detection (>5 per view)
+  - @ObservedObject vs @StateObject misuse
+  - @Environment value force unwrap detection
+  - Combine pipeline circular references
+  - Missing Timer cleanup in onDisappear
+  - Missing Task cancellation handling
+  - UI updates on background threads
+  - Dynamic list missing .id() modifiers
+  - Expensive calculations in view body
+
+- ✅ **Phase 2 - Advanced SwiftUI Patterns (5 checks):**
+  - AnyView type erasure detection
+  - Deprecated NavigationLink patterns
+  - GeometryReader root-level misuse
+  - Retain cycles in SwiftUI closures
+  - Deep view nesting detection (>6 levels)
+
+**GitHub Packages Integration**
+- ✅ Published to npm and GitHub Packages
+- ✅ Automated CI/CD publishing workflow
+- ✅ Comprehensive installation documentation
+
+**Quality Improvements**
+- ✅ Repo total: 96+ tests passing (118 total with 22 todo for Phase 3)
+- ✅ SwiftUI suite: 13 implemented Phase 1 + 13 implemented Phase 2 + 22 todo Phase 3
+- ✅ All Copilot review suggestions addressed
+- ✅ Performance optimization (content split once)
+- ✅ Contributor: @ophirbucai (execute_custom_rules fix)
+
+#### Deliverables
+
+- **Tests:** Repo total 96 passing (SwiftUI tests: 13 Phase 1 + 13 Phase 2 + 22 Phase 3 todo)
+- **Documentation:** Updated README with SwiftUI section, GITHUB_PACKAGES.md, PUBLISH_GUIDE.md
+- **NPM Package:** Published as `tech-debt-mcp@1.1.0`
+- **GitHub Packages:** Available on both npm and GitHub Packages registries
+
 ### v2.0.0 - Dependency Analysis (In Progress)
 
 **Status:** 🚧 **IN PROGRESS - Phase 2 Infrastructure Complete**

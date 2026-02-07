@@ -5,6 +5,65 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### [1.1.0] - SwiftUI Analysis
+
+### Added
+
+#### SwiftUI-Specific Technical Debt Analysis (Issue #58)
+- **14 comprehensive SwiftUI checks** across 2 phases
+- **Phase 1 - Core SwiftUI Checks (9 checks):**
+  - Excessive @State variables detection (>5 per view)
+  - @ObservedObject initialization misuse detection
+  - @Environment value force unwrap detection
+  - Combine pipeline circular reference detection ([weak self] validation)
+  - Missing Timer cleanup in onDisappear
+  - Missing Task cancellation in async operations
+  - UI updates on background threads detection
+  - Dynamic list missing .id() modifiers
+  - Expensive calculations in view body
+
+- **Phase 2 - Advanced SwiftUI Patterns (5 checks):**
+  - AnyView type erasure detection
+  - Deprecated NavigationLink patterns
+  - GeometryReader root-level misuse
+  - Retain cycles in SwiftUI closures
+  - Deep view nesting detection (>6 levels)
+
+#### GitHub Packages Support
+- Published to both npm Registry and GitHub Packages
+- Comprehensive installation documentation (GITHUB_PACKAGES.md)
+- Publishing guide for maintainers (PUBLISH_GUIDE.md)
+- Automated CI/CD publishing workflow
+
+#### Quality Improvements
+- 96 tests passing (100% of SwiftUI implementation)
+- 22 todo tests for Phase 3 enhancements
+- Performance optimization: content split once per file analysis
+- Issue IDs include filePath for global uniqueness
+- All Copilot review suggestions addressed
+
+### Changed
+- Updated README.md with multiple installation options (npm, GitHub Packages, source)
+- Enhanced publish.yml workflow to publish to both registries
+- Improved SwiftUI analyzer with per-view @State counting
+- Better Environment validation with force unwrap detection at usage sites
+
+### Fixed
+- Timer cleanup detection bug (lines.indexOf issue)
+- Environment validation now detects actual usage patterns
+- Task cancellation guidance clarified (@MainActor ≠ cancellation)
+- Removed duplicate method implementations in SwiftAnalyzer
+- **execute_custom_rules schema** - Removed unsupported anyOf constraint (Thanks @ophirbucai - PR #63)
+
+### Documentation
+- Added GITHUB_PACKAGES.md - Comprehensive installation and setup guide
+- Added PUBLISH_GUIDE.md - Publishing workflow documentation
+- Updated .github/copilot-instructions.md with strict documentation requirements
+- Enhanced PR workflow with mandatory documentation checklist
+- **IDE Installation Badges** - One-click install for VS Code, Cursor, Claude, Windsurf, JetBrains, Xcode (Thanks @ophirbucai - PR #66)
+
 ## [1.0.0] - 2026-02-07
 
 ### Added

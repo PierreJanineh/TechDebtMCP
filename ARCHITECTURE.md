@@ -462,6 +462,139 @@ Future additions:
 3. **Memory:** Issues stored in memory; large projects may need pagination
 4. **Configuration:** Loaded once per analysis; consider caching
 
+## SwiftUI Analysis Architecture
+
+**Version Added:** v1.1.0  
+**Module:** `SwiftAnalyzer` (extends `BaseAnalyzer`)  
+**Implementation:** Issue #58
+
+### Overview
+
+The SwiftUI analyzer provides **14 specialized checks** for SwiftUI applications across 2 phases:
+- **Phase 1:** Core SwiftUI checks (9 patterns)
+- **Phase 2:** Advanced SwiftUI patterns (5 patterns)
+
+### Implementation Pattern
+
+All SwiftUI checks follow a consistent architecture:
+
+```typescript
+private checkSwiftUIPattern(filePath: string, lines: string[]): TechDebtIssue[] {
+  const issues: TechDebtIssue[] = [];
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    // Pattern detection logic
+    if (/* pattern detected */) {
+      issues.push({
+        id: `pattern-name-${filePath}-${i + 1}`,  // Globally unique ID
+        category: 'code-quality',
+        severity: 'medium',
+        file: filePath,
+        line: i + 1,
+        title: 'Issue title',
+        description: 'What the issue is',
+        suggestion: 'How to fix it',
+        effort: 'small',
+        language: 'swift',
+        rule: 'swiftui-pattern-name',
+        tags: ['swiftui', 'specific-tag'],
+      });
+    }
+  }
+  
+  return issues;
+}
+```
+
+### Performance Optimization
+
+**Content Splitting:** Pre-split once in `performLanguageSpecificChecks`:
+```typescript
+const lines = content.split('\n');
+issues.push(...this.checkExcessiveStateVariables(filePath, lines));
+issues.push(...this.checkStateObjectMisuse(filePath, lines));
+// ... all other checks receive pre-split lines
+```
+
+This reduces overhead from O(N × checks) to O(1) for content splitting.
+
+### Phase 1: Core SwiftUI Checks (9 Patterns)
+
+| Check | Rule | Severity | Detection Method |
+|-------|------|----------|------------------|
+| Excessive @State | `swiftui-excessive-state` | Medium | Per-view @State counting with struct scope tracking |
+| @ObservedObject Misuse | `swiftui-state-object-misuse` | High | Pattern: `@ObservedObject` + `= ` on same line |
+| Environment Validation | `swiftui-env-validation` | High | Force unwrap detection at @Environment usage sites |
+| Combine Circular Refs | `swiftui-combine-circular-ref` | High | `.sink` without `[weak self]` in context |
+| Missing Timer Cleanup | `swiftui-timer-cleanup` | Medium | `Timer.scheduledTimer` without `onDisappear` |
+| Missing Task Cancel | `swiftui-task-cancellation` | Medium | `Task {` without tracking or `.task` modifier |
+| Main Thread Safety | `swiftui-main-thread-safety` | High | `Task {` + `self.` without `DispatchQueue.main` |
+| Missing .id() | `swiftui-missing-id` | Medium | `ForEach` + dynamic data without `.id()` |
+| Expensive Calculations | `swiftui-expensive-calculation` | Medium | `reduce/sort/filter` in view body |
+
+### Phase 2: Advanced Patterns (5 Patterns)
+
+| Check | Rule | Severity | Detection Method |
+|-------|------|----------|------------------|
+| AnyView Misuse | `swiftui-anyview-misuse` | Medium | `AnyView(` detection (type erasure) |
+| NavigationLink Issues | `swiftui-navigationlink-deprecated` | Medium | Deprecated NavigationLink patterns |
+| GeometryReader Root | `swiftui-geometryreader-root` | Medium | GeometryReader at `var body:` level |
+| Retain Cycles | `swiftui-retain-cycle-closure` | High | `.onChange/.onReceive` without `[weak self]` |
+| Deep Nesting | `swiftui-deep-nesting` | Medium | Brace depth >6 in view body |
+
+### Test Coverage
+
+**Total Repository Tests:** 118 (96 passing + 22 todo across all phases)
+
+**SwiftUI Analyzer Tests:**
+- **Phase 1 Tests:** 13 implemented test cases
+- **Phase 2 Tests:** 13 implemented test cases  
+- **Phase 3 Tests:** 22 todo tests for future enhancements
+
+**Test Pattern:**
+```typescript
+it('should detect SwiftUI pattern', async () => {
+  const code = `/* sample Swift code */`;
+  const result = await analyzer.analyze('test.swift', code);
+  const issues = result.issues.filter(i => i.rule === 'swiftui-pattern-name');
+  
+  expect(issues.length).toBeGreaterThan(0);
+  expect(issues[0].severity).toBe('medium');
+});
+```
+
+### Heuristic Limitations
+
+The SwiftUI analyzer uses line-based pattern matching with the following known limitations:
+
+1. **Multi-line Constructs:** Complex multi-line SwiftUI code may not be detected
+2. **Comment Filtering:** Inline comments are stripped but may affect detection
+3. **Scope Tracking:** Brace-depth counting for view scope has edge cases
+4. **False Positives:** Demo/example code may trigger warnings
+
+**Recommended Improvements (Phase 3):**
+- Full Swift AST parsing for accurate scope detection
+- Context-aware pattern matching
+- Enhanced comment/string literal filtering
+- User-configurable thresholds
+
+### Design Decisions
+
+1. **Issue ID Format:** `${rule}-${filePath}-${lineNumber}` for global uniqueness
+2. **Pre-split Lines:** Pass `string[]` instead of `content: string` for performance
+3. **Per-View Counting:** Track @State count per struct, not file-wide
+4. **Severity Levels:** Align with Apple's best practices (High = potential crash)
+
+### Dependencies
+
+```typescript
+import { TechDebtIssue } from '../types/index.js';
+import { BaseAnalyzer } from './baseAnalyzer.js';
+```
+
+**No External Dependencies:** Uses only Node.js built-ins (string/array manipulation)
+
 ## Future Enhancements
 
 - **Parallel file processing** — Analyze multiple files concurrently

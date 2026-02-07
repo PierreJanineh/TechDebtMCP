@@ -383,6 +383,75 @@ TechDebt MCP uses SQALE (Software Quality Assessment based on Lifecycle Expectat
 - **large**: 2-4 hours
 - **xlarge**: 4+ hours
 
+## SwiftUI Analysis
+
+Tech Debt MCP includes **14 specialized checks** for SwiftUI applications, detecting common anti-patterns, memory leaks, and performance issues.
+
+### State Management Issues
+
+- **Excessive @State Variables** - Detects views with >5 @State variables that should use a ViewModel
+- **@ObservedObject Misuse** - Flags @ObservedObject with initialization (should use @StateObject)
+- **Environment Value Safety** - Detects force unwrapping of @Environment values
+
+### Memory & Lifecycle
+
+- **Combine Circular References** - Finds missing [weak self] in Combine sinks
+- **Missing Timer Cleanup** - Detects Timers without cleanup in onDisappear
+- **Missing Task Cancellation** - Flags async Tasks without cancellation handling
+- **Retain Cycles in Closures** - Detects self captures in onChange/onReceive without [weak self]
+
+### Performance & View Hierarchy
+
+- **Missing .id() Modifiers** - Detects ForEach without stable identifiers
+- **Expensive View Body Calculations** - Flags reduce/sort/filter in view bodies
+- **Deep View Nesting** - Warns when nesting depth exceeds 6 levels
+- **GeometryReader Misuse** - Detects GeometryReader at view root
+
+### SwiftUI Best Practices
+
+- **AnyView Type Erasure** - Suggests using generics or @ViewBuilder instead
+- **Deprecated NavigationLink** - Flags old-style NavigationLink patterns
+- **Main Thread Safety** - Ensures UI updates happen on main thread
+
+### Example SwiftUI Issues Detected
+
+```swift
+// ❌ Excessive @State - should use ViewModel
+struct UserView: View {
+  @State private var firstName = ""
+  @State private var lastName = ""
+  @State private var email = ""
+  @State private var phone = ""
+  @State private var address = ""
+  @State private var city = ""  // 6+ @State variables!
+  // ...
+}
+
+// ❌ @ObservedObject with initialization
+struct ContentView: View {
+  @ObservedObject var viewModel = UserViewModel()  // Should be @StateObject!
+  // ...
+}
+
+// ❌ Missing Timer cleanup
+struct TimerView: View {
+  var body: some View {
+    Text("Hello")
+      .onAppear {
+        Timer.scheduledTimer(...)  // Missing .onDisappear cleanup!
+      }
+  }
+}
+
+// ❌ Retain cycle in Combine
+publisher
+  .sink { value in
+    self.updateUI(value)  // Missing [weak self]!
+  }
+```
+
+All SwiftUI checks follow Apple's best practices and help prevent common bugs in production apps.
+
 ## Custom Rules
 
 Define your own tech debt checks using regex patterns. Create rules in `.techdebtrc.json`:
