@@ -72,60 +72,23 @@ describe('Dependency Parser Factory', () => {
     expect(parser).toBeNull();
   });
 
-  it('should recognize package.json', () => {
-    // Will be implemented when NpmParser is created
-    // const parser = createDependencyParser('package.json');
-    // expect(parser).not.toBeNull();
-    // expect(parser?.getEcosystem()).toBe('npm');
-  });
+  it.todo('should recognize package.json');
 
-  it('should recognize pom.xml (Maven)', () => {
-    // Will be implemented when GradleParser is created
-    // const parser = createDependencyParser('pom.xml');
-    // expect(parser).not.toBeNull();
-  });
+  it.todo('should recognize pom.xml (Maven)');
 
-  it('should recognize Cargo.toml (Rust)', () => {
-    // Will be implemented when CargoParser is created
-    // const parser = createDependencyParser('Cargo.toml');
-    // expect(parser).not.toBeNull();
-  });
+  it.todo('should recognize Cargo.toml (Rust)');
 
-  it('should recognize go.mod (Go)', () => {
-    // Will be implemented when GoModParser is created
-    // const parser = createDependencyParser('go.mod');
-    // expect(parser).not.toBeNull();
-  });
+  it.todo('should recognize go.mod (Go)');
 
-  it('should recognize composer.json (PHP)', () => {
-    // Will be implemented when ComposerParser is created
-    // const parser = createDependencyParser('composer.json');
-    // expect(parser).not.toBeNull();
-  });
+  it.todo('should recognize composer.json (PHP)');
 
-  it('should recognize Gemfile (Ruby)', () => {
-    // Will be implemented when BundlerParser is created
-    // const parser = createDependencyParser('Gemfile');
-    // expect(parser).not.toBeNull();
-  });
+  it.todo('should recognize Gemfile (Ruby)');
 
-  it('should recognize Package.swift (Swift)', () => {
-    // Will be implemented when SwiftParser is created
-    // const parser = createDependencyParser('Package.swift');
-    // expect(parser).not.toBeNull();
-  });
+  it.todo('should recognize Package.swift (Swift)');
 
-  it('should recognize packages.config (C#)', () => {
-    // Will be implemented when NugetParser is created
-    // const parser = createDependencyParser('packages.config');
-    // expect(parser).not.toBeNull();
-  });
+  it.todo('should recognize packages.config (C#)');
 
-  it('should recognize CMakeLists.txt (C/C++)', () => {
-    // Will be implemented when CppParser is created
-    // const parser = createDependencyParser('CMakeLists.txt');
-    // expect(parser).not.toBeNull();
-  });
+  it.todo('should recognize CMakeLists.txt (C/C++)');
 });
 
 describe('Dependency Parser Utilities', () => {
@@ -212,4 +175,5 @@ describe('ParsedDependency Interface', () => {
     });
   });
 });
+
 

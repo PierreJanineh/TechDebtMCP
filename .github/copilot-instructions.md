@@ -193,25 +193,19 @@ If ANY test fails:
 
 When implementing features:
 1. ✅ **Write tests FIRST** (before any implementation code)
-2. ✅ Create test file alongside source in `__tests__/` folder
+2. ✅ Create test file in `__tests__/` folder alongside source
 3. ✅ Define test cases that describe the expected behavior
 4. ✅ THEN implement the feature to make tests pass
 5. ✅ Run tests to verify: `npm test`
 6. ✅ Ensure 100% of new tests pass before committing
 
 ```bash
-# Create test file FIRST
+# Create test file FIRST in __tests__/ folder
 src/
 ├── [module]/
-│   ├── [module].test.ts     # TEST FILE (write first!)
+│   ├── [module].ts          # SOURCE CODE (implement after tests)
 │   └── __tests__/
-│       └── [module].test.ts # Tests
-
-# THEN implement the source
-├── [module]/
-│   ├── [module].ts          # SOURCE CODE (write after tests)
-│   └── __tests__/
-│       └── [module].test.ts # Tests
+│       └── [module].test.ts # TEST FILE (write first!)
 ```
 
 Test requirements:

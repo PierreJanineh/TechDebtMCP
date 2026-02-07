@@ -12,7 +12,7 @@ export interface ParsedDependency {
  * Abstract base class for dependency parsers
  */
 export abstract class BaseDependencyParser {
-  protected ecosystem: string;
+  protected readonly ecosystem: string;
 
   /**
    * Create a new dependency parser
@@ -50,4 +50,5 @@ export abstract class BaseDependencyParser {
    */
   abstract getPackageFileNames(): string[];
 }
+
 

@@ -1,3 +1,4 @@
+import { basename } from 'node:path';
 import { BaseDependencyParser, ParsedDependency } from './baseParser.js';
 
 /**
@@ -6,7 +7,7 @@ import { BaseDependencyParser, ParsedDependency } from './baseParser.js';
  * @returns A dependency parser if one can handle the file, null otherwise
  */
 export function createDependencyParser(filePath: string): BaseDependencyParser | null {
-  const fileName = filePath.split('/').pop() || '';
+  const fileName = basename(filePath);
 
   // Placeholder for future parsers
   // Will be populated as parsers are implemented
@@ -17,7 +18,7 @@ export function createDependencyParser(filePath: string): BaseDependencyParser |
   };
 
   // Check file extension/name patterns
-  if (fileName in parserMap) {
+  if (Object.hasOwn(parserMap, fileName)) {
     return parserMap[fileName];
   }
 
@@ -90,4 +91,5 @@ export function getAllPackageFileNames(): string[] {
 
 // Re-export types and base classes
 export { BaseDependencyParser, ParsedDependency };
+
 
