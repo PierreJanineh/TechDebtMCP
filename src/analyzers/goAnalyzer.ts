@@ -28,7 +28,7 @@ export class GoAnalyzer extends BaseAnalyzer {
     }));
 
     // Blank imports (e.g., import _ "pkg")
-    issues.push(...this.checkPattern(filePath, content, /import\s+_\s+"[^"]+"/g, {
+    issues.push(...this.checkPattern(filePath, content, /import\s+_\s+"[^"]*"/g, {
       category: 'code-quality',
       severity: 'low',
       title: 'Blank import',
@@ -64,7 +64,7 @@ export class GoAnalyzer extends BaseAnalyzer {
     }));
 
     // init() function (implicit initialization)
-    issues.push(...this.checkPattern(filePath, content, /^func\s+init\s*\(\)/gm, {
+    issues.push(...this.checkPattern(filePath, content, /func\s+init\s*\(/g, {
       category: 'maintainability',
       severity: 'medium',
       title: 'init() function found',
