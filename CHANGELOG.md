@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### [1.1.0] - SwiftUI Analysis
+## [1.1.0] - 2026-02-07
 
 ### Added
 
@@ -61,6 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated .github/copilot-instructions.md with strict documentation requirements
 - Enhanced PR workflow with mandatory documentation checklist
 - **IDE Installation Badges** - One-click install for VS Code, Cursor, Claude, Windsurf, JetBrains, Xcode (Thanks @ophirbucai - PR #66)
+- **Documentation Accuracy** - Fixed tool count (13 tools), test count (96 passing + 22 todo), and branch references throughout all docs
 
 ## [1.0.0] - 2026-02-07
 
