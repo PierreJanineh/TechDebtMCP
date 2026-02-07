@@ -1,5 +1,10 @@
 # Tech Debt MCP Server
 
+[![npm version](https://img.shields.io/npm/v/tech-debt-mcp)](https://www.npmjs.com/package/tech-debt-mcp)
+[![Add to MCP](.github/badges/mcp-badge.svg)](#installation)
+
+<!-- Shields.io fallback: [![Add to MCP](https://img.shields.io/badge/MCP-Install_Server-6f42c1)](#installation) -->
+
 A Model Context Protocol (MCP) server for analyzing technical debt across multiple programming languages. Designed to integrate with GitHub Copilot and other MCP-compatible tools.
 
 ## Features
@@ -33,21 +38,64 @@ A Model Context Protocol (MCP) server for analyzing technical debt across multip
 
 ## Installation
 
+### One-Click Install
+
+[![VS Code](.github/badges/vscode-install.svg)](vscode:mcp/install?%7B%22name%22%3A%20%22tech-debt-mcp%22%2C%20%22command%22%3A%20%22npx%22%2C%20%22args%22%3A%20%5B%22-y%22%2C%20%22tech-debt-mcp%22%5D%7D)
+
+[![Cursor](.github/badges/cursor-install.svg)](cursor://anysphere.cursor-deeplink/mcp/install?name=tech-debt-mcp&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsInRlY2gtZGVidC1tY3AiXX0=)
+
+### Via Terminal
+
+![Claude Code](.github/badges/claude-code-install.svg)
+
+```sh
+claude mcp add tech-debt-mcp -- npx -y tech-debt-mcp
+```
+
+### Manual Setup
+
+#### VS Code / GitHub Copilot
+
+Add to your VS Code settings (<kbd>Ctrl+Shift+P</kbd> > `Preferences: Open User Settings (JSON)`):
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "tech-debt-mcp": {
+        "type": "stdio",
+        "command": "npx",
+        "args": ["-y", "tech-debt-mcp"]
+      }
+    }
+  }
+}
+```
+
+> **Note:** The `-y` flag auto-accepts the npx install prompt. This is required because MCP servers run as background processes with no interactive terminal.
+
+#### Other MCP Clients
+
+Use the same configuration format above for any MCP-compatible client.
+
+### Local Development
+
+If you want to develop or modify the server locally:
+
 ```bash
 npm install
 npm run build
 ```
 
-## Usage with GitHub Copilot
-
-Add to your MCP settings:
+Then add to your MCP settings:
 
 ```json
 {
-  "mcpServers": {
-    "tech-debt": {
+  "servers": {
+    "tech-debt-mcp": {
+      "type": "stdio",
       "command": "node",
-      "args": ["/path/to/TechDebtMCP/dist/index.js"]
+      "args": ["/absolute/path/to/TechDebtMCP/dist/index.js"]
     }
   }
 }
@@ -56,9 +104,11 @@ Add to your MCP settings:
 ## Available Tools
 
 ### `analyze_project`
+
 Analyze an entire project for technical debt.
 
 **Parameters:**
+
 - `path` (required): Absolute path to the project root
 - `languages` (optional): Array of languages to analyze
 - `categories` (optional): Filter by debt categories
@@ -66,25 +116,32 @@ Analyze an entire project for technical debt.
 - `maxFiles` (optional): Maximum files to analyze
 
 ### `analyze_file`
+
 Analyze a single file for technical debt.
 
 **Parameters:**
+
 - `path` (required): Absolute path to the file
 
 ### `get_debt_summary`
+
 Get a quick summary of technical debt in a project.
 
 **Parameters:**
+
 - `path` (required): Absolute path to the project root
 
 ### `get_sqale_metrics`
+
 Get SQALE technical debt metrics including remediation time, debt ratio, and rating.
 
 **Parameters:**
+
 - `path` (required): Absolute path to the project root
 - `developmentTime` (optional): Estimated development time in hours (for debt ratio calculation)
 
 **Output includes:**
+
 - SQALE rating (A-E) with star visualization
 - Total remediation time in human-readable format
 - Debt ratio (if development time provided)
@@ -92,11 +149,13 @@ Get SQALE technical debt metrics including remediation time, debt ratio, and rat
 - Breakdown by category (code-quality, security, maintainability, etc.)
 
 **Example:**
+
 ```bash
 get_sqale_metrics --path=/path/to/project --developmentTime=2080
 ```
 
 Returns:
+
 ```
 # SQALE Technical Debt Metrics
 
@@ -114,33 +173,42 @@ Returns:
 ```
 
 ### `list_supported_languages`
+
 List all supported programming languages with their checks.
 
 ### `get_recommendations`
+
 Get prioritized recommendations for addressing technical debt.
 
 **Parameters:**
+
 - `path` (required): Absolute path to the project root
 - `limit` (optional): Maximum recommendations to return
 
 ### `get_issues_by_severity`
+
 Get all issues of a specific severity level.
 
 **Parameters:**
+
 - `path` (required): Absolute path to the project root
 - `severity` (required): low, medium, high, or critical
 
 ### `get_issues_by_category`
+
 Get all issues of a specific category.
 
 **Parameters:**
+
 - `path` (required): Absolute path to the project root
 - `category` (required): dependency, code-quality, architecture, documentation, testing, security, performance, or maintainability
 
 ### `add_custom_rule`
+
 Add a custom pattern-based tech debt rule.
 
 **Parameters:**
+
 - `id` (required): Unique identifier for the rule
 - `pattern` (required): Regex pattern to match
 - `message` (required): Issue title/message
@@ -151,28 +219,35 @@ Add a custom pattern-based tech debt rule.
 - `flags` (optional): Regex flags (g, i, m, s, etc.)
 
 ### `remove_custom_rule`
+
 Remove a custom rule by ID.
 
 **Parameters:**
+
 - `id` (required): ID of the rule to remove
 
 ### `list_custom_rules`
+
 List all active custom rules with their statistics.
 
 ### `execute_custom_rules`
+
 Execute all custom rules against code or a file.
 
 **Parameters:**
+
 - `path` (optional): Path to the file to analyze
 - `code` (optional): Code content to analyze directly
 - `language` (optional): Programming language for filtering rules
 
-*Note: Either `path` or `code` must be provided.*
+_Note: Either `path` or `code` must be provided._
 
 ### `validate_custom_pattern`
+
 Validate a custom pattern before adding it as a rule.
 
 **Parameters:**
+
 - `id` (required): Unique identifier for the rule
 - `pattern` (required): Regex pattern to validate
 - `message` (required): Issue title/message
@@ -184,6 +259,7 @@ Validate a custom pattern before adding it as a rule.
 TechDebt MCP uses SQALE (Software Quality Assessment based on Lifecycle Expectations) methodology to quantify technical debt:
 
 ### Rating System (A-E Scale)
+
 - **A**: ≤5% debt ratio (Excellent)
 - **B**: 6-10% debt ratio (Good)
 - **C**: 11-20% debt ratio (Fair)
@@ -191,6 +267,7 @@ TechDebt MCP uses SQALE (Software Quality Assessment based on Lifecycle Expectat
 - **E**: >50% debt ratio (Critical)
 
 ### Metrics Provided
+
 - **Remediation Time**: Estimated time to fix all issues
 - **Debt Ratio**: Technical debt as percentage of development time
 - **Formatted Time**: Human-readable time estimates (e.g., "2h 30m", "3d 4h")
@@ -198,6 +275,7 @@ TechDebt MCP uses SQALE (Software Quality Assessment based on Lifecycle Expectat
 - **Severity Breakdown**: Remediation time per severity level
 
 ### Effort-to-Time Mapping
+
 - **trivial**: ≤5 minutes
 - **small**: 5-30 minutes
 - **medium**: 30 min - 2 hours
@@ -359,6 +437,7 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 ## Releases
 
 Tech Debt MCP uses automated releases via GitHub Actions:
+
 - **Latest:** [![npm version](https://img.shields.io/npm/v/tech-debt-mcp.svg)](https://www.npmjs.com/package/tech-debt-mcp)
 - **Releases:** [GitHub Releases](https://github.com/PierreJanineh/TechDebtMCP/releases)
 - **Roadmap:** See [ROADMAP.md](ROADMAP.md) for planned features
