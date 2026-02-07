@@ -38,7 +38,8 @@
     "url": "https://github.com/PierreJanineh/TechDebtMCP.git"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
   },
   "homepage": "https://github.com/PierreJanineh/TechDebtMCP#readme",
   "bugs": {
