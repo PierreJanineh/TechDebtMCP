@@ -281,7 +281,7 @@ class TechDebtServer {
               },
               language: {
                 type: 'string',
-                description: 'Programming language for filtering rules',
+                description: 'Optional: programming language for filtering rules',
               },
             },
             required: [],
