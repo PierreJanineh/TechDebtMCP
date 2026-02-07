@@ -1,0 +1,189 @@
+// Tech Debt Categories
+export type DebtCategory =
+  | 'dependency'
+  | 'code-quality'
+  | 'architecture'
+  | 'documentation'
+  | 'testing'
+  | 'security'
+  | 'performance'
+  | 'maintainability';
+
+// Severity levels
+export type Severity = 'low' | 'medium' | 'high' | 'critical';
+
+// Effort estimation
+export type Effort = 'trivial' | 'small' | 'medium' | 'large' | 'xlarge';
+
+// Supported languages
+export type SupportedLanguage =
+  | 'javascript'
+  | 'typescript'
+  | 'python'
+  | 'java'
+  | 'swift'
+  | 'kotlin'
+  | 'objectivec'
+  | 'cpp'
+  | 'c'
+  | 'csharp'
+  | 'go'
+  | 'rust'
+  | 'ruby'
+  | 'php';
+
+// Language configuration
+export interface LanguageConfig {
+  name: string;
+  extensions: string[];
+  packageFiles: string[];
+  commentPatterns: {
+    single: string[];
+    multiStart: string[];
+    multiEnd: string[];
+  };
+  todoPatterns: RegExp[];
+  specificChecks: string[];
+}
+
+// Tech debt issue
+export interface TechDebtIssue {
+  id: string;
+  category: DebtCategory;
+  severity: Severity;
+  file: string;
+  line?: number;
+  endLine?: number;
+  column?: number;
+  title: string;
+  description: string;
+  code?: string;
+  suggestion?: string;
+  effort?: Effort;
+  language?: SupportedLanguage;
+  rule: string;
+  tags?: string[];
+}
+
+// Recommendation
+export interface Recommendation {
+  title: string;
+  description: string;
+  priority: number;
+  effort: Effort;
+  impact: 'low' | 'medium' | 'high';
+  relatedIssues: string[];
+  actionItems: string[];
+}
+
+// Project info
+export interface ProjectInfo {
+  path: string;
+  languages: SupportedLanguage[];
+  totalFiles: number;
+  analyzedFiles: number;
+  packageManagers: string[];
+  frameworks: string[];
+}
+
+// Debt summary
+export interface DebtSummary {
+  totalIssues: number;
+  bySeverity: Record<Severity, number>;
+  byCategory: Record<DebtCategory, number>;
+  byLanguage: Record<string, number>;
+  debtScore: number; // 0-100, higher = more debt
+  healthScore: number; // 0-100, higher = healthier
+}
+
+// Full report
+export interface TechDebtReport {
+  timestamp: string;
+  project: ProjectInfo;
+  summary: DebtSummary;
+  issues: TechDebtIssue[];
+  recommendations: Recommendation[];
+}
+
+// Analysis options
+export interface AnalysisOptions {
+  path: string;
+  languages?: SupportedLanguage[];
+  categories?: DebtCategory[];
+  severity?: Severity;
+  includeTests?: boolean;
+  maxFiles?: number;
+  ignorePaths?: string[];
+}
+
+// File analysis result
+export interface FileAnalysisResult {
+  file: string;
+  language: SupportedLanguage | null;
+  issues: TechDebtIssue[];
+  metrics: FileMetrics;
+}
+
+// File metrics
+export interface FileMetrics {
+  lines: number;
+  codeLines: number;
+  commentLines: number;
+  blankLines: number;
+  complexity?: number;
+  functions?: number;
+  classes?: number;
+}
+
+// Dependency info
+export interface DependencyInfo {
+  name: string;
+  currentVersion: string;
+  latestVersion?: string;
+  isOutdated: boolean;
+  isDeprecated: boolean;
+  hasVulnerabilities: boolean;
+  vulnerabilities?: VulnerabilityInfo[];
+}
+
+// Vulnerability info
+export interface VulnerabilityInfo {
+  id: string;
+  severity: Severity;
+  title: string;
+  description: string;
+  fixedIn?: string;
+}
+
+// Configuration file structure
+export interface TechDebtConfig {
+  ignore?: string[];
+  include?: string[];
+  severity?: {
+    [rule: string]: Severity;
+  };
+  rules?: {
+    maxFileLines?: number;
+    maxFunctionLines?: number;
+    maxComplexity?: number;
+    maxParameters?: number;
+    maxNestingDepth?: number;
+    minCommentRatio?: number;
+  };
+  customPatterns?: CustomPattern[];
+  languageOverrides?: {
+    [lang: string]: Partial<LanguageConfig>;
+  };
+}
+
+// Custom pattern for user-defined checks
+export interface CustomPattern {
+  id: string;
+  pattern: string;
+  flags?: string;
+  severity: Severity;
+  category: DebtCategory;
+  message: string;
+  suggestion?: string;
+  languages?: SupportedLanguage[];
+}
