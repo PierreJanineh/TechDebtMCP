@@ -19,27 +19,27 @@ A Model Context Protocol (MCP) server for analyzing technical debt across multip
 
 ## Supported Languages
 
-| Language | Extensions | Key Checks |
-|----------|------------|------------|
-| JavaScript | .js, .mjs, .cjs, .jsx | console.log, debugger, eslint-disable, eval, var usage |
-| TypeScript | .ts, .tsx, .mts, .cts | any type, @ts-ignore, non-null assertions, type assertions |
-| Python | .py, .pyw, .pyi | bare except, print statements, global usage, eval/exec |
-| Java | .java | System.out, printStackTrace, empty catch, @SuppressWarnings |
-| Swift | .swift | force unwrap (!), force cast (as!), force try, retain cycles, **SwiftUI patterns** |
-| Kotlin | .kt, .kts | !!, lateinit abuse, @Suppress, unchecked casts |
-| Objective-C | .m, .mm, .h | NSLog, retain cycles, deprecated methods, massive view controllers |
-| C++ | .cpp, .cc, .hpp, .h | raw pointers, C-style casts, goto, using namespace std |
-| C | .c, .h | malloc without free, goto, unsafe functions, null checks |
-| C# | .cs | Console.WriteLine, async void, empty catch, dispose pattern |
-| Go | .go | ignored errors, blank imports, fmt.Print, panic, global variables |
-| Rust | .rs | unwrap, expect, unsafe, allow attributes, panic, println |
-| Ruby | .rb | puts, binding.pry, rubocop disable, eval, global variables |
-| PHP | .php | var_dump, print_r, die/exit, eval, error suppression |
+| Language    | Extensions            | Key Checks                                                                         |
+| ----------- | --------------------- | ---------------------------------------------------------------------------------- |
+| JavaScript  | .js, .mjs, .cjs, .jsx | console.log, debugger, eslint-disable, eval, var usage                             |
+| TypeScript  | .ts, .tsx, .mts, .cts | any type, @ts-ignore, non-null assertions, type assertions                         |
+| Python      | .py, .pyw, .pyi       | bare except, print statements, global usage, eval/exec                             |
+| Java        | .java                 | System.out, printStackTrace, empty catch, @SuppressWarnings                        |
+| Swift       | .swift                | force unwrap (!), force cast (as!), force try, retain cycles, **SwiftUI patterns** |
+| Kotlin      | .kt, .kts             | !!, lateinit abuse, @Suppress, unchecked casts                                     |
+| Objective-C | .m, .mm, .h           | NSLog, retain cycles, deprecated methods, massive view controllers                 |
+| C++         | .cpp, .cc, .hpp, .h   | raw pointers, C-style casts, goto, using namespace std                             |
+| C           | .c, .h                | malloc without free, goto, unsafe functions, null checks                           |
+| C#          | .cs                   | Console.WriteLine, async void, empty catch, dispose pattern                        |
+| Go          | .go                   | ignored errors, blank imports, fmt.Print, panic, global variables                  |
+| Rust        | .rs                   | unwrap, expect, unsafe, allow attributes, panic, println                           |
+| Ruby        | .rb                   | puts, binding.pry, rubocop disable, eval, global variables                         |
+| PHP         | .php                  | var_dump, print_r, die/exit, eval, error suppression                               |
 
 ## Installation
 
 <details>
-<summary><img src="https://raw.githubusercontent.com/PierreJanineh/TechDebtMCP/develop/.github/badges/vscode-install.svg" alt="VS Code: Install Server"></summary>
+<summary><img src="https://img.shields.io/badge/VS_Code-Install%20Server-007ACC?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTIzLjE1IDIuNTg3IDE4LjIxLjIxYTEuNDk0IDEuNDk0IDAgMCAwLTEuNzA1LjI5bC05LjQ2IDguNjMtNC4xMi0zLjEyOGEuOTk5Ljk5OSAwIDAgMC0xLjI3Ni4wNTdMLjMyNyA3LjI2MUExIDEgMCAwIDAgMCA4LjA2OGwzLjU5MiAzLjI5M0wwIDEzLjYxNmExIDEgMCAwIDAgLjMyNy44MDdsMS4zMTEgMS4zMTFhLjk5OS45OTkgMCAwIDAgMS4yNzYuMDU3bDQuMTItMy4xMjggOS40NiA4LjYzYTEuNDkyIDEuNDkyIDAgMCAwIDEuNzA0LjI5bDQuOTQyLTIuMzc3QTEuNSAxLjUgMCAwIDAgMjQgMTguMDE0VjUuOTg2YTEuNSAxLjUgMCAwIDAtLjg1LTEuMzk5ek0xOC41IDE2LjEyIDkuNDEgMTEuMzYxbDkuMDktNC43NTh6IiBmaWxsPSIjZmZmIi8+PC9zdmc+" alt="VS Code: Install Server"></summary>
 
 [One-Click Install](https://insiders.vscode.dev/redirect/mcp/install?name=tech-debt-mcp&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22tech-debt-mcp%22%5D%7D)
 
@@ -48,10 +48,11 @@ Via Terminal:
 ```sh
 code --add-mcp '{"name":"tech-debt-mcp","command":"npx","args":["-y","tech-debt-mcp"]}'
 ```
+
 </details>
 
 <details>
-<summary><img src="https://raw.githubusercontent.com/PierreJanineh/TechDebtMCP/develop/.github/badges/cursor-install.svg" alt="Cursor: Install Server"></summary>
+<summary><img src="https://img.shields.io/badge/Cursor-Install%20Server-26251E?logo=cursor&logoColor=F7F7F4" alt="Cursor: Install Server"></summary>
 
 [One-Click Install](cursor://anysphere.cursor-deeplink/mcp/install?name=tech-debt-mcp&config=eyJjb21tYW5kIjoibnB4IC15IHRlY2gtZGVidC1tY3AifQ==)
 
@@ -60,16 +61,18 @@ Via Terminal:
 ```sh
 cursor --add-mcp '{"name":"tech-debt-mcp","command":"npx -y tech-debt-mcp"}'
 ```
+
 </details>
 
 <details>
-<summary><img src="https://raw.githubusercontent.com/PierreJanineh/TechDebtMCP/develop/.github/badges/claude-code-install.svg" alt="Claude Code: Add Server"></summary>
+<summary><img src="https://img.shields.io/badge/Claude%20Code-Add%20Server-d97757?logo=Claude&logoColor=f5f5f5" alt="Claude Code: Add Server"></summary>
 
 Via Terminal:
 
 ```sh
 claude mcp add tech-debt-mcp -- npx -y tech-debt-mcp
 ```
+
 </details>
 
 ### Option 1: From npm (Recommended)
@@ -81,12 +84,14 @@ npm install -g tech-debt-mcp
 ### Option 2: From GitHub Packages
 
 Create or update `~/.npmrc`:
+
 ```
 @PierreJanineh:registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
 ```
 
 Then install:
+
 ```bash
 npm install -g @PierreJanineh/tech-debt-mcp
 ```
