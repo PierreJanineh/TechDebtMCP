@@ -1,7 +1,7 @@
 # Tech Debt MCP Server
 
 [![npm version](https://img.shields.io/npm/v/tech-debt-mcp)](https://www.npmjs.com/package/tech-debt-mcp)
-[![Add to MCP](.github/badges/mcp-badge.svg)](#installation)
+[![Add to MCP](https://raw.githubusercontent.com/PierreJanineh/TechDebtMCP/develop/.github/badges/mcp-badge.svg)](#installation)
 
 <!-- Shields.io fallback: [![Add to MCP](https://img.shields.io/badge/MCP-Install_Server-6f42c1)](#installation) -->
 
@@ -40,13 +40,14 @@ A Model Context Protocol (MCP) server for analyzing technical debt across multip
 
 ### One-Click Install
 
-[![VS Code](.github/badges/vscode-install.svg)](vscode:mcp/install?%7B%22name%22%3A%20%22tech-debt-mcp%22%2C%20%22command%22%3A%20%22npx%22%2C%20%22args%22%3A%20%5B%22-y%22%2C%20%22tech-debt-mcp%22%5D%7D)
+[![VS Code](https://raw.githubusercontent.com/PierreJanineh/TechDebtMCP/develop/.github/badges/vscode-install.svg)](vscode:mcp/install?%7B%22name%22%3A%20%22tech-debt-mcp%22%2C%20%22command%22%3A%20%22npx%22%2C%20%22args%22%3A%20%5B%22-y%22%2C%20%22tech-debt-mcp%22%5D%7D)
+[![Cursor](https://raw.githubusercontent.com/PierreJanineh/TechDebtMCP/develop/.github/badges/cursor-install.svg)](cursor://anysphere.cursor-deeplink/mcp/install?name=tech-debt-mcp&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsInRlY2gtZGVidC1tY3AiXX0=)
 
-[![Cursor](.github/badges/cursor-install.svg)](cursor://anysphere.cursor-deeplink/mcp/install?name=tech-debt-mcp&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsInRlY2gtZGVidC1tY3AiXX0=)
+> These links use custom URL schemes that may be blocked on GitHub. If they don't work, use the terminal or manual setup below.
 
 ### Via Terminal
 
-![Claude Code](.github/badges/claude-code-install.svg)
+![Claude Code](https://raw.githubusercontent.com/PierreJanineh/TechDebtMCP/develop/.github/badges/claude-code-install.svg)
 
 ```sh
 claude mcp add tech-debt-mcp -- npx -y tech-debt-mcp
