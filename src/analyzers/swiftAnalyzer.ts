@@ -131,6 +131,13 @@ export class SwiftAnalyzer extends BaseAnalyzer {
     issues.push(...this.checkMissingIdModifier(filePath, content));
     issues.push(...this.checkExpensiveViewBodyCalculations(filePath, content));
 
+    // Additional SwiftUI anti-patterns (Phase 2)
+    issues.push(...this.checkAnyViewMisuse(filePath, content));
+    issues.push(...this.checkNavigationLinkIssues(filePath, content));
+    issues.push(...this.checkGeometryReaderMisuse(filePath, content));
+    issues.push(...this.checkRetainCyclesInClosures(filePath, content));
+    issues.push(...this.checkDeepViewNesting(filePath, content));
+
     return issues;
   }
 
@@ -526,6 +533,177 @@ export class SwiftAnalyzer extends BaseAnalyzer {
             language: this.language,
             rule: 'swiftui-expensive-calculation',
             tags: ['swiftui', 'performance', 'optimization'],
+          });
+        }
+      }
+    }
+
+    return issues;
+  }
+
+  // Phase 2 SwiftUI Anti-Patterns
+
+  private checkAnyViewMisuse(filePath: string, content: string): TechDebtIssue[] {
+    const issues: TechDebtIssue[] = [];
+    const lines = content.split('\n');
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.includes('AnyView(') && !line.includes('//')) {
+        issues.push({
+          id: `anyview-misuse-${i + 1}`,
+          category: 'code-quality',
+          severity: 'medium',
+          file: filePath,
+          line: i + 1,
+          title: 'AnyView type erasure used',
+          description: 'AnyView erases type information and can impact performance and type safety',
+          suggestion: 'Use generics or @ViewBuilder instead of AnyView for better type safety and performance',
+          effort: 'medium',
+          language: this.language,
+          rule: 'swiftui-anyview-misuse',
+          tags: ['swiftui', 'type-safety', 'performance'],
+        });
+      }
+    }
+
+    return issues;
+  }
+
+  private checkNavigationLinkIssues(filePath: string, content: string): TechDebtIssue[] {
+    const issues: TechDebtIssue[] = [];
+    const lines = content.split('\n');
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.includes('NavigationLink(') && line.includes('destination:')) {
+        if (!line.includes('isActive') && !line.includes('tag:')) {
+          issues.push({
+            id: `navigationlink-deprecated-${i + 1}`,
+            category: 'code-quality',
+            severity: 'medium',
+            file: filePath,
+            line: i + 1,
+            title: 'Deprecated NavigationLink pattern',
+            description: 'Old-style NavigationLink without proper state binding can cause issues',
+            suggestion: 'Use NavigationLink with tag:selection: or the new navigation stack APIs in iOS 16+',
+            effort: 'medium',
+            language: this.language,
+            rule: 'swiftui-navigationlink-deprecated',
+            tags: ['swiftui', 'navigation', 'deprecation'],
+          });
+        }
+      }
+    }
+
+    return issues;
+  }
+
+  private checkGeometryReaderMisuse(filePath: string, content: string): TechDebtIssue[] {
+    const issues: TechDebtIssue[] = [];
+    const lines = content.split('\n');
+
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes('var body:') || (i > 0 && lines[i - 1]?.includes('var body:'))) {
+        const nextLines = lines.slice(i, Math.min(lines.length, i + 3)).join('\n');
+
+        if (nextLines.includes('GeometryReader') && !nextLines.includes('.frame(')) {
+          issues.push({
+            id: `geometryreader-root-${i + 1}`,
+            category: 'performance',
+            severity: 'medium',
+            file: filePath,
+            line: i + 1,
+            title: 'GeometryReader at view root',
+            description: 'Using GeometryReader at the root can cause performance issues and layout recalculations',
+            suggestion: 'Move GeometryReader deeper or use .frame() modifier instead',
+            effort: 'medium',
+            language: this.language,
+            rule: 'swiftui-geometryreader-root',
+            tags: ['swiftui', 'performance', 'layout'],
+          });
+        }
+      }
+    }
+
+    return issues;
+  }
+
+  private checkRetainCyclesInClosures(filePath: string, content: string): TechDebtIssue[] {
+    const issues: TechDebtIssue[] = [];
+    const lines = content.split('\n');
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if ((line.includes('.onChange(') || line.includes('.onReceive(') || line.includes('.task(')) &&
+          lines[i + 1]?.includes('self.')) {
+        const context = lines.slice(i, Math.min(lines.length, i + 5)).join('\n');
+
+        if (!context.includes('[weak self]') && !context.includes('[unowned self]')) {
+          issues.push({
+            id: `retain-cycle-closure-${i + 1}`,
+            category: 'code-quality',
+            severity: 'high',
+            file: filePath,
+            line: i + 1,
+            title: 'Potential retain cycle in SwiftUI closure',
+            description: 'Using self in SwiftUI modifiers without [weak self] can cause memory leaks',
+            suggestion: 'Add [weak self] to the closure or use optional chaining with self?',
+            effort: 'small',
+            language: this.language,
+            rule: 'swiftui-retain-cycle-closure',
+            tags: ['swiftui', 'memory', 'leak-risk'],
+          });
+        }
+      }
+    }
+
+    return issues;
+  }
+
+  private checkDeepViewNesting(filePath: string, content: string): TechDebtIssue[] {
+    const issues: TechDebtIssue[] = [];
+    const lines = content.split('\n');
+
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes('var body:')) {
+        let maxDepth = 0;
+        let currentDepth = 0;
+        const bodyStart = i;
+        const bodyEnd = Math.min(lines.length, i + 100);
+
+        for (let j = bodyStart; j < bodyEnd; j++) {
+          const line = lines[j];
+
+          if (line.includes('VStack') || line.includes('HStack') || line.includes('ZStack') ||
+              line.includes('Group') || line.includes('GeometryReader') || line.includes('ForEach') ||
+              line.includes('{')) {
+            currentDepth += (line.match(/{/g) || []).length;
+          }
+
+          if (line.includes('}')) {
+            currentDepth -= (line.match(/}/g) || []).length;
+          }
+
+          maxDepth = Math.max(maxDepth, currentDepth);
+
+          if (j > bodyStart && currentDepth <= 0) break;
+        }
+
+        if (maxDepth > 6) {
+          issues.push({
+            id: `deep-nesting-${i + 1}`,
+            category: 'maintainability',
+            severity: 'medium',
+            file: filePath,
+            line: i + 1,
+            title: 'Deep view nesting detected',
+            description: `View nesting depth of ${maxDepth} levels makes the code hard to read and maintain`,
+            suggestion: 'Extract nested views into separate subviews or use ViewBuilder for complex compositions',
+            effort: 'medium',
+            language: this.language,
+            rule: 'swiftui-deep-nesting',
+            tags: ['swiftui', 'maintainability', 'readability'],
           });
         }
       }
