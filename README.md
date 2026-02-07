@@ -52,6 +52,8 @@ code --add-mcp '{"name":"tech-debt-mcp","command":"npx","args":["-y","tech-debt-
 <details>
 <summary><img src="https://img.shields.io/badge/Cursor-Install%20Server-26251E?logo=cursor&logoColor=F7F7F4" alt="Cursor: Install Server"></summary>
 
+**<a href="cursor://anysphere.cursor-deeplink/mcp/install?name=tech-debt-mcp&config=eyJjb21tYW5kIjoibnB4IC15IHRlY2gtZGVidC1tY3AifQ==">One-Click Install</a>**
+
 **Cursor** (via Terminal):
 
 ```sh
@@ -70,24 +72,6 @@ claude mcp add tech-debt-mcp -- npx -y tech-debt-mcp
 ```
 
 **Claude Desktop** — add to your `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "tech-debt-mcp": {
-      "command": "npx",
-      "args": ["-y", "tech-debt-mcp"]
-    }
-  }
-}
-```
-
-</details>
-
-<details>
-<summary><img src="https://img.shields.io/badge/GitHub_Copilot-Install%20Server-24292E?logo=githubcopilot&logoColor=f5f5f5" alt="GitHub Copilot: Install Server"></summary>
-
-Add to your MCP settings configuration (e.g. `mcp.json`):
 
 ```json
 {
@@ -123,7 +107,7 @@ Add to your Windsurf MCP configuration (`~/.codeium/windsurf/mcp_config.json`):
 <details>
 <summary><img src="https://img.shields.io/badge/JetBrains-Install%20Server-FF0007?logo=jetbrains&logoColor=f5f5f5" alt="JetBrains: Install Server"></summary>
 
-Add to your project's `.mcp.json`:
+Via **AI Assistant** — open **Settings > Tools > AI Assistant > Model Context Protocol (MCP)**, click **+**, select **As JSON**, and paste:
 
 ```json
 {
@@ -137,6 +121,39 @@ Add to your project's `.mcp.json`:
 ```
 
 </details>
+
+<details>
+<summary><img src="https://img.shields.io/badge/Xcode-Install%20Server-147EFB?logo=xcode&logoColor=f5f5f5" alt="Xcode: Install Server"></summary>
+
+Via **GitHub Copilot for Xcode** — open Settings > MCP tab > Edit Config (`mcp.json`):
+
+```json
+{
+  "servers": {
+    "tech-debt-mcp": {
+      "command": "npx",
+      "args": ["-y", "tech-debt-mcp"]
+    }
+  }
+}
+```
+
+</details>
+
+### Manual Setup
+
+Add to your MCP client config:
+
+```json
+{
+  "mcpServers": {
+    "tech-debt-mcp": {
+      "command": "npx",
+      "args": ["-y", "tech-debt-mcp"]
+    }
+  }
+}
+```
 
 ### Option 1: From npm (Recommended)
 
