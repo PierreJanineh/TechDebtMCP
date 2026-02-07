@@ -46,7 +46,7 @@ src/
 2. Extend `BaseAnalyzer`:
    ```typescript
    export class [Language]Analyzer extends BaseAnalyzer {
-     constructor(config: TechDebtConfig = {}) {
+     constructor(config: Partial<TechDebtConfig> = {}) {
        super('[language]', config);
      }
 
@@ -67,8 +67,8 @@ src/
    case '[language]':
      return new [Language]Analyzer(config);
    ```
-4. Add config in `src/config/languages.ts` (if not exists)
-5. Add type to `SupportedLanguage` in `src/types/index.ts` (if not exists)
+4. Add config in `src/config/languages.ts` (if it does not exist)
+5. Add type to `SupportedLanguage` in `src/types/index.ts` (if it does not exist)
 
 ## Adding a New MCP Tool
 
