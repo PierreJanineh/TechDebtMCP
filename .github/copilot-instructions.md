@@ -13,11 +13,13 @@ src/
 ├── config/
 │   └── languages.ts      # Language configurations (extensible)
 ├── core/
-│   └── analysisEngine.ts # Main orchestrator
+│   ├── analysisEngine.ts    # Main orchestrator
+│   ├── sqaleEngine.ts       # ✅ SQALE metrics (Phase 1 - COMPLETE)
+│   └── customRulesEngine.ts # ✅ Custom rules (Phase 5 - COMPLETE)
 ├── analyzers/
 │   ├── baseAnalyzer.ts   # Abstract base class (shared logic)
 │   ├── index.ts          # Factory pattern for creating analyzers
-│   └── [language]Analyzer.ts # One file per language
+│   └── [language]Analyzer.ts # One file per language (14 total)
 └── utils/
     └── fileUtils.ts      # File system helpers
 ```

@@ -39,7 +39,8 @@ TechDebtMCP/
 │   │   └── languages.ts         # Language definitions and configurations
 │   ├── core/
 │   │   ├── analysisEngine.ts    # Main orchestrator for analysis
-│   │   ├── sqaleEngine.ts       # SQALE metrics calculations (Phase 1)
+│   │   ├── sqaleEngine.ts       # ✅ SQALE metrics calculations (Phase 1 - COMPLETE)
+│   │   ├── customRulesEngine.ts # ✅ Custom rules engine (Phase 5 - COMPLETE)
 │   │   ├── snapshotManager.ts   # Snapshot & trend tracking (Phase 3)
 │   │   └── complexityAnalyzer.ts # Code complexity calculations (Phase 4)
 │   ├── analyzers/
@@ -240,11 +241,15 @@ TypeScriptAnalyzer, PythonAnalyzer, JavaAnalyzer, ... (10 languages)
 - `handleGetRecommendations()` — `get_recommendations` tool
 - `handleGetIssuesBySeverity()` — `get_issues_by_severity` tool
 - `handleGetIssuesByCategory()` — `get_issues_by_category` tool
+- ✅ `handleAddCustomRule()` — `add_custom_rule` tool (Phase 5 - COMPLETE)
+- ✅ `handleRemoveCustomRule()` — `remove_custom_rule` tool (Phase 5 - COMPLETE)
+- ✅ `handleListCustomRules()` — `list_custom_rules` tool (Phase 5 - COMPLETE)
+- ✅ `handleExecuteCustomRules()` — `execute_custom_rules` tool (Phase 5 - COMPLETE)
+- ✅ `handleValidateCustomPattern()` — `validate_custom_pattern` tool (Phase 5 - COMPLETE)
 
-**Future Tools (phases 1-6):**
-- `get_sqale_metrics` (Phase 1)
+**Future Tools (phases 2-4):**
 - `check_dependencies` (Phase 2)
-- `validate_config` (Phase 5)
+- `validate_config` (Phase 2)
 - `save_baseline`, `compare_with_baseline`, `get_trend` (Phase 3)
 - `get_complexity_report` (Phase 4)
 
@@ -261,6 +266,76 @@ TypeScriptAnalyzer, PythonAnalyzer, JavaAnalyzer, ... (10 languages)
 - `Recommendation` — Actionable suggestions
 - `LanguageConfig` — Language definition
 - `TechDebtConfig` — User configuration
+- ✅ `SQALEMetrics` — SQALE technical debt metrics (Phase 1)
+- ✅ `SQALERating` — A-E rating scale (Phase 1)
+- ✅ `EffortTimeMapping` — Effort-to-time configuration (Phase 1)
+- ✅ `CustomPattern` — Custom rule definition (Phase 5)
+
+### 5. SQALEEngine (`src/core/sqaleEngine.ts`) ✅ COMPLETE
+
+**Responsibility:** Calculate SQALE (Software Quality Assessment based on Lifecycle Expectations) metrics for quantifying technical debt.
+
+**Key Methods:**
+- `calculateMetrics(issues, developmentTime)` — Compute complete SQALE metrics
+- `getRemediationTime(effort)` — Convert effort level to minutes
+- `getRating(debtRatio)` — Calculate A-E rating from debt ratio
+- `formatTime(minutes)` — Human-readable time formatting
+- Private helpers for category/severity breakdowns
+
+**SQALE Rating Scale:**
+- A: ≤5% debt ratio (Excellent)
+- B: 6-10% debt ratio (Good)
+- C: 11-20% debt ratio (Fair)
+- D: 21-50% debt ratio (Poor)
+- E: >50% debt ratio (Critical)
+
+**Metrics Provided:**
+- Total remediation time (minutes)
+- Formatted time (e.g., "2h 30m", "1d 4h")
+- Debt ratio (percentage)
+- SQALE rating (A-E)
+- Breakdown by category
+- Breakdown by severity
+
+### 6. CustomRulesEngine (`src/core/customRulesEngine.ts`) ✅ COMPLETE
+
+**Responsibility:** Allow users to define and execute custom pattern-based tech debt checks using regex.
+
+**Key Methods:**
+- `addRule(pattern)` — Add a custom rule
+- `removeRule(ruleId)` — Remove a rule by ID
+- `getRule(ruleId)` / `getAllRules()` — Retrieve rules
+- `executeRules(filePath, content, language)` — Run all rules against code
+- `getRuleStats()` — Get statistics by severity/category
+- `static validatePattern(pattern)` — Validate rule before adding
+- `static createSimplePattern()` — Helper to create patterns
+
+**Features:**
+- Regex pattern matching with configurable flags (g, i, m, s, etc.)
+- Language-specific rule filtering
+- Multiple matches per line support
+- Cross-platform line ending support (\r\n and \n)
+- Column information for precise issue location
+- Error callback for better testability
+- Category and severity validation
+
+**Pattern Execution Flow:**
+```
+CustomPattern
+  ↓
+validatePattern() [static]
+  ↓
+addRule()
+  ↓
+executeRules(filePath, content, language)
+  ├─ Filter by language (if specified)
+  ├─ Split content by lines (/\r?\n/)
+  ├─ For each line:
+  │   ├─ Apply regex with exec loop
+  │   ├─ Capture match index & column
+  │   └─ Create TechDebtIssue
+  └─ Return issues array
+```
 
 ## Extending the System
 
@@ -368,11 +443,12 @@ index.ts (MCP Server)
   │   │   └─ BaseAnalyzer
   │   │       └─ src/config/languages.ts
   │   └─ fileUtils
+  ├─ ✅ SQALEEngine (Phase 1 - COMPLETE)
+  ├─ ✅ CustomRulesEngine (Phase 5 - COMPLETE)
   ├─ src/config/languages.ts
   └─ fileUtils
 
 Future additions:
-  ├─ SQALEEngine (Phase 1)
   ├─ DependencyAnalyzer (Phase 2)
   ├─ VulnerabilityService (Phase 2b)
   ├─ SnapshotManager (Phase 3)
