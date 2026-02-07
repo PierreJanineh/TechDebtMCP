@@ -39,15 +39,15 @@ This guide provides step-by-step instructions for releasing new versions of Tech
 
 Before starting the release process, ensure:
 
-- [ ] All planned features/fixes are merged to `main` branch
+- [ ] All planned features/fixes are merged to `develop` branch
 - [ ] All tests pass locally: `npm test`
 - [ ] Build succeeds locally: `npm run build`
 - [ ] CHANGELOG.md is updated with new version details
 - [ ] README.md reflects any new features or changes
 - [ ] ARCHITECTURE.md is updated if architecture changed
 - [ ] No uncommitted changes: `git status`
-- [ ] You're on the `main` branch: `git branch --show-current`
-- [ ] Main branch is up to date: `git pull origin main`
+- [ ] You're on the `develop` branch: `git branch --show-current`
+- [ ] Develop branch is up to date: `git pull origin develop`
 
 ## Release Process
 
@@ -55,8 +55,8 @@ Before starting the release process, ensure:
 
 ```bash
 # Ensure you're on main and up to date
-git checkout main
-git pull origin main
+git checkout develop
+git pull origin develop
 
 # Run full test suite
 npm test
@@ -133,7 +133,7 @@ echo "Releasing version: v$VERSION"
 git push origin "v$VERSION"
 
 # Push the commit
-git push origin main
+
 ```
 
 ### Step 5: Monitor GitHub Actions
@@ -153,7 +153,28 @@ git push origin main
 
 **Expected Duration:** 2-3 minutes
 
-### Step 6: Workflow Success
+### Step 6: Merge develop to master
+
+After the workflow completes successfully and the release is published, merge develop to master to keep the master branch in sync with the released version:
+
+```bash
+# Switch to master
+git checkout master
+git pull origin master
+
+# Merge develop into master
+git merge develop -m "release: merge v$VERSION to master"
+
+# Push master
+git push origin master
+```
+
+**Why this step?** According to the git workflow in copilot-instructions.md:
+- `develop` branch is for integration of features
+- `master` branch should always point to a released/stable version
+- After tagging and publishing from develop, we merge it to master to keep master current
+
+### Step 7: Workflow Success
 
 Once the workflow completes successfully, you'll see:
 
@@ -231,7 +252,7 @@ npm test
 # Commit fixes
 git add .
 git commit -m "fix: resolve test failures"
-git push origin main
+
 
 # Delete the tag and recreate
 git tag -d v2.0.0
@@ -304,7 +325,7 @@ git push origin v2.0.0
 # Bump to next patch version
 npm version patch
 git push origin "v$(node -p "require('./package.json').version")"
-git push origin main
+
 ```
 
 ## Emergency Rollback
@@ -337,14 +358,14 @@ git checkout -b fix/urgent-patch
 npm test
 npm run build
 
-# Merge to main
-git checkout main
+# Merge to develop
+git checkout develop
 git merge fix/urgent-patch
 
 # Create patch release
 npm version patch  # Creates v2.0.1
 git push origin v2.0.1
-git push origin main
+
 ```
 
 ### Deprecate a Version
@@ -367,19 +388,19 @@ Release: v____.____.____
 Date: ________
 
 Pre-Release:
-- [ ] All features merged to main
+- [ ] All features merged to develop
 - [ ] All tests pass: npm test
 - [ ] Build succeeds: npm run build
 - [ ] CHANGELOG.md updated
 - [ ] README.md updated
 - [ ] ARCHITECTURE.md updated (if needed)
-- [ ] On main branch, up to date
+- [ ] On develop branch, up to date
 
 Release:
 - [ ] Version bumped: npm version [patch|minor|major]
 - [ ] CHANGELOG.md committed
 - [ ] Tag pushed: git push origin v____.____.____
-- [ ] Commits pushed: git push origin main
+- [ ] Commits pushed: 
 - [ ] GitHub Actions workflow succeeded
 - [ ] npm package published
 - [ ] GitHub Release created
@@ -437,4 +458,3 @@ Follow [Semantic Versioning](https://semver.org/):
 **Last Updated:** 2026-02-07
 
 For questions or issues, see [CONTRIBUTING.md](CONTRIBUTING.md) or open an issue.
-

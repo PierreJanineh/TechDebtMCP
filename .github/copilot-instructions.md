@@ -270,11 +270,20 @@ Use conventional commits:
 
 1. ✅ **Always create a feature branch** from `develop`
 2. ✅ **Branch naming:** `feature/issue-{number}-short-description`
-3. ✅ **Commit to feature branch** (NOT master/main/develop)
+3. ✅ **Commit to feature branch** (NOT master/develop)
 4. ✅ **Create PR** targeting `develop` (NOT master)
-5. ✅ **After merge to develop**, only then release to master via version tag
+5. ✅ **After merge to develop**, release to master via version tag:
+   - Create and push version tag: `git tag vX.X.X && git push origin vX.X.X`
+     - This triggers GitHub Actions to publish to npm and create GitHub Release
+   - Then merge develop to master: `git checkout master && git pull && git merge develop && git push origin master`
+     - This keeps master branch in sync with released version
 
-**Workflow:**
+**Why this workflow?**
+- `develop` = integration branch for features
+- `master` = stable/released branch (always points to a released version)
+- Version tag triggers publishing; then merge develop to master to keep it current
+
+**Complete Release Workflow:**
 ```bash
 # 1. Ensure on develop
 git checkout develop
@@ -292,6 +301,23 @@ git push origin feature/issue-16-add-sqale-metrics
 
 # 5. Create PR on GitHub (target: develop)
 # Do NOT target master!
+
+# After PR merged to develop:
+
+# 6. Prepare release
+git checkout develop && git pull origin develop
+npm test && npm run build
+
+# 7. Create and push version tag (triggers GitHub Actions)
+git tag vX.X.X
+git push origin vX.X.X
+
+# 8. Monitor GitHub Actions for 2-3 minutes
+
+# 9. Merge develop to master
+git checkout master && git pull origin master
+git merge develop -m "release: vX.X.X"
+git push origin master
 ```
 
 ### Standard Pull Request Steps
@@ -333,11 +359,11 @@ git push origin feature/issue-16-add-sqale-metrics
    - Re-run tests after any changes: `npm test`
    - Verify build still succeeds: `npm run build`
 10. **Merge after Copilot review is complete** — Once all suggestions are addressed:
-   - All tests must still pass
-   - Build must still succeed
-   - README must be updated if applicable
-   - All Copilot suggestions must be resolved or documented
-   - Use squash merge for clean git history
+    - All tests must still pass
+    - Build must still succeed
+    - README must be updated if applicable
+    - All Copilot suggestions must be resolved or documented
+    - Use squash merge for clean git history
 
 ### Copilot Review Checklist
 
