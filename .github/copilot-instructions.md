@@ -143,6 +143,67 @@ issues.push(...this.checkPattern(filePath, content, /pattern/g, {
 - Test files go in `__tests__/` folders next to source
 - Naming: `[filename].test.ts`
 - Run tests: `npm test`
+- **CRITICAL: ALWAYS verify tests pass before committing**
+
+### Testing Workflow (REQUIRED)
+
+Before every commit, follow this sequence:
+
+```bash
+# Step 1: Run all tests
+npm test
+
+# Expected output:
+# PASS src/analyzers/__tests__/[name].test.ts
+# Test Suites: X passed, X total
+# Tests:       Y passed, Y total
+# Snapshots:   0 total
+```
+
+Verify in output:
+- ✅ All test suites show `PASS` (not `FAIL`)
+- ✅ All tests show `✓` checkmarks (not `✕` crosses)
+- ✅ `Test Suites: X passed, X total` (ALL must pass)
+- ✅ `Tests: Y passed, Y total` (ALL must pass)
+- ✅ No error messages in output
+
+```bash
+# Step 2: Verify build
+npm run build
+
+# Should show no TypeScript errors (warnings OK)
+```
+
+### Test Failure Protocol
+
+If ANY test fails:
+1. ❌ DO NOT commit
+2. ❌ DO NOT push to GitHub
+3. Read the error message and identify the failing test
+4. Fix the code OR fix the test
+5. Run `npm test` again
+6. Repeat steps 4-5 until all tests pass
+7. ONLY then proceed with commit
+
+### Writing New Tests
+
+When implementing features:
+```bash
+# Create test file alongside source
+src/
+├── [module]/
+│   ├── [module].ts          # Source code
+│   └── __tests__/
+│       └── [module].test.ts # Tests
+```
+
+Test requirements:
+- ✅ Write test FIRST or alongside implementation
+- ✅ All imports must include `.js` extension
+- ✅ Use descriptive test names
+- ✅ Test both success and edge cases
+- ✅ Run tests: `npm test`
+- ✅ Ensure 100% of new tests pass before staging
 
 ## Commit Convention
 
@@ -163,7 +224,77 @@ Use conventional commits:
 ## Pull Request Workflow
 
 1. Create branch from `develop`
-2. Make changes
-3. Create PR targeting `develop`
-4. **Check Copilot review suggestions** — Review all automated suggestions and address them before merging
-5. Merge after review
+2. Make changes and write tests
+3. **Verify tests pass** — Run `npm test` and check output for:
+   - All `PASS` (no `FAIL`)
+   - `✓` for each test (no `✕`)
+   - `Test Suites: X passed, X total`
+   - `Tests: Y passed, Y total`
+4. **Fix any failing tests BEFORE committing** — Do not proceed if any tests fail
+5. **Verify build succeeds** — Run `npm run build` with no errors
+6. Create PR targeting `develop`
+7. **Wait for Copilot review** — GitHub will automatically run Copilot code review
+   - Wait 30-60 seconds for Copilot to analyze the PR
+   - Check the PR page for review comments
+   - Copilot will flag potential issues, improvements, and edge cases
+8. **Address Copilot suggestions** — For each suggestion:
+   - Read the suggestion carefully
+   - Decide if it's relevant (some suggestions may not apply to your code)
+   - If relevant: make the fix, commit, and push
+   - If not relevant: add a comment explaining why you're skipping it
+   - Re-run tests after any changes: `npm test`
+   - Verify build still succeeds: `npm run build`
+9. **Merge after Copilot review is complete** — Once all suggestions are addressed:
+   - All tests must still pass
+   - Build must still succeed
+   - All Copilot suggestions must be resolved or documented
+   - Use squash merge for clean git history
+
+### Copilot Review Checklist
+
+When Copilot review comments appear:
+- [ ] Read all comments completely
+- [ ] Identify which suggestions are relevant to your code
+- [ ] For relevant suggestions: implement fixes and test again
+- [ ] For irrelevant suggestions: add explanatory comments to PR
+- [ ] Commit messages should reference which Copilot suggestions were addressed
+- [ ] Run `npm test` after implementing any fixes
+- [ ] Run `npm run build` after implementing any fixes
+- [ ] Verify test output shows 100% pass rate
+
+### Copilot Review Types
+
+Copilot may suggest:
+- **Code improvements** — Better patterns, cleaner syntax
+- **Bug fixes** — Potential issues or edge cases
+- **Type safety** — TypeScript improvements
+- **Performance** — More efficient implementations
+- **Documentation** — Missing comments or clarity issues
+- **Testing** — Additional test cases to consider
+
+Example response to Copilot:
+```
+✅ Addressed: Fixed nullish coalescing operator per suggestion
+❌ Skipped: Suggestion about changing to "xl" conflicts with existing codebase types
+```
+
+## CRITICAL REQUIREMENTS
+
+**NEVER do these:**
+- ❌ Commit code with failing tests
+- ❌ Commit code that doesn't build
+- ❌ Push to GitHub without verifying tests pass locally
+- ❌ Merge a PR without checking Copilot review
+- ❌ Merge a PR with failing tests
+- ❌ Merge a PR with unresolved Copilot suggestions (without comment explaining why)
+
+**ALWAYS do these:**
+- ✅ Run `npm test` BEFORE staging changes
+- ✅ Run `npm run build` to verify TypeScript compiles
+- ✅ Fix ALL test failures before committing
+- ✅ Verify test output shows 100% pass rate
+- ✅ Wait for Copilot review suggestions (30-60 seconds)
+- ✅ Address all relevant Copilot suggestions before merging
+- ✅ Document why you're skipping irrelevant suggestions
+- ✅ Re-test after addressing Copilot suggestions
+- ✅ Read and address Copilot review suggestions
