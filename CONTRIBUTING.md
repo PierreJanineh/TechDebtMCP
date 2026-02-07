@@ -224,10 +224,13 @@ Closes #123
 npm test
 
 # Run tests in watch mode
-npm run test:watch
+npm test -- --watch
 
-# Run tests with coverage
-npm run test:coverage
+# Run specific test file
+npm test -- goAnalyzer.test.ts
+
+# Run with coverage
+npm test -- --coverage
 ```
 
 ### Writing Tests
@@ -235,11 +238,13 @@ npm run test:coverage
 - Place tests in `__tests__/` folders next to source files
 - Name test files: `[filename].test.ts`
 - Use descriptive test names
+- Jest is configured with ts-jest for TypeScript support
 
 ```typescript
 describe('TypeScriptAnalyzer', () => {
+  const analyzer = new TypeScriptAnalyzer();
+
   it('detects any type usage', async () => {
-    const analyzer = new TypeScriptAnalyzer();
     const result = await analyzer.analyze('test.ts', 'const x: any = 5;');
     
     expect(result.issues).toContainEqual(

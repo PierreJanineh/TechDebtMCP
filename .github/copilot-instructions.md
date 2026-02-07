@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Tech Debt MCP is a Model Context Protocol server for analyzing technical debt across **10 programming languages** (with 4 more planned: Go, Rust, Ruby, PHP). It integrates with GitHub Copilot and other MCP-compatible clients.
+Tech Debt MCP is a Model Context Protocol server for analyzing technical debt across **14 programming languages**. It integrates with GitHub Copilot and other MCP-compatible clients.
 ## Architecture
 
 ```
