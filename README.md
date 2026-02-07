@@ -39,9 +39,9 @@ A Model Context Protocol (MCP) server for analyzing technical debt across multip
 <details>
 <summary><img src="https://img.shields.io/badge/VS_Code-Install%20Server-007ACC?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTIzLjE1IDIuNTg3IDE4LjIxLjIxYTEuNDk0IDEuNDk0IDAgMCAwLTEuNzA1LjI5bC05LjQ2IDguNjMtNC4xMi0zLjEyOGEuOTk5Ljk5OSAwIDAgMC0xLjI3Ni4wNTdMLjMyNyA3LjI2MUExIDEgMCAwIDAgMCA4LjA2OGwzLjU5MiAzLjI5M0wwIDEzLjYxNmExIDEgMCAwIDAgLjMyNy44MDdsMS4zMTEgMS4zMTFhLjk5OS45OTkgMCAwIDAgMS4yNzYuMDU3bDQuMTItMy4xMjggOS40NiA4LjYzYTEuNDkyIDEuNDkyIDAgMCAwIDEuNzA0LjI5bDQuOTQyLTIuMzc3QTEuNSAxLjUgMCAwIDAgMjQgMTguMDE0VjUuOTg2YTEuNSAxLjUgMCAwIDAtLjg1LTEuMzk5ek0xOC41IDE2LjEyIDkuNDEgMTEuMzYxbDkuMDktNC43NTh6IiBmaWxsPSIjZmZmIi8+PC9zdmc+" alt="VS Code: Install Server"></summary>
 
-[One-Click Install](https://insiders.vscode.dev/redirect/mcp/install?name=tech-debt-mcp&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22tech-debt-mcp%22%5D%7D)
+**[One-Click Install](https://insiders.vscode.dev/redirect/mcp/install?name=tech-debt-mcp&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22tech-debt-mcp%22%5D%7D)**
 
-Via Terminal:
+**VS Code** (via Terminal):
 
 ```sh
 code --add-mcp '{"name":"tech-debt-mcp","command":"npx","args":["-y","tech-debt-mcp"]}'
@@ -52,9 +52,9 @@ code --add-mcp '{"name":"tech-debt-mcp","command":"npx","args":["-y","tech-debt-
 <details>
 <summary><img src="https://img.shields.io/badge/Cursor-Install%20Server-26251E?logo=cursor&logoColor=F7F7F4" alt="Cursor: Install Server"></summary>
 
-[One-Click Install](cursor://anysphere.cursor-deeplink/mcp/install?name=tech-debt-mcp&config=eyJjb21tYW5kIjoibnB4IC15IHRlY2gtZGVidC1tY3AifQ==)
+**<a href="cursor://anysphere.cursor-deeplink/mcp/install?name=tech-debt-mcp&config=eyJjb21tYW5kIjoibnB4IC15IHRlY2gtZGVidC1tY3AifQ==">One-Click Install</a>**
 
-Via Terminal:
+**Cursor** (via Terminal):
 
 ```sh
 cursor --add-mcp '{"name":"tech-debt-mcp","command":"npx -y tech-debt-mcp"}'
@@ -63,12 +63,79 @@ cursor --add-mcp '{"name":"tech-debt-mcp","command":"npx -y tech-debt-mcp"}'
 </details>
 
 <details>
-<summary><img src="https://img.shields.io/badge/Claude%20Code-Add%20Server-d97757?logo=Claude&logoColor=f5f5f5" alt="Claude Code: Add Server"></summary>
+<summary><img src="https://img.shields.io/badge/Claude-Install%20Server-d97757?logo=Claude&logoColor=f5f5f5" alt="Claude: Install Server"></summary>
 
-Via Terminal:
+**Claude Code** (via Terminal):
 
 ```sh
 claude mcp add tech-debt-mcp -- npx -y tech-debt-mcp
+```
+
+**Claude Desktop** — add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "tech-debt-mcp": {
+      "command": "npx",
+      "args": ["-y", "tech-debt-mcp"]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><img src="https://img.shields.io/badge/GitHub_Copilot-Install%20Server-000?logo=githubcopilot&logoColor=f5f5f5" alt="GitHub Copilot: Install Server"></summary>
+
+Add to your MCP settings configuration (e.g. `mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "tech-debt-mcp": {
+      "command": "npx",
+      "args": ["-y", "tech-debt-mcp"]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><img src="https://img.shields.io/badge/Windsurf-Install%20Server-5D2D91?logo=Windsurf&logoColor=f5f5f5" alt="Windsurf: Install Server"></summary>
+
+Add to your Windsurf MCP configuration (`~/.codeium/windsurf/mcp_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "tech-debt-mcp": {
+      "command": "npx",
+      "args": ["-y", "tech-debt-mcp"]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><img src="https://img.shields.io/badge/JetBrains-Install%20Server-000?logo=jetbrains&logoColor=f5f5f5" alt="JetBrains: Install Server"></summary>
+
+Add to your project's `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "tech-debt-mcp": {
+      "command": "npx",
+      "args": ["-y", "tech-debt-mcp"]
+    }
+  }
+}
 ```
 
 </details>
@@ -119,23 +186,6 @@ Or for development:
 ```bash
 npm run dev
 ```
-
-## Usage with GitHub Copilot
-
-After installing globally, add to your MCP settings configuration:
-
-```json
-{
-  "mcpServers": {
-    "tech-debt": {
-      "command": "tech-debt-mcp",
-      "args": []
-    }
-  }
-}
-```
-
-The MCP server will start on stdio and be ready to communicate with GitHub Copilot or other MCP clients.
 
 ## Available Tools
 
