@@ -302,7 +302,29 @@ npm run dev
 
 # Watch mode
 npm run watch
+
+# Run tests
+npm test
 ```
+
+## Documentation
+
+- **[ROADMAP.md](ROADMAP.md)** - Development phases and future enhancements
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture and design patterns
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
+- **[RELEASE.md](RELEASE.md)** - Release process and versioning guide
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history and changes
+
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Releases
+
+Tech Debt MCP uses automated releases via GitHub Actions:
+- **Latest:** [![npm version](https://img.shields.io/npm/v/tech-debt-mcp.svg)](https://www.npmjs.com/package/tech-debt-mcp)
+- **Releases:** [GitHub Releases](https://github.com/PierreJanineh/TechDebtMCP/releases)
+- **Roadmap:** See [ROADMAP.md](ROADMAP.md) for planned features
 
 ## License
 

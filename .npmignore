@@ -24,6 +24,10 @@ coverage/
 # Documentation (keep README.md)
 CONTRIBUTING.md
 ARCHITECTURE.md
+ROADMAP.md
+RELEASE.md
+NPM_SETUP.md
+test_output.log
 
 # Temporary files
 *.tmp

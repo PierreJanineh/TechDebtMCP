@@ -1,0 +1,442 @@
+# Release Guide
+
+This guide provides step-by-step instructions for releasing new versions of Tech Debt MCP.
+
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [Pre-Release Checklist](#pre-release-checklist)
+- [Release Process](#release-process)
+- [Post-Release Verification](#post-release-verification)
+- [Troubleshooting](#troubleshooting)
+- [Emergency Rollback](#emergency-rollback)
+
+## Prerequisites
+
+### Required Access
+
+- ✅ Write access to GitHub repository
+- ✅ npm account with publish permissions for `tech-debt-mcp`
+- ✅ `NPM_TOKEN` secret configured in GitHub repository
+
+### Setup npm Token (First Time Only)
+
+1. **Create npm Access Token:**
+   - Go to https://www.npmjs.com/settings/YOUR_USERNAME/tokens
+   - Click "Generate New Token" → "Automation"
+   - Copy the token (you won't see it again!)
+
+2. **Add to GitHub Secrets:**
+   - Go to repository Settings → Secrets and variables → Actions
+   - Click "New repository secret"
+   - Name: `NPM_TOKEN`
+   - Value: Paste your npm token
+   - Click "Add secret"
+
+3. **Verify Setup:**
+   ```bash
+   # Check if secret is configured (you won't see the value)
+   # Go to: https://github.com/PierreJanineh/TechDebtMCP/settings/secrets/actions
+   ```
+
+## Pre-Release Checklist
+
+Before starting the release process, ensure:
+
+- [ ] All planned features/fixes are merged to `main` branch
+- [ ] All tests pass locally: `npm test`
+- [ ] Build succeeds locally: `npm run build`
+- [ ] CHANGELOG.md is updated with new version details
+- [ ] README.md reflects any new features or changes
+- [ ] ARCHITECTURE.md is updated if architecture changed
+- [ ] No uncommitted changes: `git status`
+- [ ] You're on the `main` branch: `git branch --show-current`
+- [ ] Main branch is up to date: `git pull origin main`
+
+## Release Process
+
+### Step 1: Prepare the Release
+
+```bash
+# Ensure you're on main and up to date
+git checkout main
+git pull origin main
+
+# Run full test suite
+npm test
+
+# Verify build
+npm run build
+
+# Check for uncommitted changes
+git status
+```
+
+### Step 2: Update Version
+
+Choose the appropriate version bump based on changes:
+
+**Patch Release (Bug Fixes Only):**
+```bash
+npm version patch  # 1.0.0 -> 1.0.1
+```
+
+**Minor Release (New Features, Backward Compatible):**
+```bash
+npm version minor  # 1.0.0 -> 1.1.0
+```
+
+**Major Release (Breaking Changes):**
+```bash
+npm version major  # 1.0.0 -> 2.0.0
+```
+
+This command will:
+- Update version in `package.json`
+- Create a git commit: "2.0.0"
+- Create a git tag: "v2.0.0"
+
+### Step 3: Update CHANGELOG.md
+
+Edit CHANGELOG.md and add a new version section:
+
+```markdown
+## [2.0.0] - 2026-02-10
+
+### Added
+- New feature X
+- New feature Y
+
+### Changed
+- Modified behavior Z
+
+### Fixed
+- Bug fix A
+- Bug fix B
+
+### Breaking Changes
+- Breaking change description (for major releases)
+
+[2.0.0]: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v2.0.0
+```
+
+Commit the changelog:
+```bash
+git add CHANGELOG.md
+git commit -m "docs: update CHANGELOG for v2.0.0"
+```
+
+### Step 4: Push the Release
+
+```bash
+# Get the version that was created
+VERSION=$(node -p "require('./package.json').version")
+echo "Releasing version: v$VERSION"
+
+# Push the tag (this triggers GitHub Actions)
+git push origin "v$VERSION"
+
+# Push the commit
+git push origin main
+```
+
+### Step 5: Monitor GitHub Actions
+
+1. Go to https://github.com/PierreJanineh/TechDebtMCP/actions
+2. Watch the "Publish to npm" workflow
+3. Workflow steps:
+   - ✅ Checkout code
+   - ✅ Setup Node.js
+   - ✅ Install dependencies
+   - ✅ Run tests
+   - ✅ Build TypeScript
+   - ✅ Verify dist directory
+   - ✅ Verify version matches tag
+   - ✅ Publish to npm with provenance
+   - ✅ Create GitHub Release
+
+**Expected Duration:** 2-3 minutes
+
+### Step 6: Workflow Success
+
+Once the workflow completes successfully, you'll see:
+
+```
+✅ Successfully published tech-debt-mcp@2.0.0 to npm
+📦 Package: https://www.npmjs.com/package/tech-debt-mcp
+🎉 GitHub Release: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v2.0.0
+```
+
+## Post-Release Verification
+
+### Verify npm Publication
+
+```bash
+# Check npm registry
+npm view tech-debt-mcp
+
+# Verify specific version
+npm view tech-debt-mcp@2.0.0
+
+# Test installation
+npm install -g tech-debt-mcp@2.0.0
+
+# Verify it works
+tech-debt-mcp --version  # Should show 2.0.0
+```
+
+### Verify GitHub Release
+
+1. Go to https://github.com/PierreJanineh/TechDebtMCP/releases
+2. Verify the new release appears
+3. Check that release notes are correct
+4. Edit release notes if needed to add more details
+
+### Verify Provenance
+
+npm provenance provides supply chain security:
+
+```bash
+# View provenance information
+npm view tech-debt-mcp@2.0.0 --json | jq .dist.attestations
+```
+
+This proves the package was built by GitHub Actions from the tagged commit.
+
+### Test in a Fresh Environment
+
+```bash
+# Create a test directory
+mkdir -p /tmp/test-tech-debt-mcp
+cd /tmp/test-tech-debt-mcp
+
+# Initialize a test project
+npm init -y
+
+# Install the new version
+npm install tech-debt-mcp@2.0.0
+
+# Test basic functionality
+npx tech-debt-mcp
+```
+
+## Troubleshooting
+
+### Workflow Fails: Tests Don't Pass
+
+**Symptom:** GitHub Actions fails at "Run tests" step
+
+**Solution:**
+```bash
+# Run tests locally to identify issues
+npm test
+
+# Fix failing tests
+# Commit fixes
+git add .
+git commit -m "fix: resolve test failures"
+git push origin main
+
+# Delete the tag and recreate
+git tag -d v2.0.0
+git push origin :refs/tags/v2.0.0
+
+# Recreate tag
+git tag v2.0.0
+git push origin v2.0.0
+```
+
+### Workflow Fails: Build Error
+
+**Symptom:** GitHub Actions fails at "Build TypeScript" step
+
+**Solution:**
+```bash
+# Run build locally
+npm run build
+
+# Check for TypeScript errors
+npx tsc --noEmit
+
+# Fix errors and follow tag deletion process above
+```
+
+### Workflow Fails: Version Mismatch
+
+**Symptom:** "package.json version does not match tag version"
+
+**Solution:**
+```bash
+# Ensure package.json version matches the tag
+# If tag is v2.0.0, package.json should have "version": "2.0.0"
+
+# Fix version in package.json
+npm version 2.0.0 --no-git-tag-version
+
+# Commit
+git add package.json
+git commit -m "chore: fix version number"
+
+# Delete old tag
+git tag -d v2.0.0
+git push origin :refs/tags/v2.0.0
+
+# Recreate tag
+git tag v2.0.0
+git push origin v2.0.0
+```
+
+### Workflow Fails: npm Authentication
+
+**Symptom:** "npm ERR! code ENEEDAUTH" or "npm ERR! need auth"
+
+**Solution:**
+1. Verify `NPM_TOKEN` secret exists in GitHub
+2. Regenerate npm token if expired
+3. Update GitHub secret with new token
+4. Re-run the workflow (no need to recreate tag)
+
+### npm Publish Fails: Package Already Published
+
+**Symptom:** "npm ERR! 403 You cannot publish over the previously published versions"
+
+**Solution:**
+```bash
+# You cannot republish the same version
+# Bump to next patch version
+npm version patch
+git push origin "v$(node -p "require('./package.json').version")"
+git push origin main
+```
+
+## Emergency Rollback
+
+### If Bad Version is Published (Within 72 Hours)
+
+```bash
+# Unpublish the bad version (within 72 hours)
+npm unpublish tech-debt-mcp@2.0.0
+
+# Note: This is only possible within 72 hours of publishing
+# After that, you must publish a patch release
+```
+
+### If More Than 72 Hours Have Passed
+
+You cannot unpublish. Instead, publish a patch release:
+
+```bash
+# Checkout the problematic version
+git checkout v2.0.0
+
+# Create a fix branch
+git checkout -b fix/urgent-patch
+
+# Fix the issue
+# ... make changes ...
+
+# Test thoroughly
+npm test
+npm run build
+
+# Merge to main
+git checkout main
+git merge fix/urgent-patch
+
+# Create patch release
+npm version patch  # Creates v2.0.1
+git push origin v2.0.1
+git push origin main
+```
+
+### Deprecate a Version
+
+If the version should not be used but can't be unpublished:
+
+```bash
+# Deprecate the version
+npm deprecate tech-debt-mcp@2.0.0 "Critical bug, please upgrade to v2.0.1"
+```
+
+Users will see a warning when installing the deprecated version.
+
+## Release Checklist Template
+
+Copy this for each release:
+
+```
+Release: v____.____.____
+Date: ________
+
+Pre-Release:
+- [ ] All features merged to main
+- [ ] All tests pass: npm test
+- [ ] Build succeeds: npm run build
+- [ ] CHANGELOG.md updated
+- [ ] README.md updated
+- [ ] ARCHITECTURE.md updated (if needed)
+- [ ] On main branch, up to date
+
+Release:
+- [ ] Version bumped: npm version [patch|minor|major]
+- [ ] CHANGELOG.md committed
+- [ ] Tag pushed: git push origin v____.____.____
+- [ ] Commits pushed: git push origin main
+- [ ] GitHub Actions workflow succeeded
+- [ ] npm package published
+- [ ] GitHub Release created
+
+Post-Release:
+- [ ] npm package verified: npm view tech-debt-mcp
+- [ ] GitHub Release verified
+- [ ] Test installation: npm install -g tech-debt-mcp@____.____.____
+- [ ] Basic functionality tested
+- [ ] Provenance verified (optional)
+- [ ] Release announcement (optional)
+
+Notes:
+________________________________________________________________________________
+________________________________________________________________________________
+```
+
+## Best Practices
+
+### Version Numbering
+
+Follow [Semantic Versioning](https://semver.org/):
+
+- **MAJOR (X.0.0):** Breaking changes
+  - Changed API signatures
+  - Removed features
+  - Changed default behavior
+
+- **MINOR (0.X.0):** New features, backward compatible
+  - New MCP tools
+  - New analysis capabilities
+  - New language support
+
+- **PATCH (0.0.X):** Bug fixes only
+  - Fixed crashes
+  - Fixed incorrect results
+  - Performance improvements
+  - Documentation updates
+
+### Release Timing
+
+- **Patch releases:** As needed, can be quick
+- **Minor releases:** Every 2-4 weeks
+- **Major releases:** Every 3-6 months, with beta period
+
+### Communication
+
+- Update CHANGELOG.md with clear descriptions
+- Use GitHub Releases for detailed notes
+- Consider blog post or announcement for major releases
+- Tag relevant stakeholders in release discussions
+
+---
+
+**Last Updated:** 2026-02-07
+
+For questions or issues, see [CONTRIBUTING.md](CONTRIBUTING.md) or open an issue.
+
