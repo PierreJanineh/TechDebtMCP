@@ -25,6 +25,10 @@ A Model Context Protocol (MCP) server for analyzing technical debt across multip
 | C++ | .cpp, .cc, .hpp, .h | raw pointers, C-style casts, goto, using namespace std |
 | C | .c, .h | malloc without free, goto, unsafe functions, null checks |
 | C# | .cs | Console.WriteLine, async void, empty catch, dispose pattern |
+| Go | .go | ignored errors, blank imports, fmt.Print, panic, global variables |
+| Rust | .rs | unwrap, expect, unsafe, allow attributes, panic, println |
+| Ruby | .rb | puts, binding.pry, rubocop disable, eval, global variables |
+| PHP | .php | var_dump, print_r, die/exit, eval, error suppression |
 
 ## Installation
 
@@ -95,6 +99,73 @@ Get all issues of a specific category.
 **Parameters:**
 - `path` (required): Absolute path to the project root
 - `category` (required): dependency, code-quality, architecture, documentation, testing, security, performance, or maintainability
+
+### `add_custom_rule`
+Add a custom pattern-based tech debt rule.
+
+**Parameters:**
+- `id` (required): Unique identifier for the rule
+- `pattern` (required): Regex pattern to match
+- `message` (required): Issue title/message
+- `severity` (required): low, medium, high, or critical
+- `category` (required): One of the debt categories
+- `suggestion` (optional): How to fix the issue
+- `languages` (optional): Apply only to specific languages
+- `flags` (optional): Regex flags (g, i, m, s, etc.)
+
+### `remove_custom_rule`
+Remove a custom rule by ID.
+
+**Parameters:**
+- `id` (required): ID of the rule to remove
+
+### `list_custom_rules`
+List all active custom rules with their statistics.
+
+### `execute_custom_rules`
+Execute all custom rules against code or a file.
+
+**Parameters:**
+- `path` (optional): Path to the file to analyze
+- `code` (optional): Code content to analyze directly
+- `language` (optional): Programming language for filtering rules
+
+*Note: Either `path` or `code` must be provided.*
+
+### `validate_custom_pattern`
+Validate a custom pattern before adding it as a rule.
+
+**Parameters:**
+- `id` (required): Unique identifier for the rule
+- `pattern` (required): Regex pattern to validate
+- `message` (required): Issue title/message
+- `severity` (required): low, medium, high, or critical
+- `category` (required): One of the debt categories
+
+## SQALE Metrics
+
+TechDebt MCP uses SQALE (Software Quality Assessment based on Lifecycle Expectations) methodology to quantify technical debt:
+
+### Rating System (A-E Scale)
+- **A**: ≤5% debt ratio (Excellent)
+- **B**: 6-10% debt ratio (Good)
+- **C**: 11-20% debt ratio (Fair)
+- **D**: 21-50% debt ratio (Poor)
+- **E**: >50% debt ratio (Critical)
+
+### Metrics Provided
+- **Remediation Time**: Estimated time to fix all issues
+- **Debt Ratio**: Technical debt as percentage of development time
+- **Formatted Time**: Human-readable time estimates (e.g., "2h 30m", "3d 4h")
+- **Category Breakdown**: Remediation time per debt category
+- **Severity Breakdown**: Remediation time per severity level
+
+### Effort-to-Time Mapping
+- **trivial**: ≤5 minutes
+- **small**: 5-30 minutes
+- **medium**: 30 min - 2 hours
+- **large**: 2-4 hours
+- **xlarge**: 4+ hours
 
 ## Custom Rules
 
