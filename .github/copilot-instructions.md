@@ -164,6 +164,16 @@ Use conventional commits:
 
 1. Create branch from `develop`
 2. Make changes
-3. Create PR targeting `develop`
-4. **Check Copilot review suggestions** — Review all automated suggestions and address them before merging
-5. Merge after review
+3. **Verify tests pass** — Run `npm test` and ensure ALL tests pass (0 failures)
+4. **Verify build succeeds** — Run `npm run build` with no errors
+5. **Fix any failing tests BEFORE committing** — Do not proceed if any tests fail
+6. Create PR targeting `develop`
+7. **Check Copilot review suggestions** — Review all automated suggestions and address them before merging
+8. Merge after review
+
+**CRITICAL REQUIREMENTS:**
+- ❌ Never commit code with failing tests
+- ❌ Never commit code that doesn't build
+- ✅ Always run `npm test` before staging changes
+- ✅ Always run `npm run build` to verify TypeScript compilation
+- ✅ Fix all test failures immediately before committing

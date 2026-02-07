@@ -187,3 +187,36 @@ export interface CustomPattern {
   suggestion?: string;
   languages?: SupportedLanguage[];
 }
+
+// SQALE Rating (A-E scale like SonarQube)
+export type SQALERating = 'A' | 'B' | 'C' | 'D' | 'E';
+
+// Effort to time mapping (in minutes)
+export interface EffortTimeMapping {
+  trivial: number;  // < 5 minutes
+  small: number;    // 5-30 minutes
+  medium: number;   // 30 min - 2 hours
+  large: number;    // 2-4 hours
+  xlarge: number;   // 4+ hours
+}
+
+// SQALE Metrics
+export interface SQALEMetrics {
+  // Total remediation time in minutes
+  totalRemediationTime: number;
+
+  // Formatted time (e.g., "2h 30m" or "3d 4h")
+  formattedTime: string;
+
+  // Debt ratio (remediation time / development time estimate)
+  debtRatio: number;
+
+  // Rating based on debt ratio thresholds
+  rating: SQALERating;
+
+  // Breakdown by category
+  byCategory: Record<DebtCategory, number>;
+
+  // Breakdown by severity
+  bySeverity: Record<Severity, number>;
+}
