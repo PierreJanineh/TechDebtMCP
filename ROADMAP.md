@@ -50,6 +50,52 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 - **Documentation:** README, ARCHITECTURE, CONTRIBUTING guides
 - **NPM Package:** Published as `tech-debt-mcp@1.0.0`
 
+### v1.1.0 - SwiftUI Analysis (Released: 2026-02-07)
+
+**Status:** ✅ **COMPLETE**
+
+Enhanced Swift analyzer with comprehensive SwiftUI-specific technical debt detection.
+
+#### Completed Features
+
+**SwiftUI Analysis (Issue #58 - Phase 1 & 2)**
+- ✅ **14 SwiftUI-specific checks** across 2 phases
+- ✅ **Phase 1 - Core SwiftUI Checks (9 checks):**
+  - Excessive @State variables detection (>5 per view)
+  - @ObservedObject vs @StateObject misuse
+  - @Environment value force unwrap detection
+  - Combine pipeline circular references
+  - Missing Timer cleanup in onDisappear
+  - Missing Task cancellation handling
+  - UI updates on background threads
+  - Dynamic list missing .id() modifiers
+  - Expensive calculations in view body
+
+- ✅ **Phase 2 - Advanced SwiftUI Patterns (5 checks):**
+  - AnyView type erasure detection
+  - Deprecated NavigationLink patterns
+  - GeometryReader root-level misuse
+  - Retain cycles in SwiftUI closures
+  - Deep view nesting detection (>6 levels)
+
+**GitHub Packages Integration**
+- ✅ Published to npm and GitHub Packages
+- ✅ Automated CI/CD publishing workflow
+- ✅ Comprehensive installation documentation
+
+**Quality Improvements**
+- ✅ 96 tests passing (118 total with 22 todo for Phase 3)
+- ✅ Performance optimization (content split once)
+- ✅ All Copilot review suggestions addressed
+- ✅ Contributor: @ophirbucai (execute_custom_rules fix)
+
+#### Deliverables
+
+- **96 Tests:** SwiftUI test suite with 13 implemented + 13 todo (↑ from 93)
+- **Documentation:** Updated README with SwiftUI section, GITHUB_PACKAGES.md, PUBLISH_GUIDE.md
+- **NPM Package:** Published as `tech-debt-mcp@1.1.0`
+- **GitHub Packages:** Available on both npm and GitHub Packages registries
+
 ### v2.0.0 - Dependency Analysis (In Progress)
 
 **Status:** 🚧 **IN PROGRESS - Phase 2 Infrastructure Complete**
