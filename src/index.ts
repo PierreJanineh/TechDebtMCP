@@ -267,7 +267,7 @@ class TechDebtServer {
         },
         {
           name: 'execute_custom_rules',
-          description: 'Execute all custom rules against code or a file.',
+          description: 'Execute all custom rules against code or a file. Either path or code must be provided.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -277,7 +277,7 @@ class TechDebtServer {
               },
               code: {
                 type: 'string',
-                description: 'Optional: code content to analyze (if not provided, reads from path)',
+                description: 'Code content to analyze (if not provided, reads from path)',
               },
               language: {
                 type: 'string',
@@ -285,10 +285,6 @@ class TechDebtServer {
               },
             },
             required: [],
-            anyOf: [
-              { required: ['path'] },
-              { required: ['code'] },
-            ],
           },
         },
         {
