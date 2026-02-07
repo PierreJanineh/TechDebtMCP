@@ -40,12 +40,18 @@ A Model Context Protocol (MCP) server for analyzing technical debt across multip
 
 ### One-Click Install
 
-[![VS Code](https://raw.githubusercontent.com/PierreJanineh/TechDebtMCP/develop/.github/badges/vscode-install.svg)](vscode:mcp/install?%7B%22name%22%3A%20%22tech-debt-mcp%22%2C%20%22command%22%3A%20%22npx%22%2C%20%22args%22%3A%20%5B%22-y%22%2C%20%22tech-debt-mcp%22%5D%7D)
-[![Cursor](https://raw.githubusercontent.com/PierreJanineh/TechDebtMCP/develop/.github/badges/cursor-install.svg)](cursor://anysphere.cursor-deeplink/mcp/install?name=tech-debt-mcp&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsInRlY2gtZGVidC1tY3AiXX0=)
-
-> These links use custom URL schemes that may be blocked on GitHub. If they don't work, use the terminal or manual setup below.
+[![VS Code](https://raw.githubusercontent.com/PierreJanineh/TechDebtMCP/develop/.github/badges/vscode-install.svg)](https://insiders.vscode.dev/redirect/mcp/install?name=tech-debt-mcp&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22tech-debt-mcp%22%5D%7D)
+[![Cursor](https://raw.githubusercontent.com/PierreJanineh/TechDebtMCP/develop/.github/badges/cursor-install.svg)](cursor://anysphere.cursor-deeplink/mcp/install?name=tech-debt-mcp&config=eyJjb21tYW5kIjoibnB4IC15IHRlY2gtZGVidC1tY3AifQ==)
 
 ### Via Terminal
+
+```sh
+# For VS Code
+code --add-mcp '{"name":"tech-debt-mcp","command":"npx","args":["-y","tech-debt-mcp"]}'
+
+# For VS Code Insiders
+code-insiders --add-mcp '{"name":"tech-debt-mcp","command":"npx","args":["-y","tech-debt-mcp"]}'
+```
 
 ![Claude Code](https://raw.githubusercontent.com/PierreJanineh/TechDebtMCP/develop/.github/badges/claude-code-install.svg)
 
