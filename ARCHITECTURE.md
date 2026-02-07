@@ -545,7 +545,9 @@ This reduces overhead from O(N × checks) to O(1) for content splitting.
 
 ### Test Coverage
 
-**Total Tests:** 118 (96 passing + 22 todo)
+**Total Repository Tests:** 118 (96 passing + 22 todo across all phases)
+
+**SwiftUI Analyzer Tests:**
 - **Phase 1 Tests:** 13 implemented test cases
 - **Phase 2 Tests:** 13 implemented test cases  
 - **Phase 3 Tests:** 22 todo tests for future enhancements
