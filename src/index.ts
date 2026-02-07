@@ -9,6 +9,7 @@ import {
   McpError,
 } from '@modelcontextprotocol/sdk/types.js';
 import { AnalysisEngine } from './core/analysisEngine.js';
+import { CustomRulesEngine } from './core/customRulesEngine.js';
 import { analyzeFile } from './analyzers/index.js';
 import { getSupportedLanguages, LANGUAGE_CONFIGS } from './config/languages.js';
 import { getRelativePath, readFile, fileExists } from './utils/fileUtils.js';
@@ -17,6 +18,7 @@ import {
   DebtCategory,
   Severity,
   TechDebtReport,
+  CustomPattern,
 } from './types/index.js';
 
 /**
@@ -27,6 +29,7 @@ import {
 class TechDebtServer {
   private server: Server;
   private engine: AnalysisEngine;
+  private customRulesEngine: CustomRulesEngine;
 
   constructor() {
     this.server = new Server(
@@ -42,6 +45,7 @@ class TechDebtServer {
     );
 
     this.engine = new AnalysisEngine();
+    this.customRulesEngine = new CustomRulesEngine();
     this.setupHandlers();
   }
 
@@ -175,6 +179,128 @@ class TechDebtServer {
             required: ['path', 'category'],
           },
         },
+        {
+          name: 'add_custom_rule',
+          description: 'Add a custom pattern-based tech debt rule.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'string',
+                description: 'Unique identifier for the rule',
+              },
+              pattern: {
+                type: 'string',
+                description: 'Regex pattern to match',
+              },
+              message: {
+                type: 'string',
+                description: 'Issue title/message',
+              },
+              severity: {
+                type: 'string',
+                enum: ['low', 'medium', 'high', 'critical'],
+                description: 'Issue severity level',
+              },
+              category: {
+                type: 'string',
+                enum: ['dependency', 'code-quality', 'architecture', 'documentation', 'testing', 'security', 'performance', 'maintainability'],
+                description: 'Debt category',
+              },
+              suggestion: {
+                type: 'string',
+                description: 'Optional: how to fix the issue',
+              },
+              languages: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'Optional: apply only to specific languages',
+              },
+              flags: {
+                type: 'string',
+                description: 'Optional: regex flags (g, i, m, s, etc.)',
+              },
+            },
+            required: ['id', 'pattern', 'message', 'severity', 'category'],
+          },
+        },
+        {
+          name: 'remove_custom_rule',
+          description: 'Remove a custom rule by ID.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'string',
+                description: 'ID of the rule to remove',
+              },
+            },
+            required: ['id'],
+          },
+        },
+        {
+          name: 'list_custom_rules',
+          description: 'List all active custom rules with their statistics.',
+          inputSchema: {
+            type: 'object',
+            properties: {},
+            required: [],
+          },
+        },
+        {
+          name: 'execute_custom_rules',
+          description: 'Execute all custom rules against code or a file.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              filePath: {
+                type: 'string',
+                description: 'Path to the file to analyze',
+              },
+              code: {
+                type: 'string',
+                description: 'Optional: code content to analyze (if not provided, reads from filePath)',
+              },
+              language: {
+                type: 'string',
+                description: 'Optional: programming language for filtering rules',
+              },
+            },
+            required: ['filePath'],
+          },
+        },
+        {
+          name: 'validate_custom_pattern',
+          description: 'Validate a custom pattern before adding it as a rule.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'string',
+                description: 'Unique identifier for the rule',
+              },
+              pattern: {
+                type: 'string',
+                description: 'Regex pattern to validate',
+              },
+              message: {
+                type: 'string',
+                description: 'Issue title/message',
+              },
+              severity: {
+                type: 'string',
+                enum: ['low', 'medium', 'high', 'critical'],
+                description: 'Issue severity level',
+              },
+              category: {
+                type: 'string',
+                enum: ['dependency', 'code-quality', 'architecture', 'documentation', 'testing', 'security', 'performance', 'maintainability'],
+                description: 'Debt category',
+              },
+            },
+            required: ['id', 'pattern', 'message', 'severity', 'category'],
+          },
+        },
       ],
     }));
 
@@ -198,6 +324,16 @@ class TechDebtServer {
             return await this.handleGetIssuesBySeverity(args);
           case 'get_issues_by_category':
             return await this.handleGetIssuesByCategory(args);
+          case 'add_custom_rule':
+            return await this.handleAddCustomRule(args);
+          case 'remove_custom_rule':
+            return await this.handleRemoveCustomRule(args);
+          case 'list_custom_rules':
+            return this.handleListCustomRules();
+          case 'execute_custom_rules':
+            return await this.handleExecuteCustomRules(args);
+          case 'validate_custom_pattern':
+            return this.handleValidateCustomPattern(args);
           default:
             throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
         }
@@ -463,6 +599,172 @@ ${r.actionItems.map(a => `- ${a}`).join('\n')}
       case 'high': return '🟠';
       case 'medium': return '🟡';
       case 'low': return '🟢';
+    }
+  }
+
+  // Custom Rules Handlers
+
+  private async handleAddCustomRule(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
+    const { id, pattern, message, severity, category, suggestion, languages, flags } = args;
+
+    const customPattern: CustomPattern = {
+      id: id as string,
+      pattern: pattern as string,
+      message: message as string,
+      severity: severity as Severity,
+      category: category as DebtCategory,
+      suggestion: suggestion as string | undefined,
+      languages: (languages as string[] | undefined)?.map(l => l as SupportedLanguage),
+      flags: flags as string | undefined,
+    };
+
+    // Validate pattern
+    const validation = CustomRulesEngine.validatePattern(customPattern);
+    if (!validation.valid) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `❌ Pattern validation failed:\n${validation.errors.join('\n')}`,
+          },
+        ],
+      };
+    }
+
+    this.customRulesEngine.addRule(customPattern);
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `✅ Custom rule '${id}' added successfully.\n\nRule: ${pattern}\nSeverity: ${severity}\nCategory: ${category}`,
+        },
+      ],
+    };
+  }
+
+  private async handleRemoveCustomRule(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
+    const id = args.id as string;
+    const removed = this.customRulesEngine.removeRule(id);
+
+    if (removed) {
+      return {
+        content: [{ type: 'text', text: `✅ Custom rule '${id}' removed successfully.` }],
+      };
+    } else {
+      return {
+        content: [{ type: 'text', text: `❌ Custom rule '${id}' not found.` }],
+      };
+    }
+  }
+
+  private handleListCustomRules(): { content: Array<{ type: string; text: string }> } {
+    const rules = this.customRulesEngine.getAllRules();
+    const stats = this.customRulesEngine.getRuleStats();
+
+    if (rules.length === 0) {
+      return {
+        content: [{ type: 'text', text: 'No custom rules defined.' }],
+      };
+    }
+
+    const rulesText = rules
+      .map(
+        r => `- **${r.id}**: ${r.message}
+  - Pattern: \`${r.pattern}\`
+  - Severity: ${r.severity}
+  - Category: ${r.category}
+  ${r.languages ? `- Languages: ${r.languages.join(', ')}` : '- Languages: All'}`
+      )
+      .join('\n');
+
+    const statsText = `
+## Statistics
+
+- **Total Rules:** ${stats.totalRules}
+- **By Severity:** Low: ${stats.bySeverity.low}, Medium: ${stats.bySeverity.medium}, High: ${stats.bySeverity.high}, Critical: ${stats.bySeverity.critical}
+- **By Category:** 
+  ${Object.entries(stats.byCategory)
+    .filter(([_, count]) => count > 0)
+    .map(([cat, count]) => `  - ${cat}: ${count}`)
+    .join('\n')}
+`;
+
+    return {
+      content: [{ type: 'text', text: `# Custom Rules\n\n${rulesText}\n${statsText}` }],
+    };
+  }
+
+  private async handleExecuteCustomRules(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
+    const filePath = args.filePath as string;
+    let code = args.code as string | undefined;
+    const language = args.language as string | undefined;
+
+    if (!code) {
+      if (!await fileExists(filePath)) {
+        return {
+          content: [{ type: 'text', text: `❌ File not found: ${filePath}` }],
+        };
+      }
+      code = await readFile(filePath);
+    }
+
+    const issues = this.customRulesEngine.executeRules(filePath, code, language);
+
+    if (issues.length === 0) {
+      return {
+        content: [{ type: 'text', text: `✅ No custom rule violations found in ${filePath}.` }],
+      };
+    }
+
+    const formatted = `# Custom Rule Violations in ${filePath}
+
+Found ${issues.length} issue(s):
+
+${issues
+  .map(
+    issue => `## ${issue.title} [${issue.severity.toUpperCase()}]
+
+**File:** ${issue.file}:${issue.line}
+**Rule:** \`${issue.rule}\`
+**Category:** ${issue.category}
+**Suggestion:** ${issue.suggestion || 'N/A'}
+
+\`\`\`
+${issue.description}
+\`\`\``
+  )
+  .join('\n\n---\n\n')}
+`;
+
+    return {
+      content: [{ type: 'text', text: formatted }],
+    };
+  }
+
+  private handleValidateCustomPattern(args: Record<string, unknown>): { content: Array<{ type: string; text: string }> } {
+    const customPattern = {
+      id: args.id as string,
+      pattern: args.pattern as string,
+      message: args.message as string,
+      severity: args.severity as any,
+      category: args.category as any,
+    };
+
+    const validation = CustomRulesEngine.validatePattern(customPattern);
+
+    if (validation.valid) {
+      return {
+        content: [{ type: 'text', text: `✅ Pattern is valid and can be used as a custom rule.` }],
+      };
+    } else {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `❌ Pattern validation failed:\n${validation.errors.map(e => `- ${e}`).join('\n')}`,
+          },
+        ],
+      };
     }
   }
 

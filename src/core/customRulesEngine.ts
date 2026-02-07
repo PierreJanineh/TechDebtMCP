@@ -6,11 +6,13 @@ import { TechDebtIssue, CustomPattern, Severity, DebtCategory, Effort } from '..
  */
 export class CustomRulesEngine {
   private rules: Map<string, CustomPattern> = new Map();
+  private onRuleError?: (ruleId: string, error: Error) => void;
 
-  constructor(patterns?: CustomPattern[]) {
+  constructor(patterns?: CustomPattern[], onRuleError?: (ruleId: string, error: Error) => void) {
     if (patterns) {
       patterns.forEach(pattern => this.addRule(pattern));
     }
+    this.onRuleError = onRuleError;
   }
 
   /**
@@ -90,33 +92,60 @@ export class CustomRulesEngine {
     const issues: TechDebtIssue[] = [];
 
     try {
-      // Create regex with specified flags
+      // Normalize line endings for cross-platform consistency
+      const lines = content.split(/\r?\n/);
       const flags = pattern.flags || 'g';
       const regex = new RegExp(pattern.pattern, flags);
-      const lines = content.split('\n');
 
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        regex.lastIndex = 0;
+      for (let lineNum = 0; lineNum < lines.length; lineNum++) {
+        const line = lines[lineNum];
+        let matchIndex = 0;
 
-        if (regex.test(line)) {
-          issues.push({
-            id: `${pattern.id}-${i + 1}`,
-            category: pattern.category,
-            severity: pattern.severity,
-            file: filePath,
-            line: i + 1,
-            title: pattern.message,
-            description: line.trim(),
-            suggestion: pattern.suggestion || `Review and fix according to rule: ${pattern.id}`,
-            effort: 'small',
-            rule: pattern.id,
-            tags: [pattern.id, 'custom-rule'],
-          });
+        // Handle multiple matches on the same line
+        if (regex.global) {
+          let match;
+          regex.lastIndex = 0;
+          while ((match = regex.exec(line)) !== null) {
+            issues.push({
+              id: `${pattern.id}-${lineNum + 1}-${matchIndex}`,
+              category: pattern.category,
+              severity: pattern.severity,
+              file: filePath,
+              line: lineNum + 1,
+              column: match.index,
+              title: pattern.message,
+              description: line.trim(),
+              suggestion: pattern.suggestion || `Review and fix according to rule: ${pattern.id}`,
+              effort: 'small',
+              rule: pattern.id,
+              tags: [pattern.id, 'custom-rule'],
+            });
+            matchIndex++;
+          }
+        } else {
+          // Non-global flag: match once per line
+          regex.lastIndex = 0;
+          if (regex.test(line)) {
+            issues.push({
+              id: `${pattern.id}-${lineNum + 1}`,
+              category: pattern.category,
+              severity: pattern.severity,
+              file: filePath,
+              line: lineNum + 1,
+              title: pattern.message,
+              description: line.trim(),
+              suggestion: pattern.suggestion || `Review and fix according to rule: ${pattern.id}`,
+              effort: 'small',
+              rule: pattern.id,
+              tags: [pattern.id, 'custom-rule'],
+            });
+          }
         }
       }
     } catch (error) {
-      console.error(`Error executing custom rule ${pattern.id}:`, error);
+      if (this.onRuleError) {
+        this.onRuleError(pattern.id, error instanceof Error ? error : new Error(String(error)));
+      }
     }
 
     return issues;
@@ -127,6 +156,18 @@ export class CustomRulesEngine {
    */
   static validatePattern(pattern: CustomPattern): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
+
+    const validSeverities: Severity[] = ['low', 'medium', 'high', 'critical'];
+    const validCategories: DebtCategory[] = [
+      'dependency',
+      'code-quality',
+      'architecture',
+      'documentation',
+      'testing',
+      'security',
+      'performance',
+      'maintainability',
+    ];
 
     if (!pattern.id) {
       errors.push('Pattern ID is required');
@@ -149,12 +190,14 @@ export class CustomRulesEngine {
 
     if (!pattern.severity) {
       errors.push('Severity is required');
-    } else if (!['low', 'medium', 'high', 'critical'].includes(pattern.severity)) {
+    } else if (!validSeverities.includes(pattern.severity)) {
       errors.push(`Invalid severity: ${pattern.severity}`);
     }
 
     if (!pattern.category) {
       errors.push('Category is required');
+    } else if (!validCategories.includes(pattern.category)) {
+      errors.push(`Invalid category: ${pattern.category}`);
     }
 
     return {
