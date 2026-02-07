@@ -7,7 +7,7 @@ Tech Debt MCP is a Model Context Protocol server for analyzing technical debt ac
 
 ```
 src/
-├── index.ts              # MCP Server entry point (thin, delegates to handlers)
+├── index.ts              # MCP Server entry point and tool routing
 ├── types/
 │   └── index.ts          # All TypeScript interfaces (single source of truth)
 ├── config/
@@ -38,7 +38,7 @@ src/
 - All functions must have JSDoc comments
 - No `any` types (use `unknown` if absolutely needed)
 - Prefer `const` over `let`
-- Use ES modules (`.js` extension in imports)
+- Use ES modules with `.js` extensions in imports (required for `module: NodeNext` / `moduleResolution: NodeNext` in tsconfig.json)
 
 ## Adding a New Language Analyzer
 
