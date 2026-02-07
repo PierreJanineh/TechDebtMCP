@@ -1,6 +1,6 @@
 # Contributing to Tech Debt MCP
 
-Thank you for your interest in contributing to Tech Debt MCP! This document provides guidelines for contributing to the project.
+Thank you for your interest in contributing to **Tech Debt MCP** (repository: `TechDebtMCP`)! This document provides guidelines for contributing to the project.
 
 ## Table of Contents
 
@@ -101,12 +101,12 @@ src/
  * Example function with proper documentation
  * @param filePath Absolute path to the file
  * @param content File content to analyze
- * @returns Array of tech debt issues found
+ * @returns Object containing analysis result with issues array
  */
-async function analyzeCode(filePath: string, content: string): Promise<TechDebtIssue[]> {
+async function analyzeCode(filePath: string, content: string): Promise<{ issues: TechDebtIssue[] }> {
   const issues: TechDebtIssue[] = [];
   // Implementation
-  return issues;
+  return { issues };
 }
 ```
 
@@ -281,4 +281,6 @@ Use the feature request template and include:
 ## License
 
 By contributing, you agree that your contributions will be licensed under the MIT License.
+
+
 
