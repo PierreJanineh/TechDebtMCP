@@ -5,6 +5,8 @@
 
 A Model Context Protocol (MCP) server for analyzing technical debt across multiple programming languages. Designed to integrate with GitHub Copilot and other MCP-compatible tools.
 
+> **Built with Vibe Coding** - This project was developed using AI-assisted "vibe coding" techniques, leveraging GitHub Copilot to rapidly prototype and iterate on features while maintaining code quality and test coverage.
+
 ## Features
 
 - **Multi-language support**: JavaScript, TypeScript, Python, Java, Swift, Kotlin, Objective-C, C++, C, C#, Go, Rust, Ruby, PHP
@@ -325,7 +327,7 @@ Validate a custom pattern before adding it as a rule.
 
 ## SQALE Metrics
 
-TechDebt MCP uses SQALE (Software Quality Assessment based on Lifecycle Expectations) methodology to quantify technical debt:
+Tech Debt MCP uses SQALE (Software Quality Assessment based on Lifecycle Expectations) methodology to quantify technical debt:
 
 ### Rating System (A-E Scale)
 

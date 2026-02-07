@@ -54,7 +54,7 @@ Before starting the release process, ensure:
 ### Step 1: Prepare the Release
 
 ```bash
-# Ensure you're on main and up to date
+# Ensure you're on develop and up to date
 git checkout develop
 git pull origin develop
 
@@ -133,7 +133,7 @@ echo "Releasing version: v$VERSION"
 git push origin "v$VERSION"
 
 # Push the commit
-
+git push origin develop
 ```
 
 ### Step 5: Monitor GitHub Actions
@@ -400,7 +400,7 @@ Release:
 - [ ] Version bumped: npm version [patch|minor|major]
 - [ ] CHANGELOG.md committed
 - [ ] Tag pushed: git push origin v____.____.____
-- [ ] Commits pushed: 
+- [ ] Commits pushed: git push origin develop
 - [ ] GitHub Actions workflow succeeded
 - [ ] npm package published
 - [ ] GitHub Release created

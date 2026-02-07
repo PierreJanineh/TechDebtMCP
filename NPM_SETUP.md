@@ -85,9 +85,9 @@ Before making a real release, test that everything works:
 git clone https://github.com/PierreJanineh/TechDebtMCP.git
 cd TechDebtMCP
 
-# Checkout main branch
-git checkout main
-git pull origin main
+# Checkout develop branch
+git checkout develop
+git pull origin develop
 
 # Install dependencies
 npm ci
@@ -144,7 +144,7 @@ git add package.json
 git commit -m "chore: test release setup"
 git tag v0.0.1
 git push origin v0.0.1
-git push origin main
+git push origin develop
 
 # Watch GitHub Actions
 # Go to: https://github.com/PierreJanineh/TechDebtMCP/actions
@@ -161,9 +161,9 @@ git push origin main
 Once setup is complete, you can release v1.0.0:
 
 ```bash
-# Ensure you're on main, up to date
-git checkout main
-git pull origin main
+# Ensure you're on develop, up to date
+git checkout develop
+git pull origin develop
 
 # Run tests
 npm test
@@ -179,7 +179,7 @@ npm version 1.0.0
 
 # Push tag (this triggers the workflow)
 git push origin v1.0.0
-git push origin main
+git push origin develop
 
 # Monitor GitHub Actions
 # https://github.com/PierreJanineh/TechDebtMCP/actions

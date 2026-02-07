@@ -223,8 +223,8 @@ npm version patch|minor|major
 # Create a git tag
 git tag v$(npm pkg get version | tr -d '"')
 
-# Push to trigger GitHub Actions
-git push origin main --tags
+# Push to trigger GitHub Actions (from develop branch)
+git push origin develop --tags
 ```
 
 The CI/CD workflow will automatically:

@@ -33,7 +33,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 - ✅ Debt ratio metrics
 - ✅ Category and severity breakdowns
 - ✅ Human-readable time formatting
-- ✅ **NEW:** `get_sqale_metrics` MCP tool (14th tool)
+- ✅ **NEW:** `get_sqale_metrics` MCP tool (13th tool)
 - ✅ **NEW:** SQALE metrics integrated into all analysis reports
 
 **Phase 5: Custom Rules Engine**
@@ -45,8 +45,8 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 
 #### Deliverables
 
-- **14 MCP Tools:** Full suite of analysis and custom rule tools (↑ from 13)
-- **93 Tests:** 100% pass rate across 7 test suites (↑ from 72)
+- **13 MCP Tools:** Full suite of analysis and custom rule tools
+- **96 Tests:** 100% pass rate across 8 test suites (22 todo for Phase 3)
 - **Documentation:** README, ARCHITECTURE, CONTRIBUTING guides
 - **NPM Package:** Published as `tech-debt-mcp@1.0.0`
 
@@ -93,7 +93,7 @@ Enhanced Swift analyzer with comprehensive SwiftUI-specific technical debt detec
 #### Deliverables
 
 - **Tests:** Repo total 96 passing (SwiftUI tests: 13 Phase 1 + 13 Phase 2 + 22 Phase 3 todo)
-- **Documentation:** Updated README with SwiftUI section, GITHUB_PACKAGES.md, PUBLISH_GUIDE.md
+- **Documentation:** Updated README with SwiftUI section, GITHUB_PACKAGES.md
 - **NPM Package:** Published as `tech-debt-mcp@1.1.0`
 - **GitHub Packages:** Available on both npm and GitHub Packages registries
 
@@ -385,9 +385,9 @@ Tech Debt MCP uses GitHub Actions for automated npm publishing with supply chain
 
 1. **Prepare Release**
    ```bash
-   # Ensure you're on main branch and up to date
-   git checkout main
-   git pull origin main
+   # Ensure you're on develop branch and up to date
+   git checkout develop
+   git pull origin develop
    
    # Ensure all tests pass
    npm test
@@ -415,7 +415,7 @@ Tech Debt MCP uses GitHub Actions for automated npm publishing with supply chain
    git push origin v2.0.0  # Replace with actual version
    
    # Push commits
-   git push origin main
+   git push origin develop
    ```
 
 5. **Automated Workflow**

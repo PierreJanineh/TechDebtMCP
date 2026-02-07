@@ -34,7 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### GitHub Packages Support
 - Published to both npm Registry and GitHub Packages
 - Comprehensive installation documentation (GITHUB_PACKAGES.md)
-- Publishing guide for maintainers (PUBLISH_GUIDE.md)
 - Automated CI/CD publishing workflow
 
 #### Quality Improvements
@@ -59,7 +58,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 - Added GITHUB_PACKAGES.md - Comprehensive installation and setup guide
-- Added PUBLISH_GUIDE.md - Publishing workflow documentation
 - Updated .github/copilot-instructions.md with strict documentation requirements
 - Enhanced PR workflow with mandatory documentation checklist
 - **IDE Installation Badges** - One-click install for VS Code, Cursor, Claude, Windsurf, JetBrains, Xcode (Thanks @ophirbucai - PR #66)
@@ -96,7 +94,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multiple matches per line
 - Cross-platform line ending support (\r\n and \n)
 
-#### MCP Tools (14 total)
+#### MCP Tools (13 total)
 1. `analyze_project` - Full project technical debt analysis
 2. `analyze_file` - Single file analysis
 3. `get_debt_summary` - Quick debt summary
@@ -119,7 +117,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Full API documentation for all MCP tools
 
 ### Testing
-- 72 comprehensive tests across 6 test suites
+- 96 comprehensive tests across 8 test suites (22 todo for future enhancements)
 - 100% test pass rate
 - Tests for all language analyzers
 - Tests for SQALE engine
