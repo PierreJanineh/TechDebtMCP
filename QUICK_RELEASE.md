@@ -24,7 +24,7 @@ git push origin main
 **That's it!** GitHub Actions will:
 - Run tests ✅
 - Build TypeScript ✅
-- Publish to npm ✅
+- Publish to npm (via Trusted Publishing) ✅
 - Create GitHub Release ✅
 
 ---
@@ -88,10 +88,12 @@ npm version patch  # Fix issue and release new version
 
 ---
 
-## 🔐 Required Secrets
+## 🔐 Required Setup (First Time Only)
 
-**GitHub Repository Settings → Secrets → Actions:**
-- `NPM_TOKEN` - npm automation token ✅
+**Trusted Publishing on npm.com:**
+- Configure GitHub Actions integration on npm ✅
+- See **NPM_SETUP.md** for step-by-step instructions
+- No secrets or tokens needed!
 
 ---
 

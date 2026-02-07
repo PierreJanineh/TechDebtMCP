@@ -1,6 +1,16 @@
 # NPM Publish Setup Guide
 
-This guide walks you through the one-time setup needed to enable automated npm publishing for Tech Debt MCP.
+This guide walks you through the one-time setup needed to enable automated npm publishing for Tech Debt MCP using **Trusted Publishing** (no tokens required).
+
+## What is Trusted Publishing?
+
+**Trusted Publishing** uses OpenID Connect (OIDC) to verify GitHub Actions' identity directly with npm. This eliminates the need for long-lived access tokens.
+
+**Benefits:**
+- ✅ **No token expiration** - No 90-day rotation needed
+- ✅ **No secrets to manage** - No `NPM_TOKEN` required
+- ✅ **More secure** - npm verifies GitHub Actions directly
+- ✅ **Zero maintenance** - Set up once, works forever
 
 ## Prerequisites
 
@@ -15,64 +25,58 @@ This guide walks you through the one-time setup needed to enable automated npm p
 npm search tech-debt-mcp
 
 # If you see your package, you're good
-# If not available, you may need to claim it first
+# If not available, you may need to publish manually once first
 ```
 
-## Step 2: Create npm Access Token
+## Step 2: Enable Trusted Publishing on npm
+
+**This is the key step that replaces token management.**
 
 1. **Log in to npm:**
    - Go to https://www.npmjs.com
    - Sign in with your account
 
-2. **Navigate to Access Tokens:**
-   - Click your profile picture (top right)
-   - Select "Access Tokens"
-   - OR go directly to: https://www.npmjs.com/settings/YOUR_USERNAME/tokens
+2. **Navigate to Package Settings:**
+   - Go to your package: https://www.npmjs.com/package/tech-debt-mcp
+   - Click the **"Settings"** tab
+   - Or go directly to: https://www.npmjs.com/package/tech-debt-mcp/access
 
-3. **Generate New Token:**
-   - Click "Generate New Token"
-   - Select **"Automation"** (not "Publish" or "Read-only")
-   - This type allows GitHub Actions to publish
+3. **Configure Trusted Publishing:**
+   - Scroll to **"Publishing access"** section
+   - Click **"Require two-factor authentication or automation"**
+   - Under **"Automation"**, click **"Add GitHub Actions"**
+   
+4. **Fill in GitHub Actions Details:**
+   - **Repository:** `PierreJanineh/TechDebtMCP` (your repo in format `owner/repo`)
+   - **Workflow:** `publish.yml` (the workflow file name)
+   - **Environment:** Leave blank (or use `production` if you want extra approval step)
+   
+5. **Save Configuration:**
+   - Click **"Add"** or **"Save"**
+   - You should see the GitHub Actions integration listed
 
-4. **Copy the Token:**
-   - ⚠️ **IMPORTANT:** Copy the token immediately
-   - You won't be able to see it again
-   - It looks like: `npm_xxxxxxxxxxxxxxxxxxxxxxxxxxxx`
+**Note:** If the package doesn't exist yet, you'll need to publish v0.0.1 manually first (see Step 5 below), then configure Trusted Publishing for future releases.
 
-## Step 3: Add Token to GitHub Secrets
+## Step 3: Verify GitHub Actions Permissions
 
-1. **Go to Repository Settings:**
-   - https://github.com/PierreJanineh/TechDebtMCP/settings
-
-2. **Navigate to Secrets:**
-   - Click "Secrets and variables" in the left sidebar
-   - Click "Actions"
-   - OR go directly to: https://github.com/PierreJanineh/TechDebtMCP/settings/secrets/actions
-
-3. **Create New Secret:**
-   - Click "New repository secret"
-   - **Name:** `NPM_TOKEN` (must be exactly this)
-   - **Value:** Paste your npm token
-   - Click "Add secret"
-
-4. **Verify Secret Added:**
-   - You should see `NPM_TOKEN` in the list
-   - The value will be hidden (shows `***`)
-
-## Step 4: Verify GitHub Actions Permissions
 
 1. **Check Workflow Permissions:**
    - Go to https://github.com/PierreJanineh/TechDebtMCP/settings/actions
    - Under "Workflow permissions":
-     - Select "Read and write permissions"
-     - Check "Allow GitHub Actions to create and approve pull requests"
+     - Select **"Read and write permissions"**
+     - Check **"Allow GitHub Actions to create and approve pull requests"**
    - Click "Save"
 
-2. **Verify GITHUB_TOKEN Permissions:**
-   - This is automatically provided by GitHub
-   - No additional setup needed
+2. **Verify OIDC Permissions in Workflow:**
+   - The workflow file `.github/workflows/publish.yml` must have:
+   ```yaml
+   permissions:
+     contents: write  # For creating GitHub releases
+     id-token: write  # For Trusted Publishing (OIDC)
+   ```
+   - This is already configured ✅
 
-## Step 5: Test the Setup (Dry Run)
+## Step 4: Test the Setup (Dry Run)
 
 Before making a real release, test that everything works:
 
@@ -97,13 +101,33 @@ npm run build
 # Check if dist/ was created
 ls -la dist/
 
-# Verify npm authentication (optional)
-# This checks if you can publish manually
-npm login
+# Test local publish (dry run)
 npm publish --dry-run
 ```
 
-## Step 6: Make a Test Release (Optional)
+**Note:** For the first publish, you may need to do it manually with `npm login` + `npm publish`, then configure Trusted Publishing for subsequent automated releases.
+
+## Step 5: Make First Manual Publish (If Package Doesn't Exist)
+
+If this is the very first release and the package doesn't exist on npm yet:
+
+```bash
+# Ensure you're at version 1.0.0
+npm version 1.0.0 --no-git-tag-version
+
+# Login to npm manually
+npm login
+
+# Publish first version manually
+npm publish --access public
+
+# Now the package exists and you can configure Trusted Publishing
+# Go back to Step 2 and configure npm.com settings
+```
+
+After the first manual publish, all future releases will be automated via GitHub Actions.
+
+## Step 6: Test Automated Release (Optional)
 
 If you want to test the full workflow before v1.0.0:
 
@@ -163,14 +187,25 @@ git push origin main
 
 ## Troubleshooting
 
-### "npm ERR! need auth"
+### "npm ERR! 403 Forbidden" or "OIDC token verification failed"
 
-**Problem:** npm token is invalid or not set correctly
+**Problem:** Trusted Publishing not configured correctly
 
 **Solution:**
-1. Verify `NPM_TOKEN` secret exists in GitHub
-2. Check token hasn't expired (regenerate if needed)
-3. Ensure token type is "Automation"
+1. Verify Trusted Publishing is set up on npm.com (Step 2)
+2. Check repository name matches exactly: `PierreJanineh/TechDebtMCP`
+3. Check workflow file name matches: `publish.yml`
+4. Verify `id-token: write` permission is in workflow
+5. Make sure you're publishing from the correct repository
+
+### "npm ERR! 404 Not Found"
+
+**Problem:** Package doesn't exist yet
+
+**Solution:**
+1. Do first publish manually (Step 5)
+2. Then configure Trusted Publishing
+3. Future releases will be automated
 
 ### "npm ERR! 403 Forbidden"
 
@@ -179,11 +214,7 @@ git push origin main
 **Solution:**
 1. Verify you own the package on npm
 2. Check you're logged in to the correct npm account
-3. If package doesn't exist, publish manually once:
-   ```bash
-   npm login
-   npm publish --access public
-   ```
+3. If package doesn't exist, publish manually once (Step 5)
 
 ### "npm ERR! Package already exists"
 
@@ -214,27 +245,30 @@ git push origin main
    ```yaml
    permissions:
      contents: write
-     id-token: write
+     id-token: write  # Required for Trusted Publishing
    ```
 
 ## Security Best Practices
 
-1. **Never Commit npm Token:**
-   - Don't add token to code or `.env` files
-   - Always use GitHub Secrets
-
-2. **Use Automation Tokens:**
-   - Don't use "Publish" tokens (too much access)
-   - Use "Automation" tokens (scoped access)
-
-3. **Rotate Tokens Regularly:**
-   - Regenerate tokens every 6-12 months
-   - Update GitHub Secret when rotating
-
-4. **Enable 2FA on npm:**
+1. **Enable 2FA on npm:**
    - Go to https://www.npmjs.com/settings/YOUR_USERNAME/profile
    - Enable two-factor authentication
    - Protects against unauthorized publishing
+
+2. **Use Trusted Publishing:**
+   - Already configured ✅
+   - No tokens to leak or expire
+   - npm verifies GitHub Actions directly
+
+3. **Review Publishing History:**
+   - Check npm package page regularly
+   - Verify all publishes are from GitHub Actions
+   - Look for the provenance badge
+
+4. **Monitor GitHub Actions:**
+   - Review workflow runs: https://github.com/PierreJanineh/TechDebtMCP/actions
+   - Check for unauthorized tag pushes
+   - Enable branch protection on `main`
 
 5. **Use Provenance:**
    - Already configured in workflow: `npm publish --provenance`
@@ -246,13 +280,13 @@ git push origin main
 Before first release, verify:
 
 - [ ] npm account exists and verified
-- [ ] npm automation token created
-- [ ] `NPM_TOKEN` secret added to GitHub
+- [ ] 2FA enabled on npm account
+- [ ] Trusted Publishing configured on npm.com
 - [ ] GitHub Actions permissions set to "Read and write"
 - [ ] Workflow file exists: `.github/workflows/publish.yml`
 - [ ] Tests pass locally: `npm test`
 - [ ] Build succeeds locally: `npm run build`
-- [ ] Package name is available on npm
+- [ ] Package name is available on npm (or first manual publish done)
 - [ ] CHANGELOG.md is ready for v1.0.0
 - [ ] README.md is complete
 
@@ -264,7 +298,7 @@ Once all checked, you're ready to release! 🚀
 
 - See [RELEASE.md](RELEASE.md) for detailed release process
 - See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines
-- Open an issue for setup problems
+- npm Trusted Publishing docs: https://docs.npmjs.com/generating-provenance-statements
 
 **Last Updated:** 2026-02-07
 

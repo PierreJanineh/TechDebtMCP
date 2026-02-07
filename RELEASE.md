@@ -17,27 +17,23 @@ This guide provides step-by-step instructions for releasing new versions of Tech
 
 - ✅ Write access to GitHub repository
 - ✅ npm account with publish permissions for `tech-debt-mcp`
-- ✅ `NPM_TOKEN` secret configured in GitHub repository
+- ✅ Trusted Publishing configured on npm.com (see NPM_SETUP.md)
 
-### Setup npm Token (First Time Only)
+### Setup Trusted Publishing (First Time Only)
 
-1. **Create npm Access Token:**
-   - Go to https://www.npmjs.com/settings/YOUR_USERNAME/tokens
-   - Click "Generate New Token" → "Automation"
-   - Copy the token (you won't see it again!)
+**No tokens or secrets needed!** npm uses Trusted Publishing (OIDC) to verify GitHub Actions.
 
-2. **Add to GitHub Secrets:**
-   - Go to repository Settings → Secrets and variables → Actions
-   - Click "New repository secret"
-   - Name: `NPM_TOKEN`
-   - Value: Paste your npm token
-   - Click "Add secret"
+1. **Configure on npm.com:**
+   - Go to https://www.npmjs.com/package/tech-debt-mcp/access
+   - Add GitHub Actions integration
+   - Repository: `PierreJanineh/TechDebtMCP`
+   - Workflow: `publish.yml`
 
-3. **Verify Setup:**
-   ```bash
-   # Check if secret is configured (you won't see the value)
-   # Go to: https://github.com/PierreJanineh/TechDebtMCP/settings/secrets/actions
-   ```
+2. **Verify Setup:**
+   - See [NPM_SETUP.md](NPM_SETUP.md) for detailed step-by-step instructions
+   - No GitHub Secrets required (Trusted Publishing handles authentication)
+
+**Benefits:** No token expiration, no secret rotation, more secure!
 
 ## Pre-Release Checklist
 
@@ -288,13 +284,15 @@ git push origin v2.0.0
 
 ### Workflow Fails: npm Authentication
 
-**Symptom:** "npm ERR! code ENEEDAUTH" or "npm ERR! need auth"
+**Symptom:** "npm ERR! 403 Forbidden" or "OIDC token verification failed"
 
 **Solution:**
-1. Verify `NPM_TOKEN` secret exists in GitHub
-2. Regenerate npm token if expired
-3. Update GitHub secret with new token
-4. Re-run the workflow (no need to recreate tag)
+1. Verify Trusted Publishing is configured on npm.com
+2. Check repository name in npm.com matches: `PierreJanineh/TechDebtMCP`
+3. Check workflow file name matches: `publish.yml`
+4. Verify `id-token: write` permission exists in workflow
+5. See [NPM_SETUP.md](NPM_SETUP.md) for configuration details
+6. Re-run the workflow (no need to recreate tag)
 
 ### npm Publish Fails: Package Already Published
 
