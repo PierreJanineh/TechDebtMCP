@@ -1,5 +1,8 @@
 # Tech Debt MCP Server
 
+[![npm version](https://img.shields.io/npm/v/tech-debt-mcp)](https://www.npmjs.com/package/tech-debt-mcp)
+[![Add to MCP](https://img.shields.io/badge/MCP-Install_Server-6f42c1)](#installation)
+
 A Model Context Protocol (MCP) server for analyzing technical debt across multiple programming languages. Designed to integrate with GitHub Copilot and other MCP-compatible tools.
 
 ## Features
@@ -14,24 +17,143 @@ A Model Context Protocol (MCP) server for analyzing technical debt across multip
 
 ## Supported Languages
 
-| Language | Extensions | Key Checks |
-|----------|------------|------------|
-| JavaScript | .js, .mjs, .cjs, .jsx | console.log, debugger, eslint-disable, eval, var usage |
-| TypeScript | .ts, .tsx, .mts, .cts | any type, @ts-ignore, non-null assertions, type assertions |
-| Python | .py, .pyw, .pyi | bare except, print statements, global usage, eval/exec |
-| Java | .java | System.out, printStackTrace, empty catch, @SuppressWarnings |
-| Swift | .swift | force unwrap (!), force cast (as!), force try, retain cycles, **SwiftUI patterns** |
-| Kotlin | .kt, .kts | !!, lateinit abuse, @Suppress, unchecked casts |
-| Objective-C | .m, .mm, .h | NSLog, retain cycles, deprecated methods, massive view controllers |
-| C++ | .cpp, .cc, .hpp, .h | raw pointers, C-style casts, goto, using namespace std |
-| C | .c, .h | malloc without free, goto, unsafe functions, null checks |
-| C# | .cs | Console.WriteLine, async void, empty catch, dispose pattern |
-| Go | .go | ignored errors, blank imports, fmt.Print, panic, global variables |
-| Rust | .rs | unwrap, expect, unsafe, allow attributes, panic, println |
-| Ruby | .rb | puts, binding.pry, rubocop disable, eval, global variables |
-| PHP | .php | var_dump, print_r, die/exit, eval, error suppression |
+| Language    | Extensions            | Key Checks                                                                         |
+| ----------- | --------------------- | ---------------------------------------------------------------------------------- |
+| JavaScript  | .js, .mjs, .cjs, .jsx | console.log, debugger, eslint-disable, eval, var usage                             |
+| TypeScript  | .ts, .tsx, .mts, .cts | any type, @ts-ignore, non-null assertions, type assertions                         |
+| Python      | .py, .pyw, .pyi       | bare except, print statements, global usage, eval/exec                             |
+| Java        | .java                 | System.out, printStackTrace, empty catch, @SuppressWarnings                        |
+| Swift       | .swift                | force unwrap (!), force cast (as!), force try, retain cycles, **SwiftUI patterns** |
+| Kotlin      | .kt, .kts             | !!, lateinit abuse, @Suppress, unchecked casts                                     |
+| Objective-C | .m, .mm, .h           | NSLog, retain cycles, deprecated methods, massive view controllers                 |
+| C++         | .cpp, .cc, .hpp, .h   | raw pointers, C-style casts, goto, using namespace std                             |
+| C           | .c, .h                | malloc without free, goto, unsafe functions, null checks                           |
+| C#          | .cs                   | Console.WriteLine, async void, empty catch, dispose pattern                        |
+| Go          | .go                   | ignored errors, blank imports, fmt.Print, panic, global variables                  |
+| Rust        | .rs                   | unwrap, expect, unsafe, allow attributes, panic, println                           |
+| Ruby        | .rb                   | puts, binding.pry, rubocop disable, eval, global variables                         |
+| PHP         | .php                  | var_dump, print_r, die/exit, eval, error suppression                               |
 
 ## Installation
+
+<details>
+<summary><img src="https://img.shields.io/badge/VS_Code-Install%20Server-007ACC?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTIzLjE1IDIuNTg3IDE4LjIxLjIxYTEuNDk0IDEuNDk0IDAgMCAwLTEuNzA1LjI5bC05LjQ2IDguNjMtNC4xMi0zLjEyOGEuOTk5Ljk5OSAwIDAgMC0xLjI3Ni4wNTdMLjMyNyA3LjI2MUExIDEgMCAwIDAgMCA4LjA2OGwzLjU5MiAzLjI5M0wwIDEzLjYxNmExIDEgMCAwIDAgLjMyNy44MDdsMS4zMTEgMS4zMTFhLjk5OS45OTkgMCAwIDAgMS4yNzYuMDU3bDQuMTItMy4xMjggOS40NiA4LjYzYTEuNDkyIDEuNDkyIDAgMCAwIDEuNzA0LjI5bDQuOTQyLTIuMzc3QTEuNSAxLjUgMCAwIDAgMjQgMTguMDE0VjUuOTg2YTEuNSAxLjUgMCAwIDAtLjg1LTEuMzk5ek0xOC41IDE2LjEyIDkuNDEgMTEuMzYxbDkuMDktNC43NTh6IiBmaWxsPSIjZmZmIi8+PC9zdmc+" alt="VS Code: Install Server"></summary>
+
+**[One-Click Install](https://insiders.vscode.dev/redirect/mcp/install?name=tech-debt-mcp&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22tech-debt-mcp%22%5D%7D)**
+
+**VS Code** (via Terminal):
+
+```sh
+code --add-mcp '{"name":"tech-debt-mcp","command":"npx","args":["-y","tech-debt-mcp"]}'
+```
+
+</details>
+
+<details>
+<summary><img src="https://img.shields.io/badge/Cursor-Install%20Server-26251E?logo=cursor&logoColor=F7F7F4" alt="Cursor: Install Server"></summary>
+
+**<a href="cursor://anysphere.cursor-deeplink/mcp/install?name=tech-debt-mcp&config=eyJjb21tYW5kIjoibnB4IC15IHRlY2gtZGVidC1tY3AifQ==">One-Click Install</a>**
+
+**Cursor** (via Terminal):
+
+```sh
+cursor --add-mcp '{"name":"tech-debt-mcp","command":"npx -y tech-debt-mcp"}'
+```
+
+</details>
+
+<details>
+<summary><img src="https://img.shields.io/badge/Claude-Install%20Server-d97757?logo=Claude&logoColor=f5f5f5" alt="Claude: Install Server"></summary>
+
+**Claude Code** (via Terminal):
+
+```sh
+claude mcp add tech-debt-mcp -- npx -y tech-debt-mcp
+```
+
+**Claude Desktop** — add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "tech-debt-mcp": {
+      "command": "npx",
+      "args": ["-y", "tech-debt-mcp"]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><img src="https://img.shields.io/badge/Windsurf-Install%20Server-0B100F?logo=Windsurf&logoColor=f5f5f5" alt="Windsurf: Install Server"></summary>
+
+Add to your Windsurf MCP configuration (`~/.codeium/windsurf/mcp_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "tech-debt-mcp": {
+      "command": "npx",
+      "args": ["-y", "tech-debt-mcp"]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><img src="https://img.shields.io/badge/JetBrains-Install%20Server-FF0007?logo=jetbrains&logoColor=f5f5f5" alt="JetBrains: Install Server"></summary>
+
+Via **AI Assistant** — open **Settings > Tools > AI Assistant > Model Context Protocol (MCP)**, click **+**, select **As JSON**, and paste:
+
+```json
+{
+  "mcpServers": {
+    "tech-debt-mcp": {
+      "command": "npx",
+      "args": ["-y", "tech-debt-mcp"]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><img src="https://img.shields.io/badge/Xcode-Install%20Server-147EFB?logo=xcode&logoColor=f5f5f5" alt="Xcode: Install Server"></summary>
+
+Via **GitHub Copilot for Xcode** — open Settings > MCP tab > Edit Config (`mcp.json`):
+
+```json
+{
+  "servers": {
+    "tech-debt-mcp": {
+      "command": "npx",
+      "args": ["-y", "tech-debt-mcp"]
+    }
+  }
+}
+```
+
+</details>
+
+### Manual Setup
+
+Add to your MCP client config:
+
+```json
+{
+  "mcpServers": {
+    "tech-debt-mcp": {
+      "command": "npx",
+      "args": ["-y", "tech-debt-mcp"]
+    }
+  }
+}
+```
 
 ### Option 1: From npm (Recommended)
 
@@ -42,12 +164,14 @@ npm install -g tech-debt-mcp
 ### Option 2: From GitHub Packages
 
 Create or update `~/.npmrc`:
+
 ```
 @PierreJanineh:registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
 ```
 
 Then install:
+
 ```bash
 npm install -g @PierreJanineh/tech-debt-mcp
 ```
@@ -78,29 +202,14 @@ Or for development:
 npm run dev
 ```
 
-## Usage with GitHub Copilot
-
-After installing globally, add to your MCP settings configuration:
-
-```json
-{
-  "mcpServers": {
-    "tech-debt": {
-      "command": "tech-debt-mcp",
-      "args": []
-    }
-  }
-}
-```
-
-The MCP server will start on stdio and be ready to communicate with GitHub Copilot or other MCP clients.
-
 ## Available Tools
 
 ### `analyze_project`
+
 Analyze an entire project for technical debt.
 
 **Parameters:**
+
 - `path` (required): Absolute path to the project root
 - `languages` (optional): Array of languages to analyze
 - `categories` (optional): Filter by debt categories
@@ -108,25 +217,32 @@ Analyze an entire project for technical debt.
 - `maxFiles` (optional): Maximum files to analyze
 
 ### `analyze_file`
+
 Analyze a single file for technical debt.
 
 **Parameters:**
+
 - `path` (required): Absolute path to the file
 
 ### `get_debt_summary`
+
 Get a quick summary of technical debt in a project.
 
 **Parameters:**
+
 - `path` (required): Absolute path to the project root
 
 ### `get_sqale_metrics`
+
 Get SQALE technical debt metrics including remediation time, debt ratio, and rating.
 
 **Parameters:**
+
 - `path` (required): Absolute path to the project root
 - `developmentTime` (optional): Estimated development time in hours (for debt ratio calculation)
 
 **Output includes:**
+
 - SQALE rating (A-E) with star visualization
 - Total remediation time in human-readable format
 - Debt ratio (if development time provided)
@@ -134,11 +250,13 @@ Get SQALE technical debt metrics including remediation time, debt ratio, and rat
 - Breakdown by category (code-quality, security, maintainability, etc.)
 
 **Example:**
+
 ```bash
 get_sqale_metrics --path=/path/to/project --developmentTime=2080
 ```
 
 Returns:
+
 ```
 # SQALE Technical Debt Metrics
 
@@ -156,33 +274,42 @@ Returns:
 ```
 
 ### `list_supported_languages`
+
 List all supported programming languages with their checks.
 
 ### `get_recommendations`
+
 Get prioritized recommendations for addressing technical debt.
 
 **Parameters:**
+
 - `path` (required): Absolute path to the project root
 - `limit` (optional): Maximum recommendations to return
 
 ### `get_issues_by_severity`
+
 Get all issues of a specific severity level.
 
 **Parameters:**
+
 - `path` (required): Absolute path to the project root
 - `severity` (required): low, medium, high, or critical
 
 ### `get_issues_by_category`
+
 Get all issues of a specific category.
 
 **Parameters:**
+
 - `path` (required): Absolute path to the project root
 - `category` (required): dependency, code-quality, architecture, documentation, testing, security, performance, or maintainability
 
 ### `add_custom_rule`
+
 Add a custom pattern-based tech debt rule.
 
 **Parameters:**
+
 - `id` (required): Unique identifier for the rule
 - `pattern` (required): Regex pattern to match
 - `message` (required): Issue title/message
@@ -193,28 +320,35 @@ Add a custom pattern-based tech debt rule.
 - `flags` (optional): Regex flags (g, i, m, s, etc.)
 
 ### `remove_custom_rule`
+
 Remove a custom rule by ID.
 
 **Parameters:**
+
 - `id` (required): ID of the rule to remove
 
 ### `list_custom_rules`
+
 List all active custom rules with their statistics.
 
 ### `execute_custom_rules`
+
 Execute all custom rules against code or a file.
 
 **Parameters:**
+
 - `path` (optional): Path to the file to analyze
 - `code` (optional): Code content to analyze directly
 - `language` (optional): Programming language for filtering rules
 
-*Note: Either `path` or `code` must be provided.*
+_Note: Either `path` or `code` must be provided._
 
 ### `validate_custom_pattern`
+
 Validate a custom pattern before adding it as a rule.
 
 **Parameters:**
+
 - `id` (required): Unique identifier for the rule
 - `pattern` (required): Regex pattern to validate
 - `message` (required): Issue title/message
@@ -226,6 +360,7 @@ Validate a custom pattern before adding it as a rule.
 TechDebt MCP uses SQALE (Software Quality Assessment based on Lifecycle Expectations) methodology to quantify technical debt:
 
 ### Rating System (A-E Scale)
+
 - **A**: ≤5% debt ratio (Excellent)
 - **B**: 6-10% debt ratio (Good)
 - **C**: 11-20% debt ratio (Fair)
@@ -233,6 +368,7 @@ TechDebt MCP uses SQALE (Software Quality Assessment based on Lifecycle Expectat
 - **E**: >50% debt ratio (Critical)
 
 ### Metrics Provided
+
 - **Remediation Time**: Estimated time to fix all issues
 - **Debt Ratio**: Technical debt as percentage of development time
 - **Formatted Time**: Human-readable time estimates (e.g., "2h 30m", "3d 4h")
@@ -240,6 +376,7 @@ TechDebt MCP uses SQALE (Software Quality Assessment based on Lifecycle Expectat
 - **Severity Breakdown**: Remediation time per severity level
 
 ### Effort-to-Time Mapping
+
 - **trivial**: ≤5 minutes
 - **small**: 5-30 minutes
 - **medium**: 30 min - 2 hours
@@ -401,6 +538,7 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 ## Releases
 
 Tech Debt MCP uses automated releases via GitHub Actions:
+
 - **Latest:** [![npm version](https://img.shields.io/npm/v/tech-debt-mcp.svg)](https://www.npmjs.com/package/tech-debt-mcp)
 - **Releases:** [GitHub Releases](https://github.com/PierreJanineh/TechDebtMCP/releases)
 - **Roadmap:** See [ROADMAP.md](ROADMAP.md) for planned features
