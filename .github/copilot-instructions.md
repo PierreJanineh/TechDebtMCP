@@ -225,28 +225,35 @@ Use conventional commits:
 
 1. Create branch from `develop`
 2. Make changes and write tests
-3. **Verify tests pass** — Run `npm test` and check output for:
+3. **Update documentation** — Update README.md if:
+   - Adding new features
+   - Changing existing behavior
+   - Adding new MCP tools
+   - Adding new checks or patterns
+   - Updating configuration options
+4. **Verify tests pass** — Run `npm test` and check output for:
    - All `PASS` (no `FAIL`)
    - `✓` for each test (no `✕`)
    - `Test Suites: X passed, X total`
    - `Tests: Y passed, Y total`
-4. **Fix any failing tests BEFORE committing** — Do not proceed if any tests fail
-5. **Verify build succeeds** — Run `npm run build` with no errors
-6. Create PR targeting `develop`
-7. **Wait for Copilot review** — GitHub will automatically run Copilot code review
+5. **Fix any failing tests BEFORE committing** — Do not proceed if any tests fail
+6. **Verify build succeeds** — Run `npm run build` with no errors
+7. Create PR targeting `develop`
+8. **Wait for Copilot review** — GitHub will automatically run Copilot code review
    - Wait 30-60 seconds for Copilot to analyze the PR
    - Check the PR page for review comments
    - Copilot will flag potential issues, improvements, and edge cases
-8. **Address Copilot suggestions** — For each suggestion:
+9. **Address Copilot suggestions** — For each suggestion:
    - Read the suggestion carefully
    - Decide if it's relevant (some suggestions may not apply to your code)
    - If relevant: make the fix, commit, and push
    - If not relevant: add a comment explaining why you're skipping it
    - Re-run tests after any changes: `npm test`
    - Verify build still succeeds: `npm run build`
-9. **Merge after Copilot review is complete** — Once all suggestions are addressed:
+10. **Merge after Copilot review is complete** — Once all suggestions are addressed:
    - All tests must still pass
    - Build must still succeed
+   - README must be updated if applicable
    - All Copilot suggestions must be resolved or documented
    - Use squash merge for clean git history
 
@@ -287,6 +294,7 @@ Example response to Copilot:
 - ❌ Merge a PR without checking Copilot review
 - ❌ Merge a PR with failing tests
 - ❌ Merge a PR with unresolved Copilot suggestions (without comment explaining why)
+- ❌ Merge a PR without updating README if features changed
 
 **ALWAYS do these:**
 - ✅ Run `npm test` BEFORE staging changes
@@ -297,4 +305,5 @@ Example response to Copilot:
 - ✅ Address all relevant Copilot suggestions before merging
 - ✅ Document why you're skipping irrelevant suggestions
 - ✅ Re-test after addressing Copilot suggestions
+- ✅ Update README.md for new features/changes
 - ✅ Read and address Copilot review suggestions

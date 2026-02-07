@@ -1,0 +1,327 @@
+import { CustomRulesEngine } from '../customRulesEngine.js';
+import { CustomPattern } from '../../types/index.js';
+
+describe('CustomRulesEngine', () => {
+  let engine: CustomRulesEngine;
+
+  beforeEach(() => {
+    engine = new CustomRulesEngine();
+  });
+
+  describe('Rule Management', () => {
+    it('adds a custom rule', () => {
+      const pattern: CustomPattern = {
+        id: 'test-rule',
+        pattern: 'console\\.log',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Console log found',
+      };
+
+      engine.addRule(pattern);
+      expect(engine.hasRule('test-rule')).toBe(true);
+    });
+
+    it('retrieves a specific rule', () => {
+      const pattern: CustomPattern = {
+        id: 'test-rule',
+        pattern: 'console\\.log',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Console log found',
+      };
+
+      engine.addRule(pattern);
+      const retrieved = engine.getRule('test-rule');
+      expect(retrieved).toEqual(pattern);
+    });
+
+    it('removes a rule', () => {
+      const pattern: CustomPattern = {
+        id: 'test-rule',
+        pattern: 'console\\.log',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Console log found',
+      };
+
+      engine.addRule(pattern);
+      expect(engine.hasRule('test-rule')).toBe(true);
+
+      const removed = engine.removeRule('test-rule');
+      expect(removed).toBe(true);
+      expect(engine.hasRule('test-rule')).toBe(false);
+    });
+
+    it('returns false when removing non-existent rule', () => {
+      const removed = engine.removeRule('non-existent');
+      expect(removed).toBe(false);
+    });
+
+    it('gets all rules', () => {
+      const pattern1: CustomPattern = {
+        id: 'rule-1',
+        pattern: 'console\\.log',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Console log',
+      };
+
+      const pattern2: CustomPattern = {
+        id: 'rule-2',
+        pattern: 'debugger',
+        severity: 'high',
+        category: 'code-quality',
+        message: 'Debugger statement',
+      };
+
+      engine.addRule(pattern1);
+      engine.addRule(pattern2);
+
+      const rules = engine.getAllRules();
+      expect(rules).toHaveLength(2);
+    });
+
+    it('clears all rules', () => {
+      engine.addRule({
+        id: 'rule-1',
+        pattern: 'test',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Test',
+      });
+
+      expect(engine.getAllRules()).toHaveLength(1);
+      engine.clearRules();
+      expect(engine.getAllRules()).toHaveLength(0);
+    });
+  });
+
+  describe('Pattern Execution', () => {
+    it('detects pattern matches in code', () => {
+      const pattern: CustomPattern = {
+        id: 'console-log',
+        pattern: 'console\\.log',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Console log found',
+      };
+
+      engine.addRule(pattern);
+      const code = 'console.log("test");';
+      const issues = engine.executeRules('test.ts', code);
+
+      expect(issues).toHaveLength(1);
+      expect(issues[0].rule).toBe('console-log');
+      expect(issues[0].line).toBe(1);
+    });
+
+    it('detects multiple pattern matches', () => {
+      const pattern: CustomPattern = {
+        id: 'console-log',
+        pattern: 'console\\.log',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Console log found',
+      };
+
+      engine.addRule(pattern);
+      const code = `console.log("test1");
+console.log("test2");
+console.log("test3");`;
+      const issues = engine.executeRules('test.ts', code);
+
+      expect(issues).toHaveLength(3);
+      expect(issues[0].line).toBe(1);
+      expect(issues[1].line).toBe(2);
+      expect(issues[2].line).toBe(3);
+    });
+
+    it('respects language filter', () => {
+      const pattern: CustomPattern = {
+        id: 'ts-only-rule',
+        pattern: 'any',
+        severity: 'medium',
+        category: 'code-quality',
+        message: 'Any type found',
+        languages: ['typescript'],
+      };
+
+      engine.addRule(pattern);
+      const code = 'const x: any = 5;';
+
+      // Should match when language is TypeScript
+      const tsIssues = engine.executeRules('test.ts', code, 'typescript');
+      expect(tsIssues).toHaveLength(1);
+
+      // Should not match for other languages
+      const jsIssues = engine.executeRules('test.js', code, 'javascript');
+      expect(jsIssues).toHaveLength(0);
+    });
+
+    it('handles regex flags', () => {
+      const pattern: CustomPattern = {
+        id: 'case-insensitive',
+        pattern: 'TODO',
+        flags: 'i',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'TODO comment',
+      };
+
+      engine.addRule(pattern);
+      const code = `// todo: fix this
+// TODO: fix that
+// Todo: fix this too`;
+      const issues = engine.executeRules('test.ts', code);
+
+      expect(issues).toHaveLength(3);
+    });
+  });
+
+  describe('Pattern Validation', () => {
+    it('validates valid pattern', () => {
+      const pattern: CustomPattern = {
+        id: 'test-rule',
+        pattern: 'console\\.log',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Console log found',
+      };
+
+      const validation = CustomRulesEngine.validatePattern(pattern);
+      expect(validation.valid).toBe(true);
+      expect(validation.errors).toHaveLength(0);
+    });
+
+    it('rejects pattern with invalid regex', () => {
+      const pattern: CustomPattern = {
+        id: 'invalid-rule',
+        pattern: '[invalid(regex',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Test',
+      };
+
+      const validation = CustomRulesEngine.validatePattern(pattern);
+      expect(validation.valid).toBe(false);
+      expect(validation.errors.length).toBeGreaterThan(0);
+    });
+
+    it('rejects pattern with missing required fields', () => {
+      const pattern: Partial<CustomPattern> = {
+        id: 'test',
+        // Missing pattern, message, severity, category
+      };
+
+      const validation = CustomRulesEngine.validatePattern(pattern as CustomPattern);
+      expect(validation.valid).toBe(false);
+      expect(validation.errors.length).toBeGreaterThanOrEqual(3);
+    });
+
+    it('rejects pattern with invalid severity', () => {
+      const pattern: CustomPattern = {
+        id: 'test-rule',
+        pattern: 'test',
+        severity: 'invalid' as any,
+        category: 'code-quality',
+        message: 'Test',
+      };
+
+      const validation = CustomRulesEngine.validatePattern(pattern);
+      expect(validation.valid).toBe(false);
+    });
+  });
+
+  describe('Helper Methods', () => {
+    it('creates simple pattern', () => {
+      const pattern = CustomRulesEngine.createSimplePattern(
+        'test-id',
+        'test.*pattern',
+        'Test message',
+        'high',
+        'security',
+        'Fix this'
+      );
+
+      expect(pattern.id).toBe('test-id');
+      expect(pattern.pattern).toBe('test.*pattern');
+      expect(pattern.message).toBe('Test message');
+      expect(pattern.severity).toBe('high');
+      expect(pattern.category).toBe('security');
+      expect(pattern.suggestion).toBe('Fix this');
+    });
+
+    it('calculates rule statistics', () => {
+      engine.addRule({
+        id: 'rule-1',
+        pattern: 'test',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Test 1',
+      });
+
+      engine.addRule({
+        id: 'rule-2',
+        pattern: 'test',
+        severity: 'high',
+        category: 'security',
+        message: 'Test 2',
+      });
+
+      const stats = engine.getRuleStats();
+      expect(stats.totalRules).toBe(2);
+      expect(stats.bySeverity.low).toBe(1);
+      expect(stats.bySeverity.high).toBe(1);
+      expect(stats.byCategory['code-quality']).toBe(1);
+      expect(stats.byCategory.security).toBe(1);
+    });
+  });
+
+  describe('Constructor', () => {
+    it('initializes with patterns', () => {
+      const patterns: CustomPattern[] = [
+        {
+          id: 'rule-1',
+          pattern: 'console\\.log',
+          severity: 'low',
+          category: 'code-quality',
+          message: 'Console log',
+        },
+        {
+          id: 'rule-2',
+          pattern: 'debugger',
+          severity: 'high',
+          category: 'code-quality',
+          message: 'Debugger',
+        },
+      ];
+
+      const customEngine = new CustomRulesEngine(patterns);
+      expect(customEngine.getAllRules()).toHaveLength(2);
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('handles invalid regex gracefully', () => {
+      const pattern: CustomPattern = {
+        id: 'bad-rule',
+        pattern: '[invalid',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Test',
+      };
+
+      engine.addRule(pattern);
+      // Should not throw, just skip the invalid rule
+      const issues = engine.executeRules('test.ts', 'const x = 5;');
+      expect(issues).toHaveLength(0);
+    });
+
+    it('returns empty array when no rules exist', () => {
+      const issues = engine.executeRules('test.ts', 'const x = 5;');
+      expect(issues).toEqual([]);
+    });
+  });
+});
+
