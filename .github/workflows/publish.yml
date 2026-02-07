@@ -24,6 +24,7 @@ jobs:
         with:
           node-version: '18'
           registry-url: 'https://registry.npmjs.org'
+          # Note: NODE_AUTH_TOKEN is set via env in publish step
 
       - name: Install dependencies
         run: npm ci
@@ -59,7 +60,10 @@ jobs:
 
       - name: Publish to npm with provenance
         run: npm publish --provenance --access public
-        # Note: No NODE_AUTH_TOKEN needed - npm uses Trusted Publishing (OIDC) automatically
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # NPM_TOKEN must be configured in GitHub repository secrets
+          # Get token from: https://www.npmjs.com/settings/YOUR_USERNAME/tokens
 
       - name: Publish to GitHub Packages
         run: npm publish
