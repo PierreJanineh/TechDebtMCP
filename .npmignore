@@ -1,0 +1,32 @@
+# Source files
+src/
+__tests__/
+*.test.ts
+
+# Configuration files
+tsconfig.json
+jest.config.js
+
+# Git and GitHub
+.git/
+.github/
+.gitignore
+
+# Development files
+.vscode/
+.idea/
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/
+
+# Documentation (keep README.md)
+CONTRIBUTING.md
+ARCHITECTURE.md
+
+# Temporary files
+*.tmp
+*.swp
+*~
+

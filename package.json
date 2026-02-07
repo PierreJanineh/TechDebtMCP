@@ -18,13 +18,29 @@
   },
   "keywords": [
     "mcp",
+    "model-context-protocol",
     "tech-debt",
+    "technical-debt",
     "code-analysis",
+    "static-analysis",
     "copilot",
-    "static-analysis"
+    "code-quality",
+    "sqale",
+    "typescript",
+    "javascript",
+    "python",
+    "java"
   ],
-  "author": "",
+  "author": "Pierre Janineh",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PierreJanineh/TechDebtMCP.git"
+  },
+  "homepage": "https://github.com/PierreJanineh/TechDebtMCP#readme",
+  "bugs": {
+    "url": "https://github.com/PierreJanineh/TechDebtMCP/issues"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "glob": "^10.3.10",
