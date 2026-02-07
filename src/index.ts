@@ -253,20 +253,24 @@ class TechDebtServer {
           inputSchema: {
             type: 'object',
             properties: {
-              filePath: {
+              path: {
                 type: 'string',
                 description: 'Path to the file to analyze',
               },
               code: {
                 type: 'string',
-                description: 'Optional: code content to analyze (if not provided, reads from filePath)',
+                description: 'Optional: code content to analyze (if not provided, reads from path)',
               },
               language: {
                 type: 'string',
                 description: 'Optional: programming language for filtering rules',
               },
             },
-            required: ['filePath'],
+            required: [],
+            anyOf: [
+              { required: ['path'] },
+              { required: ['code'] },
+            ],
           },
         },
         {
@@ -625,7 +629,7 @@ ${r.actionItems.map(a => `- ${a}`).join('\n')}
         content: [
           {
             type: 'text',
-            text: `❌ Pattern validation failed:\n${validation.errors.join('\n')}`,
+            text: `❌ Pattern validation failed:\n${validation.errors.map(e => `- ${e}`).join('\n')}`,
           },
         ],
       };
@@ -695,19 +699,27 @@ ${r.actionItems.map(a => `- ${a}`).join('\n')}
   }
 
   private async handleExecuteCustomRules(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
-    const filePath = args.filePath as string;
+    const path = args.path as string | undefined;
     let code = args.code as string | undefined;
     const language = args.language as string | undefined;
 
-    if (!code) {
-      if (!await fileExists(filePath)) {
-        return {
-          content: [{ type: 'text', text: `❌ File not found: ${filePath}` }],
-        };
-      }
-      code = await readFile(filePath);
+    // Either path or code must be provided
+    if (!path && !code) {
+      return {
+        content: [{ type: 'text', text: '❌ Either path or code must be provided' }],
+      };
     }
 
+    if (!code) {
+      if (!await fileExists(path!)) {
+        return {
+          content: [{ type: 'text', text: `❌ File not found: ${path}` }],
+        };
+      }
+      code = await readFile(path!);
+    }
+
+    const filePath = path || 'inline-code';
     const issues = this.customRulesEngine.executeRules(filePath, code, language);
 
     if (issues.length === 0) {

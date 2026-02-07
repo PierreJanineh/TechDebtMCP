@@ -1,4 +1,4 @@
-import { TechDebtIssue, CustomPattern, Severity, DebtCategory, Effort } from '../types/index.js';
+import { TechDebtIssue, CustomPattern, Severity, DebtCategory } from '../types/index.js';
 
 /**
  * Custom Rules Engine
@@ -68,8 +68,8 @@ export class CustomRulesEngine {
     const issues: TechDebtIssue[] = [];
 
     this.rules.forEach(pattern => {
-      // Skip if language filter is specified and doesn't match
-      if (pattern.languages && language && !pattern.languages.includes(language as any)) {
+      // Skip if language filter is specified and either language is missing or doesn't match
+      if (pattern.languages && (!language || !pattern.languages.includes(language as any))) {
         return;
       }
 
@@ -125,13 +125,15 @@ export class CustomRulesEngine {
         } else {
           // Non-global flag: match once per line
           regex.lastIndex = 0;
-          if (regex.test(line)) {
+          const match = regex.exec(line);
+          if (match) {
             issues.push({
               id: `${pattern.id}-${lineNum + 1}`,
               category: pattern.category,
               severity: pattern.severity,
               file: filePath,
               line: lineNum + 1,
+              column: match.index,
               title: pattern.message,
               description: line.trim(),
               suggestion: pattern.suggestion || `Review and fix according to rule: ${pattern.id}`,
