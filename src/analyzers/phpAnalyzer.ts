@@ -64,7 +64,7 @@ export class PhpAnalyzer extends BaseAnalyzer {
     }));
 
     // Error suppression operator (@)
-    issues.push(...this.checkPattern(filePath, content, /@\s*\$\w+|@\s*\w+\(/g, {
+    issues.push(...this.checkPattern(filePath, content, /(?:@\s*\$\w+|@\s*\w+\()/g, {
       category: 'code-quality',
       severity: 'medium',
       title: 'Error suppression operator (@) found',

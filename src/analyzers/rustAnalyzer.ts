@@ -51,19 +51,7 @@ export class RustAnalyzer extends BaseAnalyzer {
       tags: ['safety', 'security'],
     }));
 
-    // #[allow(...)] attributes
-    issues.push(...this.checkPattern(filePath, content, /#\[allow\s*\([^)]+\)\]/g, {
-      category: 'code-quality',
-      severity: 'medium',
-      title: 'allow attribute found',
-      description: 'Suppressing compiler warnings may hide potential issues',
-      suggestion: 'Fix the underlying issue or add a detailed comment explaining the suppression',
-      effort: 'small',
-      rule: 'allow-attribute',
-      tags: ['warnings', 'quality'],
-    }));
-
-    // #[allow(clippy::...)] attributes
+    // #[allow(clippy::...)] attributes (check first to avoid double reporting)
     issues.push(...this.checkPattern(filePath, content, /#\[allow\(clippy::[^)]+\)\]/g, {
       category: 'code-quality',
       severity: 'medium',
@@ -73,6 +61,18 @@ export class RustAnalyzer extends BaseAnalyzer {
       effort: 'small',
       rule: 'clippy-allow',
       tags: ['linting', 'quality'],
+    }));
+
+    // #[allow(...)] attributes (excluding clippy to avoid double reporting)
+    issues.push(...this.checkPattern(filePath, content, /#\[allow\s*\((?!clippy::)[^)]+\)\]/g, {
+      category: 'code-quality',
+      severity: 'medium',
+      title: 'allow attribute found',
+      description: 'Suppressing compiler warnings may hide potential issues',
+      suggestion: 'Fix the underlying issue or add a detailed comment explaining the suppression',
+      effort: 'small',
+      rule: 'allow-attribute',
+      tags: ['warnings', 'quality'],
     }));
 
     // panic! macro

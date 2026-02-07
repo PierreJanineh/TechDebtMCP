@@ -27,8 +27,8 @@ export class GoAnalyzer extends BaseAnalyzer {
       tags: ['error-handling', 'quality'],
     }));
 
-    // Blank imports (e.g., import _ "pkg")
-    issues.push(...this.checkPattern(filePath, content, /import\s+_\s+"[^"]*"/g, {
+    // Blank imports (e.g., import _ "pkg" or import blocks with _ "pkg")
+    issues.push(...this.checkPattern(filePath, content, /(?:import\s+)?\s*_\s+"[^"]*"/gm, {
       category: 'code-quality',
       severity: 'low',
       title: 'Blank import',
