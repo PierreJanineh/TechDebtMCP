@@ -61,6 +61,12 @@ jobs:
         run: npm publish --provenance --access public
         # Note: No NODE_AUTH_TOKEN needed - npm uses Trusted Publishing (OIDC) automatically
 
+      - name: Publish to GitHub Packages
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_REGISTRY: https://npm.pkg.github.com
+
       - name: Create GitHub Release
         uses: actions/create-release@v1
         env:
@@ -71,15 +77,29 @@ jobs:
           body: |
             ## Tech Debt MCP v${{ steps.version.outputs.VERSION }}
             
-            ### Installation
+            ### Installation Options
+            
+            **From npm (recommended):**
             ```bash
             npm install -g tech-debt-mcp@${{ steps.version.outputs.VERSION }}
             ```
             
-            ### NPM Package
-            https://www.npmjs.com/package/tech-debt-mcp/v/${{ steps.version.outputs.VERSION }}
+            **From GitHub Packages:**
+            First, create a `.npmrc` file in your home directory:
+            ```
+            @PierreJanineh:registry=https://npm.pkg.github.com
+            //npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
+            ```
+            Then install:
+            ```bash
+            npm install -g @PierreJanineh/tech-debt-mcp@${{ steps.version.outputs.VERSION }}
+            ```
             
-            ### Changes
+            ### Package Links
+            - **npm Registry:** https://www.npmjs.com/package/tech-debt-mcp/v/${{ steps.version.outputs.VERSION }}
+            - **GitHub Packages:** https://github.com/PierreJanineh/TechDebtMCP/packages
+            
+            ### Documentation
             See [CHANGELOG.md](https://github.com/PierreJanineh/TechDebtMCP/blob/v${{ steps.version.outputs.VERSION }}/CHANGELOG.md) for detailed changes.
           draft: false
           prerelease: false

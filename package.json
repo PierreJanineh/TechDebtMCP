@@ -37,6 +37,9 @@
     "type": "git",
     "url": "https://github.com/PierreJanineh/TechDebtMCP.git"
   },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "homepage": "https://github.com/PierreJanineh/TechDebtMCP#readme",
   "bugs": {
     "url": "https://github.com/PierreJanineh/TechDebtMCP/issues"

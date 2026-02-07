@@ -33,25 +33,67 @@ A Model Context Protocol (MCP) server for analyzing technical debt across multip
 
 ## Installation
 
+### Option 1: From npm (Recommended)
+
 ```bash
+npm install -g tech-debt-mcp
+```
+
+### Option 2: From GitHub Packages
+
+Create or update `~/.npmrc`:
+```
+@PierreJanineh:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
+```
+
+Then install:
+```bash
+npm install -g @PierreJanineh/tech-debt-mcp
+```
+
+For detailed setup instructions, see [GITHUB_PACKAGES.md](./GITHUB_PACKAGES.md).
+
+### Option 3: Build from Source
+
+```bash
+git clone https://github.com/PierreJanineh/TechDebtMCP.git
+cd TechDebtMCP
 npm install
 npm run build
+npm link  # Makes available globally as 'tech-debt-mcp'
+```
+
+## Usage
+
+Start the MCP server:
+
+```bash
+tech-debt-mcp
+```
+
+Or for development:
+
+```bash
+npm run dev
 ```
 
 ## Usage with GitHub Copilot
 
-Add to your MCP settings:
+After installing globally, add to your MCP settings configuration:
 
 ```json
 {
   "mcpServers": {
     "tech-debt": {
-      "command": "node",
-      "args": ["/path/to/TechDebtMCP/dist/index.js"]
+      "command": "tech-debt-mcp",
+      "args": []
     }
   }
 }
 ```
+
+The MCP server will start on stdio and be ready to communicate with GitHub Copilot or other MCP clients.
 
 ## Available Tools
 
