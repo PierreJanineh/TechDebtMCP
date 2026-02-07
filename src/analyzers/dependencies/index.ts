@@ -1,0 +1,93 @@
+import { BaseDependencyParser, ParsedDependency } from './baseParser.js';
+
+/**
+ * Factory function to create a dependency parser for a given file
+ * @param filePath The path to the file
+ * @returns A dependency parser if one can handle the file, null otherwise
+ */
+export function createDependencyParser(filePath: string): BaseDependencyParser | null {
+  const fileName = filePath.split('/').pop() || '';
+
+  // Placeholder for future parsers
+  // Will be populated as parsers are implemented
+  const parserMap: Record<string, BaseDependencyParser> = {
+    // 'package.json': new NpmParser(),
+    // 'requirements.txt': new PipParser(),
+    // ... other parsers
+  };
+
+  // Check file extension/name patterns
+  if (fileName in parserMap) {
+    return parserMap[fileName];
+  }
+
+  // Check for build files
+  if (fileName === 'pom.xml' || fileName === 'build.gradle' || fileName === 'build.gradle.kts') {
+    // return new GradleParser();
+  }
+
+  if (fileName === 'Cargo.toml') {
+    // return new CargoParser();
+  }
+
+  if (fileName === 'go.mod') {
+    // return new GoModParser();
+  }
+
+  if (fileName === 'composer.json') {
+    // return new ComposerParser();
+  }
+
+  if (fileName === 'Gemfile') {
+    // return new BundlerParser();
+  }
+
+  if (fileName === 'Package.swift' || fileName === 'Podfile') {
+    // return new SwiftParser();
+  }
+
+  if (fileName === 'packages.config' || fileName.endsWith('.csproj')) {
+    // return new NugetParser();
+  }
+
+  if (fileName === 'CMakeLists.txt' || fileName === 'conanfile.txt' || fileName === 'vcpkg.json') {
+    // return new CppParser();
+  }
+
+  return null;
+}
+
+/**
+ * Get all available dependency parsers
+ * @returns An array of all dependency parser instances
+ */
+export function getAllParsers(): BaseDependencyParser[] {
+  // Placeholder for future parsers
+  // Will return instances of all implemented parsers
+  const parsers: BaseDependencyParser[] = [
+    // new NpmParser(),
+    // new PipParser(),
+    // new GradleParser(),
+    // ... other parsers
+  ];
+
+  return parsers;
+}
+
+/**
+ * Get package file names from all parsers
+ * @returns An array of all package file names
+ */
+export function getAllPackageFileNames(): string[] {
+  const fileNames = new Set<string>();
+
+  for (const parser of getAllParsers()) {
+    parser.getPackageFileNames().forEach(name => fileNames.add(name));
+  }
+
+  return Array.from(fileNames);
+}
+
+// Re-export types and base classes
+export { BaseDependencyParser, ParsedDependency };
+

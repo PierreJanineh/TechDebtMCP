@@ -189,23 +189,68 @@ If ANY test fails:
 
 ### Writing New Tests
 
+**CRITICAL: Follow Test-Driven Development (TDD) - Write Tests FIRST**
+
 When implementing features:
+1. ✅ **Write tests FIRST** (before any implementation code)
+2. ✅ Create test file alongside source in `__tests__/` folder
+3. ✅ Define test cases that describe the expected behavior
+4. ✅ THEN implement the feature to make tests pass
+5. ✅ Run tests to verify: `npm test`
+6. ✅ Ensure 100% of new tests pass before committing
+
 ```bash
-# Create test file alongside source
+# Create test file FIRST
 src/
 ├── [module]/
-│   ├── [module].ts          # Source code
+│   ├── [module].test.ts     # TEST FILE (write first!)
+│   └── __tests__/
+│       └── [module].test.ts # Tests
+
+# THEN implement the source
+├── [module]/
+│   ├── [module].ts          # SOURCE CODE (write after tests)
 │   └── __tests__/
 │       └── [module].test.ts # Tests
 ```
 
 Test requirements:
-- ✅ Write test FIRST or alongside implementation
+- ✅ **Write tests BEFORE implementation** (TDD principle)
 - ✅ All imports must include `.js` extension
-- ✅ Use descriptive test names
-- ✅ Test both success and edge cases
-- ✅ Run tests: `npm test`
-- ✅ Ensure 100% of new tests pass before staging
+- ✅ Use descriptive test names that explain expected behavior
+- ✅ Test both success cases AND edge cases
+- ✅ Test error conditions and invalid inputs
+- ✅ Aim for >80% code coverage minimum
+- ✅ Run `npm test` after each change
+- ✅ Ensure ALL tests pass (0 failures) before committing
+- ✅ Do not commit code with failing tests
+
+Example TDD Workflow:
+```bash
+# 1. Write tests first
+touch src/myFeature/__tests__/myFeature.test.ts
+# Edit test file with all test cases
+
+# 2. Run tests (they should all FAIL initially)
+npm test
+# Expected: Tests fail because code doesn't exist yet
+
+# 3. Implement just enough code to make tests pass
+touch src/myFeature/myFeature.ts
+# Write implementation
+
+# 4. Run tests again
+npm test
+# Expected: All tests pass ✅
+
+# 5. Refactor if needed, verify tests still pass
+npm test
+# Expected: All tests still pass ✅
+
+# 6. Commit
+git add .
+git commit -m "feat: add myFeature with full test coverage"
+```
 
 ## Commit Convention
 
