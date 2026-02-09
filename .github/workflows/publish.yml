@@ -25,6 +25,21 @@ jobs:
           node-version: '18'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Configure npm for OIDC Trusted Publishing
+        run: |
+          # Clear any cached npm credentials to prevent stale token usage
+          npm cache clean --force
+          
+          # Verify registry URL is set correctly
+          npm config set registry "https://registry.npmjs.org"
+          
+          # Display current npm config for debugging
+          echo "Current npm config:"
+          npm config list --userconfig=$HOME/.npmrc
+          
+          echo "Contents of .npmrc:"
+          cat $HOME/.npmrc || echo "No .npmrc found (expected - setup-node creates it)"
+
       - name: Install dependencies
         run: npm ci
 
@@ -57,15 +72,46 @@ jobs:
           fi
           echo "Version verified: $PKG_VERSION"
 
+      - name: Verify npm authentication setup
+        run: |
+          echo "=== npm Registry Configuration ==="
+          npm config get registry
+          
+          echo "=== npm Authentication Status ==="
+          # Check if npm can authenticate with OIDC
+          npm whoami 2>&1 || echo "⚠️ npm whoami failed (expected - will use OIDC token from GitHub Actions)"
+          
+          echo "=== .npmrc Status ==="
+          if [ -f "$HOME/.npmrc" ]; then
+            echo "✅ .npmrc exists"
+            # Show .npmrc content (safe - only registry URLs, no secrets)
+            cat "$HOME/.npmrc" | grep -v "_authToken\|_auth\|token" || true
+          else
+            echo "ℹ️ No .npmrc found - will use GitHub Actions OIDC token"
+          fi
+          
+          echo "=== Environment Variables ==="
+          echo "NODE_AUTH_TOKEN: ${NODE_AUTH_TOKEN:-(not set, will use OIDC)}"
+
       - name: Publish to npm with provenance
         run: npm publish --provenance --access public
-        # Note: No NODE_AUTH_TOKEN needed - npm uses Trusted Publishing (OIDC) automatically
+        # Note: Uses Trusted Publishing (OIDC) - no NPM_TOKEN needed
+        # OIDC token is automatically requested from GitHub Actions
+        # Requires npm.com configuration: https://docs.npmjs.com/generating-provenance-statements
 
       - name: Publish to GitHub Packages
-        run: npm publish
+        run: |
+          # Reset registry to GitHub Packages for this step
+          npm config set registry "https://npm.pkg.github.com"
+          
+          # Publish to GitHub Packages
+          npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_CONFIG_REGISTRY: https://npm.pkg.github.com
+
+      - name: Reset registry to npm.org
+        if: always()
+        run: npm config set registry "https://registry.npmjs.org"
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
