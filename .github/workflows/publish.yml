@@ -99,20 +99,6 @@ jobs:
         # OIDC token is automatically requested from GitHub Actions
         # Requires npm.com configuration: https://docs.npmjs.com/generating-provenance-statements
 
-      - name: Publish to GitHub Packages
-        run: |
-          # Reset registry to GitHub Packages for this step
-          npm config set registry "https://npm.pkg.github.com"
-          
-          # Publish to GitHub Packages
-          npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Reset registry to npm.org
-        if: always()
-        run: npm config set registry "https://registry.npmjs.org"
-
       - name: Create GitHub Release
         uses: actions/create-release@v1
         env:
@@ -156,4 +142,3 @@ jobs:
           echo "✅ Successfully published tech-debt-mcp@${{ steps.version.outputs.VERSION }} to npm"
           echo "📦 Package: https://www.npmjs.com/package/tech-debt-mcp"
           echo "🎉 GitHub Release: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v${{ steps.version.outputs.VERSION }}"
-
