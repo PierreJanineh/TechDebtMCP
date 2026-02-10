@@ -12,7 +12,8 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
-
+    environment:
+      name: npm  # Required for OIDC Trusted Publishing
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,8 +23,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: 'lts/*'
           registry-url: 'https://registry.npmjs.org'
+
+      - name: Install latest npm
+        run: |
+          echo "Current npm version: $(npm -v)"
+          npm install -g npm@latest
+          echo "Updated npm version: $(npm -v)"
 
       - name: Install dependencies
         run: npm ci
@@ -59,14 +66,6 @@ jobs:
 
       - name: Publish to npm with provenance
         run: npm publish --provenance --access public
-        # Note: Uses Trusted Publishing (OIDC) - no NPM_TOKEN needed
-        # Requires npm.com configuration: https://docs.npmjs.com/generating-provenance-statements
-
-      - name: Publish to GitHub Packages
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_CONFIG_REGISTRY: https://npm.pkg.github.com
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
@@ -111,4 +110,3 @@ jobs:
           echo "✅ Successfully published tech-debt-mcp@${{ steps.version.outputs.VERSION }} to npm"
           echo "📦 Package: https://www.npmjs.com/package/tech-debt-mcp"
           echo "🎉 GitHub Release: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v${{ steps.version.outputs.VERSION }}"
-
