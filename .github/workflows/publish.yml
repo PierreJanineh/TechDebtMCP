@@ -12,7 +12,8 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
-
+    environment:
+      name: npm  # Required for OIDC Trusted Publishing
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,23 +23,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: 'lts/*'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Configure npm for OIDC Trusted Publishing
+      - name: Install latest npm
         run: |
-          # Clear any cached npm credentials to prevent stale token usage
-          npm cache clean --force
-          
-          # Verify registry URL is set correctly
-          npm config set registry "https://registry.npmjs.org"
-          
-          # Display current npm config for debugging
-          echo "Current npm config:"
-          npm config list --userconfig=$HOME/.npmrc
-          
-          echo "Contents of .npmrc:"
-          cat $HOME/.npmrc || echo "No .npmrc found (expected - setup-node creates it)"
+          echo "Current npm version: $(npm -v)"
+          npm install -g npm@latest
+          echo "Updated npm version: $(npm -v)"
 
       - name: Install dependencies
         run: npm ci
@@ -72,32 +64,8 @@ jobs:
           fi
           echo "Version verified: $PKG_VERSION"
 
-      - name: Verify npm authentication setup
-        run: |
-          echo "=== npm Registry Configuration ==="
-          npm config get registry
-          
-          echo "=== npm Authentication Status ==="
-          # Check if npm can authenticate with OIDC
-          npm whoami 2>&1 || echo "⚠️ npm whoami failed (expected - will use OIDC token from GitHub Actions)"
-          
-          echo "=== .npmrc Status ==="
-          if [ -f "$HOME/.npmrc" ]; then
-            echo "✅ .npmrc exists"
-            # Show .npmrc content (safe - only registry URLs, no secrets)
-            cat "$HOME/.npmrc" | grep -v "_authToken\|_auth\|token" || true
-          else
-            echo "ℹ️ No .npmrc found - will use GitHub Actions OIDC token"
-          fi
-          
-          echo "=== Environment Variables ==="
-          echo "NODE_AUTH_TOKEN: ${NODE_AUTH_TOKEN:-(not set, will use OIDC)}"
-
       - name: Publish to npm with provenance
         run: npm publish --provenance --access public
-        # Note: Uses Trusted Publishing (OIDC) - no NPM_TOKEN needed
-        # OIDC token is automatically requested from GitHub Actions
-        # Requires npm.com configuration: https://docs.npmjs.com/generating-provenance-statements
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
