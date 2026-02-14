@@ -1,5 +1,7 @@
 # AI Agent Instructions for Tech Debt MCP
 
+> **📝 LIVE DOCUMENT** — This document evolves as the project grows. When adding new workflows, practices, or processes, update this file to reflect the current standards. This ensures consistency and clarity for all team members and AI agents working on the project.
+
 ## Project Overview
 
 Tech Debt MCP is a Model Context Protocol server for analyzing technical debt across **14 programming languages**. It integrates with GitHub Copilot and other MCP-compatible clients.
@@ -542,3 +544,146 @@ git commit -m "feat: add SwiftUI checks - update README, ROADMAP, ARCHITECTURE
 - Added JSDoc comments to all new analyzer methods
 - Fixes #58"
 ```
+
+## Progress Documentation & GitHub Issue Comments
+
+**IMPORTANT: Maintain transparency through documented progress in GitHub issues**
+
+### When to Post Progress Comments
+
+Whenever you create a markdown summary file documenting progress or work completed:
+- ✅ **Post it as a comment in the GitHub issue** you're working on
+- ✅ **If no specific issue exists**, create one and post the progress there
+- ✅ **Use this for any milestone completion**, not just final PR merge
+
+### Progress Comment Guidelines
+
+**Format:**
+```markdown
+## ✅ [Task/Phase Name] - Progress Summary
+
+**Date:** [Date]
+**Status:** [In Progress / Completed / Blocked]
+
+### What Was Done
+- Item 1 completed with details
+- Item 2 with specific outcome
+- Metrics or test results
+
+### Files Changed
+- src/file1.ts - Description
+- src/file2.ts - Description
+
+### Testing
+- Tests: XX passing (or XX/XX)
+- Coverage: XX%
+- All tests passing? ✅ YES / ❌ NO
+
+### Next Steps
+- What comes next
+- Blockers if any
+- Related issues
+```
+
+**Examples of When to Post:**
+1. ✅ Closing resolved GitHub issues (post closure summary)
+2. ✅ Completing each sub-task in a multi-part issue
+3. ✅ Finishing a code review cycle
+4. ✅ Completing infrastructure setup
+5. ✅ Finishing test suite implementation
+6. ✅ Merging complex features
+
+### Issue Creation for Untracked Work
+
+**If working on something without a specific issue:**
+
+1. Check if issue exists:
+   ```bash
+   git branch -v | grep issue
+   ```
+
+2. If no issue, create one:
+   - **Title:** Descriptive task name
+   - **Description:** What you're doing and why
+   - **Labels:** Add relevant phase/enhancement/bug labels
+   - **Milestone:** Link to current phase if applicable
+
+3. Then post progress comment in the new issue
+
+### Example Workflows
+
+#### Scenario A: Closing Completed Issues
+```
+User: "Let's close all resolved issues"
+Agent Action:
+  1. Identify resolved issues from codebase
+  2. Close each on GitHub
+  3. Post summary comment in issue #1 (or create issue #X)
+     - Lists all closed issues
+     - Explains why each was closed
+     - Shows current project state
+     - Links to next steps
+```
+
+#### Scenario B: Multi-Part Feature Implementation
+```
+User: "Implement Phase 2 Dependency Analysis"
+Agent Action:
+  1. Create issue #65: "Phase 2: Dependency Analysis Infrastructure"
+  2. Complete baseParser implementation
+  3. Post progress comment in #65:
+     - "✅ Completed: baseParser abstract class"
+     - Test results
+     - Next: npm parser implementation
+  4. Repeat for each parser implementation
+  5. Final comment when all complete, then close issue
+```
+
+#### Scenario C: Test Suite Completion
+```
+User: "Add tests for npm parser"
+Agent Action:
+  1. Create issue #66: "Add npm parser tests" (if needed)
+  2. Implement test suite
+  3. Post progress comment in #66:
+     - "✅ npm parser tests complete"
+     - XX test cases passing
+     - Coverage: XX%
+     - Ready for next parser tests
+  4. Link to related parser issues
+```
+
+### GitHub Issue Comments Best Practices
+
+**DO:**
+- ✅ Use clear markdown formatting
+- ✅ Include metrics (test count, coverage %, time spent)
+- ✅ Link related issues using `#issue-number`
+- ✅ Include code snippets if relevant
+- ✅ Update original issue description if status changes
+- ✅ Cross-reference related work
+- ✅ Mention blocking dependencies
+
+**DON'T:**
+- ❌ Post redundant comments (consolidate updates)
+- ❌ Commit to GitHub before progress is verified locally
+- ❌ Skip commenting on major milestones
+- ❌ Leave issues without closure summaries
+- ❌ Forget to link between related issues
+
+### Commit Message Convention for Issue Comments
+
+When committing work that updates an issue, reference it:
+
+```bash
+git commit -m "feat: implement npm parser - closes #19, relates to #30
+
+- Parses dependencies from package.json
+- Handles dev and production dependencies
+- 5+ test cases passing
+- Ready for pip parser implementation
+- See #30 for dependency parser suite status"
+```
+
+Then post comprehensive progress comment in the issue for full transparency.
+
