@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Scans project for package manifests across multiple ecosystems
   - Returns a structured dependency report with production vs development dependencies
   - Includes failed-parse reporting for troubleshooting
-  - Parsers for npm, pip, Maven/Gradle, Cargo, Go Modules, Composer, Bundler, NuGet, C/C++ added under `src/analyzers/dependencies/`
+  - Parsers for npm, pip, Maven/Gradle, Cargo, Go Modules, Composer, Bundler, NuGet, C/C++, and Swift Package Manager added under `src/analyzers/dependencies/`
 
 ### Changed
 - **README.md** - Added Code Quality section with updated SQALE rating

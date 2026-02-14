@@ -455,7 +455,7 @@ Follow [Semantic Versioning](https://semver.org/):
 
 ---
 
-**Last Updated:** 2026-02-07
+**Last Updated:** 2026-02-14
 
 For questions or issues, see [CONTRIBUTING.md](CONTRIBUTING.md) or open an issue.
 
@@ -463,7 +463,7 @@ For questions or issues, see [CONTRIBUTING.md](CONTRIBUTING.md) or open an issue
 
 Phase 2 (dependency analysis) introduces the `check_dependencies` MCP tool and a set of dependency parsers. Follow these additional steps when preparing a v2.0.0 release:
 
-1. Ensure `docs/phase-2` branch includes README, ARCHITECTURE, CHANGELOG, and CONTRIBUTING updates.
+1. Ensure all Phase 2 documentation updates (README, ARCHITECTURE, CHANGELOG, and CONTRIBUTING) are merged into the `develop` branch via a documentation PR.
 2. Verify dependency parser unit tests: `npm test -- src/analyzers/dependencies`.
 3. Run the `check_dependencies` tool locally against the repository to validate output:
 
@@ -477,4 +477,3 @@ npx tech-debt-mcp # or npm run dev and call the tool via MCP client
 5. Follow standard release steps (version bump, tag, push) described above.
 
 Note: v2.0.0 is a feature release (new functionality) and should be published as a major bump if the project intends to mark it breaking: `npm version major`.
-

@@ -732,9 +732,9 @@ Phase 2 introduces a modular dependency parsing subsystem and a new MCP tool, `c
 Key points:
 
 - Parsers are implemented under `src/analyzers/dependencies/` following the same factory + base class pattern as language analyzers.
-- Each parser focuses on one ecosystem and exposes a common `parse(filePath, content)` interface that returns `ParsedDependency[]`.
-- A `check_dependencies` MCP tool scans the repository for recognized package files, invokes parsers, and returns a human-readable markdown report with production vs development dependencies and any failed parse entries.
-- The design is offline-first and includes well-defined extension points for future vulnerability scanning services (e.g., `services/vulnerabilityService.ts`).
+- Each parser focuses on one ecosystem and exposes a common async `parse(filePath, content)` interface that returns `Promise<ParsedDependency[]>`.
+- A `check_dependencies` MCP tool scans the repository for recognized package files, invokes these async parsers, and returns a human-readable markdown report with production vs development dependencies and any failed parse entries.
+- The design is offline-first and describes extension points for future vulnerability scanning services (e.g., a dedicated vulnerability scanning module in a later phase) without adding an immediate implementation path.
 
 **Files added in Phase 2:**
 ```

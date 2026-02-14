@@ -196,6 +196,14 @@ Fixes #45
 
 ## Pull Request Process
 
+### Review Process
+
+1. **Automated checks** — CI/CD runs tests and linting
+2. **Copilot review** — Review automated suggestions and address relevant ones
+3. **Human review** — Maintainer reviews the code
+4. **Address feedback** — Make requested changes
+5. **Merge** — Squash and merge into `develop`
+
 ### Before Submitting
 
 1. ✅ **Run tests** — `npm test` (all tests must pass)
@@ -240,19 +248,6 @@ Closes #123
 - [ ] No TypeScript errors
 - [ ] Copilot review suggestions addressed
 ```
-
-### Pull Request Process
-
-1. **Automated checks** — CI/CD runs tests and linting
-2. **Copilot review** — Review automated suggestions and address relevant ones
-3. **Human review** — Maintainer reviews the code
-4. **Address feedback** — Make requested changes
-5. **Merge** — Squash and merge into `develop`
-
-## PR Checklist (Docs-specific)
-- [ ] Documentation updated in `README.md`, `ARCHITECTURE.md`, and `CHANGELOG.md` if behavior changed
-- [ ] New MCP tools documented with usage examples
-- [ ] Add links to related issues in PR body
 
 ## Testing
 
