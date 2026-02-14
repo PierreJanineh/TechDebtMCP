@@ -202,6 +202,7 @@ Fixes #45
 2. ✅ **Build succeeds** — `npm run build` (no TypeScript errors)
 3. ✅ **Update documentation** — If you changed functionality
 4. ✅ **Add tests** — For new features or bug fixes
+5. ✅ **Include docs for Phase 2 features** — If your change touches dependency parsing or adds MCP tools (e.g., `check_dependencies`), update README, ARCHITECTURE.md, and CHANGELOG.md in the same branch
 
 ### Branch Naming
 
@@ -240,13 +241,18 @@ Closes #123
 - [ ] Copilot review suggestions addressed
 ```
 
-### Review Process
+### Pull Request Process
 
 1. **Automated checks** — CI/CD runs tests and linting
 2. **Copilot review** — Review automated suggestions and address relevant ones
 3. **Human review** — Maintainer reviews the code
 4. **Address feedback** — Make requested changes
 5. **Merge** — Squash and merge into `develop`
+
+## PR Checklist (Docs-specific)
+- [ ] Documentation updated in `README.md`, `ARCHITECTURE.md`, and `CHANGELOG.md` if behavior changed
+- [ ] New MCP tools documented with usage examples
+- [ ] Add links to related issues in PR body
 
 ## Testing
 
@@ -319,6 +325,4 @@ Use the feature request template and include:
 ## License
 
 By contributing, you agree that your contributions will be licensed under the MIT License.
-
-
 
