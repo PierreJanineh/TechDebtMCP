@@ -22,6 +22,8 @@ import {
   Severity,
   TechDebtReport,
   CustomPattern,
+  ParsedDependency,
+  PackageManager,
 } from './types/index.js';
 
 /**
@@ -907,6 +909,12 @@ ${issue.description}
     // Recursively find all package files in project
     const packageFiles: string[] = [];
     const failedParses: Array<{ file: string; error: string }> = [];
+    // Typed collection of parsed file dependency info
+    const dependencies: Array<{
+      file: string;
+      ecosystem: PackageManager | string;
+      dependencies: ParsedDependency[];
+    }> = [];
     await this.findPackageFiles(projectPath, packageFileNames, packageFiles);
 
     for (const filePath of packageFiles) {
@@ -935,8 +943,8 @@ ${issue.description}
     }
 
     // Format output
-    const totalDeps = dependencies.reduce((sum, f) => sum + f.dependencies.length, 0);
-    const ecosystems = [...new Set(dependencies.map(d => d.ecosystem))];
+    const totalDeps = dependencies.reduce((sum: number, f: { dependencies: ParsedDependency[] }) => sum + f.dependencies.length, 0);
+    const ecosystems = [...new Set(dependencies.map((d: { ecosystem: PackageManager | string }) => d.ecosystem))];
 
     let report = `# Dependency Analysis
 
@@ -951,17 +959,17 @@ ${issue.description}
       report += `## ${fileInfo.file} (${fileInfo.ecosystem})\n\n`;
       report += `**Dependencies:** ${fileInfo.dependencies.length}\n\n`;
 
-      const prodDeps = fileInfo.dependencies.filter(d => !d.isDev);
-      const devDeps = fileInfo.dependencies.filter(d => d.isDev);
+      const prodDeps = fileInfo.dependencies.filter((d: ParsedDependency) => !d.isDev);
+      const devDeps = fileInfo.dependencies.filter((d: ParsedDependency) => d.isDev);
 
       if (prodDeps.length > 0) {
         report += `### Production (${prodDeps.length})\n`;
-        report += prodDeps.map(d => `- ${d.name}@${d.version}`).join('\n') + '\n\n';
+        report += prodDeps.map((d: ParsedDependency) => `- ${d.name}@${d.version}`).join('\n') + '\n\n';
       }
 
       if (devDeps.length > 0 && includeDev) {
         report += `### Development (${devDeps.length})\n`;
-        report += devDeps.map(d => `- ${d.name}@${d.version}`).join('\n') + '\n\n';
+        report += devDeps.map((d: ParsedDependency) => `- ${d.name}@${d.version}`).join('\n') + '\n\n';
       }
     }
 
