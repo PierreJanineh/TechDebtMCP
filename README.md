@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/tech-debt-mcp)](https://www.npmjs.com/package/tech-debt-mcp)
 [![Add to MCP](https://img.shields.io/badge/MCP-Install_Server-6f42c1)](#installation)
-[![SQALE Rating](https://img.shields.io/badge/SQALE-A_(3.4%25)-brightgreen)](#code-quality)
+[![SQALE Rating](https://img.shields.io/badge/SQALE-A_(2.9%25)-brightgreen)](#code-quality)
 
 A Model Context Protocol (MCP) server for analyzing technical debt across multiple programming languages. Designed to integrate with GitHub Copilot and other MCP-compatible tools.
 
