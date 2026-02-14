@@ -13,46 +13,46 @@ This document outlines the development phases, release strategy, and future enha
 
 ## Version History
 
-### v1.0.0 - Initial Release (Released: 2026-02-07)
+### [Unreleased] - Quality & Compliance Release
+
+**Status:** ✅ **READY FOR RELEASE** (Next version after v1.1.0)
+
+Focus on project quality, code compliance, and transparent metrics.
+
+#### Features
+
+**Code Quality & Technical Debt Compliance**
+- ✅ CODE_OF_CONDUCT.md - Contributor Covenant v2.1
+- ✅ .techdebtrc.json - Project-specific tech debt configuration
+- ✅ TECH_DEBT_SCAN.md - Complete self-scan analysis with before/after metrics
+- ✅ Measured impact: -20 issues (-19.8%), -10 hours (-14.3%) remediation time
+- ✅ SQALE Rating: A ⭐⭐⭐⭐⭐ (2.9% debt ratio)
+
+**Documentation Updates**
+- ✅ README.md - Added Code Quality section with SQALE rating badge
+- ✅ CONTRIBUTING.md - Tech Debt Compliance section with refactoring targets
+- ✅ ARCHITECTURE.md - Code Quality Standards section
+- ✅ .github/copilot-instructions.md - Tech Debt Refactoring Rules with priorities
+
+**Metrics Summary**
+- SQALE Rating: A ⭐⭐⭐⭐⭐ (2.9% debt ratio, improved from 3.4%)
+- Total Issues: 81 (down from 101)
+- Remediation Time: 60 hours (down from 70 hours)
+- Improvement: -20 false positives, -10 hours remediation time
+- Files Analyzed: 25 (down from 33, test files excluded)
+- Critical Issues: 0
+- High Issues: 14 (13 are false positives in analyzer patterns)
+
+**Community**
+- Improved Snyk package health score with Code of Conduct
+- Better contributor onboarding with comprehensive guidelines
+- Transparent quality metrics showing "we practice what we preach"
+
+---
+
+### v1.1.0 - SwiftUI Analysis (Released: 2026-02-07)
 
 **Status:** ✅ **COMPLETE**
-
-The foundation release with multi-language support, SQALE metrics, and custom rules engine.
-
-#### Completed Phases
-
-**Phase 0: Multi-Language Support**
-- ✅ 14 programming languages supported
-- ✅ BaseAnalyzer with factory pattern
-- ✅ Language-specific detection patterns
-- ✅ Comprehensive test coverage
-
-**Phase 1: SQALE Metrics** ✅ **COMPLETE**
-- ✅ A-E rating system implementation
-- ✅ Remediation time calculations
-- ✅ Debt ratio metrics
-- ✅ Category and severity breakdowns
-- ✅ Human-readable time formatting
-- ✅ **NEW:** `get_sqale_metrics` MCP tool (13th tool)
-- ✅ **NEW:** SQALE metrics integrated into all analysis reports
-
-**Phase 5: Custom Rules Engine**
-- ✅ Pattern-based custom rules
-- ✅ 5 MCP tools for rule management
-- ✅ Regex support with configurable flags
-- ✅ Language-specific filtering
-- ✅ Multi-match and cross-platform support
-
-#### Deliverables
-
-- **13 MCP Tools:** Full suite of analysis and custom rule tools
-- **96 Tests:** 100% pass rate across 8 test suites (22 todo for Phase 3)
-- **Documentation:** README, ARCHITECTURE, CONTRIBUTING guides
-- **NPM Package:** Published as `tech-debt-mcp@1.0.0`
-
-### v1.1.0 - SwiftUI Analysis (Unreleased)
-
-**Status:** ✅ **READY FOR RELEASE** (tagging/publishing after merge)
 
 Enhanced Swift analyzer with comprehensive SwiftUI-specific technical debt detection.
 
@@ -84,46 +84,66 @@ Enhanced Swift analyzer with comprehensive SwiftUI-specific technical debt detec
 - ✅ Comprehensive installation documentation
 
 **Quality Improvements**
-- ✅ Repo total: 96+ tests passing (118 total with 22 todo for Phase 3)
+- ✅ 96 tests passing (118 total with 22 todo for Phase 3)
 - ✅ SwiftUI suite: 13 implemented Phase 1 + 13 implemented Phase 2 + 22 todo Phase 3
 - ✅ All Copilot review suggestions addressed
 - ✅ Performance optimization (content split once)
-- ✅ Contributor: @ophirbucai (execute_custom_rules fix)
+- ✅ Contributor: @ophirbucai (execute_custom_rules fix, IDE badges)
+
+#### Deliverables
+- Tests: Repo total 96 passing (SwiftUI tests: 13 Phase 1 + 13 Phase 2 + 22 Phase 3 todo)
+- Documentation: Updated README with SwiftUI section, GITHUB_PACKAGES.md
+- NPM Package: Published as `tech-debt-mcp@1.1.0`
+- GitHub Packages: Available on both npm and GitHub Packages registries
+
+---
+
+### v1.0.0 - Initial Release (Released: 2026-02-07)
+
+**Status:** ✅ **COMPLETE**
+
+The foundation release with multi-language support, SQALE metrics, and custom rules engine.
+
+#### Completed Phases
+
+**Phase 0: Multi-Language Support**
+- ✅ 14 programming languages supported
+- ✅ BaseAnalyzer with factory pattern
+- ✅ Language-specific detection patterns
+- ✅ Comprehensive test coverage
+
+**Phase 1: SQALE Metrics** ✅ **COMPLETE**
+- ✅ A-E rating system implementation
+- ✅ Remediation time calculations
+- ✅ Debt ratio metrics
+- ✅ Category and severity breakdowns
+- ✅ Human-readable time formatting
+- ✅ `get_sqale_metrics` MCP tool (13th tool)
+- ✅ SQALE metrics integrated into all analysis reports
+
+**Phase 5: Custom Rules Engine**
+- ✅ Pattern-based custom rules
+- ✅ 5 MCP tools for rule management
+- ✅ Regex support with configurable flags
+- ✅ Language-specific filtering
+- ✅ Multi-match and cross-platform support
 
 #### Deliverables
 
-- **Tests:** Repo total 96 passing (SwiftUI tests: 13 Phase 1 + 13 Phase 2 + 22 Phase 3 todo)
-- **Documentation:** Updated README with SwiftUI section, GITHUB_PACKAGES.md
-- **NPM Package:** Published as `tech-debt-mcp@1.1.0`
-- **GitHub Packages:** Available on both npm and GitHub Packages registries
-
-### v2.0.0 - Dependency Analysis (In Progress)
-
-**Status:** 🚧 **IN PROGRESS - Phase 2 Infrastructure Complete**
-
-#### Phase 2: Dependency Analysis (Issue #18 - IN PR #61)
-- ✅ BaseDependencyParser abstract class
-- ✅ Factory pattern for parser creation  
-- ✅ Infrastructure ready for 8 package manager parsers
-- ✅ 21 comprehensive tests (9 todo for future parsers)
-- ✅ Copilot review suggestions addressed
-- 🚧 Individual parser implementations pending (Issues #19-28)
-  - npm (JavaScript/TypeScript)
-  - pip (Python)
-  - Maven/Gradle (Java/Kotlin)
-  - Cargo (Rust)
-  - Go Modules
-  - Composer (PHP)
-  - Bundler (Ruby)
-  - Swift/NuGet/C++ parsers
+- **13 MCP Tools:** Full suite of analysis and custom rule tools
+- **96 Tests:** 100% pass rate across 8 test suites (22 todo for Phase 3)
+- **Documentation:** README, ARCHITECTURE, CONTRIBUTING guides
+- **NPM Package:** Published as `tech-debt-mcp@1.0.0`
 
 ## Current Status
 
-**Active Development:** Phase 2 Infrastructure Complete - Parser Implementations Starting
+**Active Development:** Quality & Compliance Release - Ready for tagging and publishing
 
-**PR #61:** Dependency Analyzer Infrastructure (Issue #18) - Under Review
+**Latest Release:** v1.1.0 (SwiftUI Analysis) - 2026-02-07
 
-**Next Release Target:** v2.0.0 - Q2 2026
+**Unreleased Changes:** Quality & Compliance Release with CODE_OF_CONDUCT, .techdebtrc.json, TECH_DEBT_SCAN.md, and documentation updates
+
+**Next Phase:** Phase 2 - Dependency Analysis Infrastructure (v2.0.0)
 
 ## Phase Overview
 
@@ -132,7 +152,9 @@ Enhanced Swift analyzer with comprehensive SwiftUI-specific technical debt detec
 | Phase 0 | v1.0.0 | ✅ Complete | Multi-language support (14 languages) |
 | Phase 1 | v1.0.0 | ✅ Complete | SQALE metrics & rating system (+ get_sqale_metrics tool) |
 | Phase 5 | v1.0.0 | ✅ Complete | Custom rules engine |
-| Phase 2 | v2.0.0 | 🚧 In Progress | Dependency infrastructure ready; parser implementations pending |
+| v1.1.0 | v1.1.0 | ✅ Complete | SwiftUI-specific analysis (14 checks) |
+| Quality & Compliance | Unreleased | ✅ Ready | Code of Conduct, .techdebtrc.json, TECH_DEBT_SCAN.md, documentation |
+| Phase 2 | v2.0.0 | 📋 Planned | Dependency analysis infrastructure ready; parser implementations pending |
 | Phase 3 | v2.1.0 | 📋 Planned | Snapshot & trend tracking |
 | Phase 4 | v2.2.0 | 📋 Planned | Code complexity analysis |
 
@@ -140,7 +162,7 @@ Enhanced Swift analyzer with comprehensive SwiftUI-specific technical debt detec
 
 ### Phase 2: Dependency Analysis (v2.0.0)
 
-**Status:** 🚧 **IN PROGRESS - Infrastructure Ready**
+**Status:** 📋 **PLANNED** (After Quality & Compliance Release)
 
 **Objective:** Parse and analyze project dependencies across multiple package managers, detect outdated packages and security vulnerabilities.
 

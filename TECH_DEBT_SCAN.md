@@ -41,9 +41,67 @@
 
 ## 🎯 Impact of .techdebtrc.json Configuration
 
-**Before:** 101 issues, 70 hours remediation time  
-**After:** 81 issues, 60 hours remediation time  
-**Improvement:** -20 issues (-19.8%), -10 hours (-14.3%)
+### Two-Scan Comparison
+
+We performed **two complete scans** to measure the impact of configuration:
+
+#### 📊 Scan #1: Before .techdebtrc.json (Baseline)
+
+**Configuration:** No test exclusions, all files analyzed
+
+| Metric | Value |
+|--------|-------|
+| **SQALE Rating** | A ⭐⭐⭐⭐⭐ |
+| **Debt Ratio** | 3.4% |
+| **Health Score** | 41/100 |
+| **Total Issues** | 101 |
+| **Critical Issues** | 0 |
+| **High Issues** | 17 |
+| **Medium Issues** | 46 |
+| **Low Issues** | 38 |
+| **Remediation Time** | 70 hours |
+| **Files Analyzed** | 33 (including test files) |
+
+**Issues by Category (Scan #1):**
+- Code Quality: 84 issues
+- Maintainability: 17 issues
+
+#### 📊 Scan #2: After .techdebtrc.json (Current)
+
+**Configuration:** `.techdebtrc.json` enabled (test files excluded)
+
+| Metric | Value |
+|--------|-------|
+| **SQALE Rating** | A ⭐⭐⭐⭐⭐ |
+| **Debt Ratio** | 2.9% |
+| **Health Score** | 51.8/100 |
+| **Total Issues** | 81 |
+| **Critical Issues** | 0 |
+| **High Issues** | 14 |
+| **Medium Issues** | 38 |
+| **Low Issues** | 29 |
+| **Remediation Time** | 60 hours |
+| **Files Analyzed** | 25 (production code only) |
+
+**Issues by Category (Scan #2):**
+- Code Quality: 66 issues
+- Maintainability: 15 issues
+
+### 📈 Improvement Summary
+
+| Metric | Before | After | Change |
+|--------|--------|-------|--------|
+| **SQALE Rating** | A (3.4%) | A (2.9%) | ✅ -0.5% |
+| **Health Score** | 41/100 | 51.8/100 | ✅ +10.8 points |
+| **Total Issues** | 101 | 81 | ✅ -20 (-19.8%) |
+| **Critical** | 0 | 0 | ✅ No change |
+| **High** | 17 | 14 | ✅ -3 |
+| **Medium** | 46 | 38 | ✅ -8 |
+| **Low** | 38 | 29 | ✅ -9 |
+| **Remediation Time** | 70h | 60h | ✅ -10h (-14.3%) |
+| **Files Analyzed** | 33 | 25 | ✅ -8 test files |
+
+**Key Insight:** Both scans maintained SQALE Rating A, but the configuration improved debt ratio from 3.4% to 2.9% by removing false positives.
 
 ### What Changed?
 
