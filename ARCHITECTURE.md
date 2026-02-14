@@ -724,3 +724,33 @@ npx tech-debt-mcp analyze_project --path=/path/to/TechDebtMCP
 - **Plugin system** — Load analyzers dynamically
 - **Custom severity weights** — User-configurable issue scoring
 - **Integration with CI/CD** — GitHub Actions, GitLab CI, etc.
+
+## Phase 2: Dependency Analysis (Added)
+
+Phase 2 introduces a modular dependency parsing subsystem and a new MCP tool, `check_dependencies`.
+
+Key points:
+
+- Parsers are implemented under `src/analyzers/dependencies/` following the same factory + base class pattern as language analyzers.
+- Each parser focuses on one ecosystem and exposes a common async `parse(filePath, content)` interface that returns `Promise<ParsedDependency[]>`.
+- A `check_dependencies` MCP tool scans the repository for recognized package files, invokes these async parsers, and returns a human-readable markdown report with production vs development dependencies and any failed parse entries.
+- The design is offline-first and describes extension points for future vulnerability scanning services (e.g., a dedicated vulnerability scanning module in a later phase) without adding an immediate implementation path.
+
+**Files added in Phase 2:**
+```
+src/analyzers/dependencies/
+  ├── baseParser.ts
+  ├── index.ts (factory)
+  ├── npmParser.ts
+  ├── pipParser.ts
+  ├── cargoParser.ts
+  ├── goModParser.ts
+  ├── gradleParser.ts
+  ├── composerParser.ts
+  ├── bundlerParser.ts
+  ├── nugetParser.ts
+  ├── cppParser.ts
+  └── swiftPackageParser.ts
+```
+
+These modules follow the existing analyzer conventions and are covered by unit tests in `src/analyzers/dependencies/__tests__/`.

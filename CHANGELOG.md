@@ -22,6 +22,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Documents reduction from 101 to 81 issues (-19.8%)
   - Identifies false positives vs. real technical debt
   - Provides actionable roadmap for continuous improvement
+- **check_dependencies** MCP tool (Phase 2 - Dependency Analysis)
+  - Scans project for package manifests across multiple ecosystems
+  - Returns a structured dependency report with production vs development dependencies
+  - Includes failed-parse reporting for troubleshooting
+  - Parsers for npm, pip, Maven/Gradle, Cargo, Go Modules, Composer, Bundler, NuGet, C/C++, and Swift Package Manager added under `src/analyzers/dependencies/`
 
 ### Changed
 - **README.md** - Added Code Quality section with updated SQALE rating

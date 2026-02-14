@@ -196,12 +196,21 @@ Fixes #45
 
 ## Pull Request Process
 
+### Review Process
+
+1. **Automated checks** — CI/CD runs tests and linting
+2. **Copilot review** — Review automated suggestions and address relevant ones
+3. **Human review** — Maintainer reviews the code
+4. **Address feedback** — Make requested changes
+5. **Merge** — Squash and merge into `develop`
+
 ### Before Submitting
 
 1. ✅ **Run tests** — `npm test` (all tests must pass)
 2. ✅ **Build succeeds** — `npm run build` (no TypeScript errors)
 3. ✅ **Update documentation** — If you changed functionality
 4. ✅ **Add tests** — For new features or bug fixes
+5. ✅ **Include docs for Phase 2 features** — If your change touches dependency parsing or adds MCP tools (e.g., `check_dependencies`), update README, ARCHITECTURE.md, and CHANGELOG.md in the same branch
 
 ### Branch Naming
 
@@ -239,14 +248,6 @@ Closes #123
 - [ ] No TypeScript errors
 - [ ] Copilot review suggestions addressed
 ```
-
-### Review Process
-
-1. **Automated checks** — CI/CD runs tests and linting
-2. **Copilot review** — Review automated suggestions and address relevant ones
-3. **Human review** — Maintainer reviews the code
-4. **Address feedback** — Make requested changes
-5. **Merge** — Squash and merge into `develop`
 
 ## Testing
 
@@ -319,6 +320,4 @@ Use the feature request template and include:
 ## License
 
 By contributing, you agree that your contributions will be licensed under the MIT License.
-
-
 
