@@ -72,7 +72,11 @@ describe('Dependency Parser Factory', () => {
     expect(parser).toBeNull();
   });
 
-  it.todo('should recognize package.json');
+  it('should recognize package.json', () => {
+    const parser = createDependencyParser('package.json');
+    expect(parser).not.toBeNull();
+    expect(parser?.getEcosystem()).toBe('npm');
+  });
 
   it.todo('should recognize pom.xml (Maven)');
 
@@ -92,20 +96,23 @@ describe('Dependency Parser Factory', () => {
 });
 
 describe('Dependency Parser Utilities', () => {
-  it('should return empty array for all parsers when none are implemented', () => {
+  it('should return array of implemented parsers', () => {
     const parsers = getAllParsers();
     expect(Array.isArray(parsers)).toBe(true);
-    expect(parsers.length).toBe(0);
+    expect(parsers.length).toBeGreaterThan(0);
+    // At least npm parser should be implemented
+    expect(parsers.some(p => p.getEcosystem() === 'npm')).toBe(true);
   });
 
-  it('should return empty array for all package file names when no parsers are implemented', () => {
+  it('should return file names from all parsers', () => {
     const fileNames = getAllPackageFileNames();
     expect(Array.isArray(fileNames)).toBe(true);
-    expect(fileNames.length).toBe(0);
+    expect(fileNames.length).toBeGreaterThan(0);
+    // package.json should be in the list
+    expect(fileNames).toContain('package.json');
   });
 
   it('should return unique file names from all parsers', () => {
-    // Will be tested once parsers are implemented
     // This ensures no duplicate file names in the array
     const fileNames = getAllPackageFileNames();
     const uniqueNames = new Set(fileNames);
