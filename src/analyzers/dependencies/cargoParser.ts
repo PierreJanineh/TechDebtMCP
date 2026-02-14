@@ -117,10 +117,4 @@ export class CargoParser extends BaseDependencyParser {
 
     return null;
   }
-
-  protected performParsing(): ParsedDependency[] {
-    // Not used - override parent implementation with async parse
-    return [];
-  }
 }
-

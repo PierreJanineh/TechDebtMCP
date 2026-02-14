@@ -239,7 +239,10 @@ export type PackageManager =
   | 'composer'
   | 'bundler'
   | 'conan'
-  | 'vcpkg';
+  | 'vcpkg'
+  | 'swift'
+  | 'nuget'
+  | 'cpp';
 
 /**
  * Parsed dependency information from manifest files

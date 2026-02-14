@@ -1,4 +1,5 @@
 import { BaseDependencyParser, ParsedDependency } from './baseParser.js';
+import { basename } from 'node:path';
 
 /**
  * Dependency parser for C/C++ (CMake, Conan, vcpkg)
@@ -29,7 +30,7 @@ export class CppParser extends BaseDependencyParser {
       throw new Error(`CppParser cannot handle file: ${filePath}`);
     }
 
-    const fileName = filePath.split('/').pop() || '';
+    const fileName = basename(filePath) || '';
 
     if (fileName === 'CMakeLists.txt') {
       return this.parseCMakeLists(content, filePath);
@@ -164,9 +165,4 @@ export class CppParser extends BaseDependencyParser {
 
     return deps;
   }
-
-  protected performParsing(): ParsedDependency[] {
-    return [];
-  }
 }
-

@@ -112,11 +112,4 @@ export class BundlerParser extends BaseDependencyParser {
       version,
     };
   }
-
-  protected performParsing(): ParsedDependency[] {
-    // Not used - override parent implementation with async parse
-    return [];
-  }
 }
-
-

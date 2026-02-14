@@ -906,20 +906,8 @@ ${issue.description}
 
     // Recursively find all package files in project
     const packageFiles: string[] = [];
+    const failedParses: Array<{ file: string; error: string }> = [];
     await this.findPackageFiles(projectPath, packageFileNames, packageFiles);
-
-    if (packageFiles.length === 0) {
-      return {
-        content: [{ type: 'text', text: `No dependency files found in ${projectPath}` }],
-      };
-    }
-
-    // Parse each found package file
-    const dependencies: Array<{
-      file: string;
-      ecosystem: string;
-      dependencies: Array<{ name: string; version: string; isDev: boolean }>;
-    }> = [];
 
     for (const filePath of packageFiles) {
       const parser = createDependencyParser(filePath);
@@ -939,7 +927,9 @@ ${issue.description}
             });
           }
         } catch (error) {
-          console.error(`Failed to parse ${filePath}:`, error);
+          const rel = getRelativePath(projectPath, filePath);
+          console.error(`Failed to parse ${filePath} (${rel}):`, error instanceof Error ? error.message : String(error));
+          failedParses.push({ file: rel, error: error instanceof Error ? error.message : String(error) });
         }
       }
     }
@@ -973,6 +963,11 @@ ${issue.description}
         report += `### Development (${devDeps.length})\n`;
         report += devDeps.map(d => `- ${d.name}@${d.version}`).join('\n') + '\n\n';
       }
+    }
+
+    if (failedParses.length > 0) {
+      report += `## ⚠️ Failed to parse ${failedParses.length} file(s)\n\n`;
+      report += failedParses.map(f => `- ${f.file}: ${f.error}`).join('\n') + '\n\n';
     }
 
     return {
@@ -1010,7 +1005,9 @@ ${issue.description}
         }
       }
     } catch (error) {
-      // Ignore permission errors and continue
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`findPackageFiles: failed to scan directory "${dir}": ${message}`);
+      // Continue scanning other directories where possible
     }
   }
 

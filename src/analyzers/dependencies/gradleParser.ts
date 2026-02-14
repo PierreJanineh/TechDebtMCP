@@ -156,10 +156,4 @@ export class GradleParser extends BaseDependencyParser {
 
     return dependencies;
   }
-
-  protected performParsing(): ParsedDependency[] {
-    // Not used - override parent implementation with async parse
-    return [];
-  }
 }
-

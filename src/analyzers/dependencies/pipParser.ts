@@ -1,5 +1,6 @@
 import { BaseDependencyParser, ParsedDependency } from './baseParser.js';
 import * as toml from 'toml';
+import { basename } from 'node:path';
 
 /**
  * Dependency parser for pip (Python)
@@ -19,7 +20,7 @@ export class PipParser extends BaseDependencyParser {
    * Check if this parser can handle the file
    */
   canParse(filePath: string): boolean {
-    const fileName = filePath.split('/').pop() || '';
+    const fileName = basename(filePath) || '';
     return (
       (fileName.startsWith('requirements') && fileName.endsWith('.txt')) ||
       fileName === 'pyproject.toml' ||
@@ -42,7 +43,7 @@ export class PipParser extends BaseDependencyParser {
       throw new Error(`PipParser cannot handle file: ${filePath}`);
     }
 
-    const fileName = filePath.split('/').pop() || '';
+    const fileName = basename(filePath) || '';
 
     if (fileName.includes('requirements') && fileName.endsWith('.txt')) {
       return this.parseRequirementsTxt(content, filePath);
@@ -295,13 +296,5 @@ export class PipParser extends BaseDependencyParser {
       .split(/[\s,]/) // Take first part if split
       [0] || '*';
   }
-
-  protected performParsing(): ParsedDependency[] {
-    // Not used - override parent implementation with async parse
-    return [];
-  }
 }
-
-
-
 

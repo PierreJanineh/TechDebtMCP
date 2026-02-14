@@ -98,10 +98,4 @@ export class NpmParser extends BaseDependencyParser {
       throw error;
     }
   }
-
-  protected performParsing(): ParsedDependency[] {
-    // Not used - override parent implementation with async parse
-    return [];
-  }
 }
-

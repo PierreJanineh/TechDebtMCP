@@ -106,10 +106,4 @@ export class GoModParser extends BaseDependencyParser {
       version: match[2],
     };
   }
-
-  protected performParsing(): ParsedDependency[] {
-    // Not used - override parent implementation with async parse
-    return [];
-  }
 }
-

@@ -1,4 +1,5 @@
 import { BaseDependencyParser, ParsedDependency } from './baseParser.js';
+import { basename } from 'node:path';
 
 /**
  * Dependency parser for NuGet (C#/.NET)
@@ -28,7 +29,7 @@ export class NugetParser extends BaseDependencyParser {
       throw new Error(`NugetParser cannot handle file: ${filePath}`);
     }
 
-    const fileName = filePath.split('/').pop() || '';
+    const fileName = basename(filePath) || '';
 
     if (fileName === 'packages.config') {
       return this.parsePackagesConfig(content, filePath);
@@ -86,9 +87,4 @@ export class NugetParser extends BaseDependencyParser {
 
     return deps;
   }
-
-  protected performParsing(): ParsedDependency[] {
-    return [];
-  }
 }
-
