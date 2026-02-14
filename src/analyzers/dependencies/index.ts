@@ -1,5 +1,6 @@
 import { basename } from 'node:path';
 import { BaseDependencyParser, ParsedDependency } from './baseParser.js';
+import { NpmParser } from './npmParser.js';
 
 /**
  * Factory function to create a dependency parser for a given file
@@ -9,10 +10,9 @@ import { BaseDependencyParser, ParsedDependency } from './baseParser.js';
 export function createDependencyParser(filePath: string): BaseDependencyParser | null {
   const fileName = basename(filePath);
 
-  // Placeholder for future parsers
-  // Will be populated as parsers are implemented
+  // Map of file names to parser instances
   const parserMap: Record<string, BaseDependencyParser> = {
-    // 'package.json': new NpmParser(),
+    'package.json': new NpmParser(),
     // 'requirements.txt': new PipParser(),
     // ... other parsers
   };
@@ -63,10 +63,8 @@ export function createDependencyParser(filePath: string): BaseDependencyParser |
  * @returns An array of all dependency parser instances
  */
 export function getAllParsers(): BaseDependencyParser[] {
-  // Placeholder for future parsers
-  // Will return instances of all implemented parsers
   const parsers: BaseDependencyParser[] = [
-    // new NpmParser(),
+    new NpmParser(),
     // new PipParser(),
     // new GradleParser(),
     // ... other parsers
