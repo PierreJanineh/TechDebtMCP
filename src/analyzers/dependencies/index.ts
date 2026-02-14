@@ -4,6 +4,8 @@ import { NpmParser } from './npmParser.js';
 import { PipParser } from './pipParser.js';
 import { ComposerParser } from './composerParser.js';
 import { BundlerParser } from './bundlerParser.js';
+import { CargoParser } from './cargoParser.js';
+import { GoModParser } from './goModParser.js';
 
 /**
  * Factory function to create a dependency parser for a given file
@@ -20,6 +22,8 @@ export function createDependencyParser(filePath: string): BaseDependencyParser |
     'Pipfile': new PipParser(),
     'composer.json': new ComposerParser(),
     'Gemfile': new BundlerParser(),
+    'Cargo.toml': new CargoParser(),
+    'go.mod': new GoModParser(),
     // 'requirements.txt': new PipParser(), // handled by requirements check
     // ... other parsers
   };
@@ -80,6 +84,8 @@ export function getAllParsers(): BaseDependencyParser[] {
     new PipParser(),
     new ComposerParser(),
     new BundlerParser(),
+    new CargoParser(),
+    new GoModParser(),
     // new GradleParser(),
     // ... other parsers
   ];
