@@ -334,7 +334,7 @@ Phase 2 adds comprehensive dependency parsing across multiple ecosystems and a n
 
 Key capabilities:
 
-- Detects package manifests for npm, pip, Maven/Gradle, Cargo, Go Modules, Composer, Bundler, NuGet, C/C++, and Swift Package Manager (Package.swift)
+- Detects package manifests for npm, pip, Maven/Gradle, Cargo, Go Modules, Composer, Bundler, NuGet, C/C++, and Swift Package Manager (Package.swift, Podfile, Cartfile)
 - Separates production vs development dependencies
 - Filters output by `includeDev` parameter
 - Reports files that failed to parse for troubleshooting
@@ -347,7 +347,7 @@ Tool parameters:
 - `path` (required): Absolute path to the project root
 - `includeDev` (optional): boolean (default: true) — include dev/test dependencies
 
-Example (MCP call):
+Example (MCP call, abbreviated):
 
 ```json
 {
@@ -365,7 +365,7 @@ Example output (abbreviated):
 # Dependency Analysis
 
 **Project:** /absolute/path/to/project
-**Found:** 3 package file(s) across 2 ecosystem(s)
+**Found:** 1 package file(s) across 1 ecosystem(s)
 **Total Dependencies:** 45
 
 ## package.json (npm)
