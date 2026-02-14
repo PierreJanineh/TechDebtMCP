@@ -11,8 +11,11 @@ import {
 import { AnalysisEngine } from './core/analysisEngine.js';
 import { CustomRulesEngine } from './core/customRulesEngine.js';
 import { analyzeFile } from './analyzers/index.js';
+import { createDependencyParser, getAllPackageFileNames } from './analyzers/dependencies/index.js';
 import { getSupportedLanguages, LANGUAGE_CONFIGS } from './config/languages.js';
 import { getRelativePath, readFile, fileExists } from './utils/fileUtils.js';
+import { readdir, stat } from 'node:fs/promises';
+import { join } from 'node:path';
 import {
   SupportedLanguage,
   DebtCategory,
@@ -319,6 +322,24 @@ class TechDebtServer {
             required: ['id', 'pattern', 'message', 'severity', 'category'],
           },
         },
+        {
+          name: 'check_dependencies',
+          description: 'Scan project for all dependency files and parse them. Supports 10 package managers across 30+ file formats.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              path: {
+                type: 'string',
+                description: 'Absolute path to the project root directory',
+              },
+              includeDev: {
+                type: 'boolean',
+                description: 'Optional: include development dependencies (default: true)',
+              },
+            },
+            required: ['path'],
+          },
+        },
       ],
     }));
 
@@ -354,6 +375,8 @@ class TechDebtServer {
             return await this.handleExecuteCustomRules(args);
           case 'validate_custom_pattern':
             return this.handleValidateCustomPattern(args);
+          case 'check_dependencies':
+            return await this.handleCheckDependencies(args);
           default:
             throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
         }
@@ -867,6 +890,127 @@ ${issue.description}
           },
         ],
       };
+    }
+  }
+
+  private async handleCheckDependencies(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
+    const projectPath = args.path as string;
+    const includeDev = args.includeDev !== false; // Default to true
+
+    if (!(await fileExists(projectPath))) {
+      throw new McpError(ErrorCode.InvalidParams, `Project path not found: ${projectPath}`);
+    }
+
+    // Get all supported package file names
+    const packageFileNames = getAllPackageFileNames();
+
+    // Recursively find all package files in project
+    const packageFiles: string[] = [];
+    await this.findPackageFiles(projectPath, packageFileNames, packageFiles);
+
+    if (packageFiles.length === 0) {
+      return {
+        content: [{ type: 'text', text: `No dependency files found in ${projectPath}` }],
+      };
+    }
+
+    // Parse each found package file
+    const dependencies: Array<{
+      file: string;
+      ecosystem: string;
+      dependencies: Array<{ name: string; version: string; isDev: boolean }>;
+    }> = [];
+
+    for (const filePath of packageFiles) {
+      const parser = createDependencyParser(filePath);
+      if (parser) {
+        try {
+          const content = await readFile(filePath);
+          const deps = await parser.parse(filePath, content);
+
+          // Filter dev dependencies if needed
+          const filteredDeps = includeDev ? deps : deps.filter(d => !d.isDev);
+
+          if (filteredDeps.length > 0) {
+            dependencies.push({
+              file: getRelativePath(projectPath, filePath),
+              ecosystem: parser.getEcosystem(),
+              dependencies: filteredDeps,
+            });
+          }
+        } catch (error) {
+          console.error(`Failed to parse ${filePath}:`, error);
+        }
+      }
+    }
+
+    // Format output
+    const totalDeps = dependencies.reduce((sum, f) => sum + f.dependencies.length, 0);
+    const ecosystems = [...new Set(dependencies.map(d => d.ecosystem))];
+
+    let report = `# Dependency Analysis
+
+**Project:** ${projectPath}
+**Found:** ${packageFiles.length} package file(s) across ${ecosystems.length} ecosystem(s)
+**Total Dependencies:** ${totalDeps}
+**Ecosystems:** ${ecosystems.join(', ')}
+
+`;
+
+    for (const fileInfo of dependencies) {
+      report += `## ${fileInfo.file} (${fileInfo.ecosystem})\n\n`;
+      report += `**Dependencies:** ${fileInfo.dependencies.length}\n\n`;
+
+      const prodDeps = fileInfo.dependencies.filter(d => !d.isDev);
+      const devDeps = fileInfo.dependencies.filter(d => d.isDev);
+
+      if (prodDeps.length > 0) {
+        report += `### Production (${prodDeps.length})\n`;
+        report += prodDeps.map(d => `- ${d.name}@${d.version}`).join('\n') + '\n\n';
+      }
+
+      if (devDeps.length > 0 && includeDev) {
+        report += `### Development (${devDeps.length})\n`;
+        report += devDeps.map(d => `- ${d.name}@${d.version}`).join('\n') + '\n\n';
+      }
+    }
+
+    return {
+      content: [{ type: 'text', text: report }],
+    };
+  }
+
+  private async findPackageFiles(
+    dir: string,
+    targetFiles: string[],
+    results: string[],
+    maxDepth: number = 10,
+    currentDepth: number = 0
+  ): Promise<void> {
+    if (currentDepth >= maxDepth) return;
+
+    try {
+      const entries = await readdir(dir);
+
+      for (const entry of entries) {
+        // Skip common directories that shouldn't contain top-level package files
+        if (['node_modules', '.git', 'dist', 'build', 'target', '.venv', '__pycache__'].includes(entry)) {
+          continue;
+        }
+
+        const fullPath = join(dir, entry);
+        const stats = await stat(fullPath);
+
+        if (stats.isDirectory()) {
+          await this.findPackageFiles(fullPath, targetFiles, results, maxDepth, currentDepth + 1);
+        } else if (stats.isFile()) {
+          if (targetFiles.includes(entry) || entry.endsWith('.csproj')) {
+            results.push(fullPath);
+          }
+        }
+      }
+    } catch (error) {
+      // Ignore permission errors and continue
     }
   }
 
