@@ -42,6 +42,79 @@ src/
 - Prefer `const` over `let`
 - Use ES modules with `.js` extensions in imports (required for `module: NodeNext` / `moduleResolution: NodeNext` in tsconfig.json)
 
+## Tech Debt Refactoring Rules (Self-Scan Compliance)
+
+**Current Project Health:** SQALE Rating A ⭐⭐⭐⭐⭐ (2.9% debt ratio)
+
+> **📊 See [TECH_DEBT_SCAN.md](../TECH_DEBT_SCAN.md)** for complete analysis showing how `.techdebtrc.json` reduced false positives from 101 to 81 issues (-19.8%).
+
+### File Size & Complexity Limits
+- **Max file length:** 500 lines (current: `src/index.ts` is 883 lines - needs refactoring)
+- **Max nesting depth:** 4 levels (current violations in `csharpAnalyzer.ts:267` with 14 levels)
+- **Max function length:** 50 lines
+- **Max function complexity:** 10 (cyclomatic complexity)
+
+### Configuration Impact (Measured)
+**Before .techdebtrc.json:**
+- 101 issues (17 high, 46 medium, 38 low)
+- 70 hours remediation time
+- 33 files analyzed (including tests)
+
+**After .techdebtrc.json:**
+- 81 issues (14 high, 38 medium, 29 low)
+- 60 hours remediation time
+- 25 files analyzed (production only)
+
+**Improvement:** -20 false positives (-19.8%), -10 hours (-14.3%)
+
+### Refactoring Priorities (Apply when touching these files)
+
+1. **Large Files to Split:**
+   - `src/index.ts` (883 lines) → Split into:
+     - `src/server/handlers.ts` - Tool handlers
+     - `src/server/setup.ts` - Server configuration
+     - `src/index.ts` - Entry point only
+   
+2. **Deep Nesting to Fix:**
+   - `src/analyzers/csharpAnalyzer.ts:267` - 14 levels (extract nested logic to helper functions)
+   - `src/index.ts:63` - 8 levels (use early returns)
+   - `src/core/customRulesEngine.ts:129` - 7 levels (extract helper functions)
+   - `src/core/analysisEngine.ts:93` - 5 levels (use guard clauses)
+
+3. **Non-null Assertions to Replace:**
+   - `src/index.ts:804, 809` - Using `!` operator
+   - Use optional chaining (`?.`) instead of `!` operator
+   - Add proper null checks before accessing properties
+   - Example: Replace `value!` with `value ?? defaultValue` or guard clauses
+
+4. **False Positives in Analyzers (13 high-severity):**
+   - Pattern definitions in analyzer files (not actual issues)
+   - String references like 'debugger' in config files
+   - See TECH_DEBT_SCAN.md for complete list and exclusion strategy
+
+### Code Quality Rules (Enforced)
+
+- ❌ **NO `debugger` statements** in production code (allowed in tests with clear TODOs)
+- ❌ **NO `@ts-ignore`** - Use `@ts-expect-error` with explanation comments
+- ❌ **NO console.log** in production code - Use proper logging or remove
+- ✅ **USE early returns** to reduce nesting instead of deep if-else chains
+- ✅ **EXTRACT complex logic** into well-named helper functions
+- ✅ **ADD JSDoc** to all public functions, classes, and complex private methods
+
+### When Refactoring Any File
+
+**Before making changes, check:**
+1. Current file length (if >300 lines, consider splitting)
+2. Maximum nesting depth (if >4, refactor first)
+3. Number of functions (if >10, consider splitting)
+4. Public API surface (keep minimal, extract internals)
+
+**After making changes:**
+1. Run `npm test` to ensure all tests pass
+2. Run `npm run build` to verify TypeScript compilation
+3. Check for new tech debt: Run tech-debt-mcp scan on modified files
+4. Update JSDoc comments for any changed public APIs
+
 ## Adding a New Language Analyzer
 
 1. Create `src/analyzers/[language]Analyzer.ts`

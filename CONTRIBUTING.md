@@ -94,6 +94,39 @@ src/
 - **Prefer `const`** — Use `let` only when reassignment is needed
 - **ES modules** — Use `.js` extensions in imports
 
+### Tech Debt Compliance (SQALE Rating: A ⭐⭐⭐⭐⭐)
+
+**Project maintains 2.9% debt ratio - follow these rules to keep it excellent:**
+
+> **📊 See [TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md)** for complete self-scan results showing how `.techdebtrc.json` reduced false positives by 20 issues (-19.8%).
+
+#### File Size & Complexity Limits
+- **Max file length:** 500 lines (split larger files into modules)
+- **Max nesting depth:** 4 levels (use early returns and helper functions)
+- **Max function length:** 50 lines
+- **Max cyclomatic complexity:** 10
+
+#### Code Quality Rules (Enforced)
+- ❌ **NO `debugger` statements** in production code
+- ❌ **NO `@ts-ignore`** - Use `@ts-expect-error` with explanation
+- ❌ **NO `console.log`** in production code - Remove or use proper logging
+- ✅ **USE early returns** to reduce nesting
+- ✅ **EXTRACT complex logic** into well-named helper functions
+- ✅ **REPLACE `!` operator** with optional chaining (`?.`) or null checks
+- ✅ **ADD JSDoc** to all public APIs
+
+#### Known Refactoring Targets (Don't make worse)
+1. `src/index.ts` - 883 lines (needs splitting into handlers/setup/entry modules)
+2. `src/analyzers/csharpAnalyzer.ts:267` - Deep nesting (14 levels)
+3. Non-null assertions at `src/index.ts:804, 809` - Replace with safe alternatives
+
+#### Configuration Impact
+**Before .techdebtrc.json:** 101 issues, 70 hours  
+**After .techdebtrc.json:** 81 issues, 60 hours  
+**Improvement:** -20 false positives, -10 hours
+
+**Configuration:** See `.techdebtrc.json` for project-specific rules.
+
 ### Code Style
 
 ```typescript
