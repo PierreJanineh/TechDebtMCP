@@ -7,6 +7,9 @@ import { BundlerParser } from './bundlerParser.js';
 import { CargoParser } from './cargoParser.js';
 import { GoModParser } from './goModParser.js';
 import { GradleParser } from './gradleParser.js';
+import { SwiftPackageParser } from './swiftPackageParser.js';
+import { NugetParser } from './nugetParser.js';
+import { CppParser } from './cppParser.js';
 
 /**
  * Factory function to create a dependency parser for a given file
@@ -28,6 +31,15 @@ export function createDependencyParser(filePath: string): BaseDependencyParser |
     'pom.xml': new GradleParser(),
     'build.gradle': new GradleParser(),
     'build.gradle.kts': new GradleParser(),
+    'Package.swift': new SwiftPackageParser(),
+    'Podfile': new SwiftPackageParser(),
+    'Cartfile': new SwiftPackageParser(),
+    'packages.config': new NugetParser(),
+    'Directory.Build.props': new NugetParser(),
+    'CMakeLists.txt': new CppParser(),
+    'conanfile.txt': new CppParser(),
+    'conanfile.py': new CppParser(),
+    'vcpkg.json': new CppParser(),
     // 'requirements.txt': new PipParser(), // handled by requirements check
     // ... other parsers
   };
@@ -91,6 +103,9 @@ export function getAllParsers(): BaseDependencyParser[] {
     new CargoParser(),
     new GoModParser(),
     new GradleParser(),
+    new SwiftPackageParser(),
+    new NugetParser(),
+    new CppParser(),
     // ... other parsers
   ];
 
