@@ -328,6 +328,63 @@ Validate a custom pattern before adding it as a rule.
 - `severity` (required): low, medium, high, or critical
 - `category` (required): One of the debt categories
 
+## Dependency Analysis (Phase 2)
+
+Phase 2 adds comprehensive dependency parsing across multiple ecosystems and a new MCP tool `check_dependencies` that scans a project for package manifests and returns a structured dependency report.
+
+Key capabilities:
+
+- Detects package manifests for npm, pip, Maven/Gradle, Cargo, Go Modules, Composer, Bundler, NuGet, and C/C++ package files
+- Separates production vs development dependencies
+- Filters output by `includeDev` parameter
+- Reports files that failed to parse for troubleshooting
+- Offline-first design with future integration points for vulnerability databases
+
+### `check_dependencies` Usage
+
+Tool parameters:
+
+- `path` (required): Absolute path to the project root
+- `includeDev` (optional): boolean (default: true) — include dev/test dependencies
+
+Example (MCP call):
+
+```json
+{
+  "tool": "check_dependencies",
+  "params": {
+    "path": "/absolute/path/to/project",
+    "includeDev": true
+  }
+}
+```
+
+Example output (abbreviated):
+
+```
+# Dependency Analysis
+
+**Project:** /absolute/path/to/project
+**Found:** 3 package file(s) across 2 ecosystem(s)
+**Total Dependencies:** 45
+
+## package.json (npm)
+**Dependencies:** 30
+### Production (25)
+- express@4.18.0
+- react@18.2.0
+...
+### Development (5)
+- jest@29.0.0
+- typescript@5.3.0
+...
+
+## ⚠️ Failed to parse 1 file(s)
+- path/to/bad-file: Unexpected token
+```
+
+
+
 ## SQALE Metrics
 
 Tech Debt MCP uses SQALE (Software Quality Assessment based on Lifecycle Expectations) methodology to quantify technical debt:
