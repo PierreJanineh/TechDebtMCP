@@ -3,6 +3,7 @@ import { BaseDependencyParser, ParsedDependency } from './baseParser.js';
 import { NpmParser } from './npmParser.js';
 import { PipParser } from './pipParser.js';
 import { ComposerParser } from './composerParser.js';
+import { BundlerParser } from './bundlerParser.js';
 
 /**
  * Factory function to create a dependency parser for a given file
@@ -18,6 +19,7 @@ export function createDependencyParser(filePath: string): BaseDependencyParser |
     'pyproject.toml': new PipParser(),
     'Pipfile': new PipParser(),
     'composer.json': new ComposerParser(),
+    'Gemfile': new BundlerParser(),
     // 'requirements.txt': new PipParser(), // handled by requirements check
     // ... other parsers
   };
@@ -77,6 +79,7 @@ export function getAllParsers(): BaseDependencyParser[] {
     new NpmParser(),
     new PipParser(),
     new ComposerParser(),
+    new BundlerParser(),
     // new GradleParser(),
     // ... other parsers
   ];
