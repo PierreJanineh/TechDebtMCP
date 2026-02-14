@@ -1,6 +1,7 @@
 import { basename } from 'node:path';
 import { BaseDependencyParser, ParsedDependency } from './baseParser.js';
 import { NpmParser } from './npmParser.js';
+import { PipParser } from './pipParser.js';
 
 /**
  * Factory function to create a dependency parser for a given file
@@ -13,13 +14,20 @@ export function createDependencyParser(filePath: string): BaseDependencyParser |
   // Map of file names to parser instances
   const parserMap: Record<string, BaseDependencyParser> = {
     'package.json': new NpmParser(),
-    // 'requirements.txt': new PipParser(),
+    'pyproject.toml': new PipParser(),
+    'Pipfile': new PipParser(),
+    // 'requirements.txt': new PipParser(), // handled by requirements check
     // ... other parsers
   };
 
   // Check file extension/name patterns
   if (Object.hasOwn(parserMap, fileName)) {
     return parserMap[fileName];
+  }
+
+  // Check for requirements.txt variants
+  if (fileName.startsWith('requirements') && fileName.endsWith('.txt')) {
+    return new PipParser();
   }
 
   // Check for build files
@@ -65,7 +73,7 @@ export function createDependencyParser(filePath: string): BaseDependencyParser |
 export function getAllParsers(): BaseDependencyParser[] {
   const parsers: BaseDependencyParser[] = [
     new NpmParser(),
-    // new PipParser(),
+    new PipParser(),
     // new GradleParser(),
     // ... other parsers
   ];
