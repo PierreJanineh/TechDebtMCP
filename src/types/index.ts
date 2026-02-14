@@ -221,3 +221,49 @@ export interface SQALEMetrics {
   // Breakdown by severity
   bySeverity: Record<Severity, number>;
 }
+
+// ========================================
+// Phase 2: Dependency Analysis Types
+// ========================================
+
+/**
+ * Supported package managers for dependency analysis
+ */
+export type PackageManager =
+  | 'npm'
+  | 'pip'
+  | 'maven'
+  | 'gradle'
+  | 'cargo'
+  | 'go'
+  | 'composer'
+  | 'bundler'
+  | 'conan'
+  | 'vcpkg';
+
+/**
+ * Parsed dependency information from manifest files
+ */
+export interface ParsedDependency {
+  name: string;
+  version: string;
+  isDev: boolean;
+  source: string; // e.g., "package.json", "requirements.txt"
+}
+
+/**
+ * Dependency analysis report containing all parsed dependencies
+ */
+export interface DependencyReport {
+  timestamp: string;
+  projectPath: string;
+  dependencies: ParsedDependency[];
+  packageManagers: PackageManager[];
+  summary: {
+    totalDependencies: number;
+    productionDependencies: number;
+    developmentDependencies: number;
+    ecosystems: PackageManager[];
+  };
+  issues?: TechDebtIssue[]; // Outdated/vulnerable dependencies as issues
+}
