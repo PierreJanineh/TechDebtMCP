@@ -15,7 +15,7 @@ This document outlines the development phases, release strategy, and future enha
 
 ### [Unreleased] - Quality & Compliance Release
 
-**Status:** ✅ **READY FOR RELEASE** (Next version after v1.1.0)
+**Status:** ✅ **READY FOR RELEASE** (Next version: v2.0.0)
 
 Focus on project quality, code compliance, and transparent metrics.
 
@@ -93,7 +93,7 @@ Enhanced Swift analyzer with comprehensive SwiftUI-specific technical debt detec
 #### Deliverables
 - Tests: Repo total 96 passing (SwiftUI tests: 13 Phase 1 + 13 Phase 2 + 22 Phase 3 todo)
 - Documentation: Updated README with SwiftUI section, GITHUB_PACKAGES.md
-- NPM Package: Published as `tech-debt-mcp@1.1.0`
+- NPM Package: Published as `tech-debt-mcp@1.1.0` (historical)
 - GitHub Packages: Available on both npm and GitHub Packages registries
 
 ---
