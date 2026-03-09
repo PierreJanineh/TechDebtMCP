@@ -13,11 +13,12 @@ import { getSupportedLanguages, LANGUAGE_CONFIGS } from '../config/languages.js'
 import { getRelativePath, readFile, fileExists } from '../utils/fileUtils.js';
 import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
+import { formatReport, getSeverityEmoji, formatMinutes } from './formatters.js';
+import { TOOL_DEFINITIONS } from './tools.js';
 import {
   SupportedLanguage,
   DebtCategory,
   Severity,
-  TechDebtReport,
   CustomPattern,
   ParsedDependency,
   PackageManager,
@@ -33,25 +34,7 @@ export function attachHandlers(mcpServer: McpServer): void {
 
   // List available tools
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
-    tools: [
-      // ...existing tools...
-      {
-        name: 'analyze_project',
-        description: 'Analyze an entire project for technical debt. Scans all supported files and returns a comprehensive report with issues, metrics, and recommendations.',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            path: { type: 'string', description: 'Absolute path to the project root directory' },
-            languages: { type: 'array', items: { type: 'string' } },
-            categories: { type: 'array', items: { type: 'string' } },
-            severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
-            maxFiles: { type: 'number' },
-          },
-          required: ['path'],
-        },
-      },
-      // The rest of the tool definitions are the same as before; to keep this edit concise we re-register them programmatically below
-    ],
+    tools: [...TOOL_DEFINITIONS],
   }));
 
   // For brevity we'll register the full set of tools using the same logic as before
@@ -204,14 +187,6 @@ async function handleGetSqaleMetrics(engine: AnalysisEngine, args: Record<string
   return { content: [{ type: 'text', text: sqaleReport }] };
 }
 
-function formatMinutes(minutes: number): string {
-  if (minutes === 0) return '0m';
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  if (hours === 0) return `${mins}m`;
-  if (mins === 0) return `${hours}h`;
-  return `${hours}h ${mins}m`;
-}
 
 function handleListSupportedLanguages(): { content: Array<{ type: string; text: string }> } {
   const languages = getSupportedLanguages();
@@ -267,19 +242,6 @@ async function handleGetIssuesByCategory(engine: AnalysisEngine, args: Record<st
   const formatted = `# ${category.toUpperCase()} Issues\n\nFound **${issues.length}** issues in the ${category} category.\n\n${issues.slice(0, 50).map(i => `## ${i.title}\n- **File:** ${i.file}${i.line ? `:${i.line}` : ''}\n- **Severity:** ${i.severity}\n- **Rule:** ${i.rule}\n- **Description:** ${i.description}\n${i.suggestion ? `- **Suggestion:** ${i.suggestion}` : ''}\n`).join('\n---\n\n')}${issues.length > 50 ? `\n... and ${issues.length - 50} more issues.` : ''}\n`;
 
   return { content: [{ type: 'text', text: formatted }] };
-}
-
-function formatReport(report: TechDebtReport): string {
-  return `# Tech Debt Analysis Report\n\n**Generated:** ${report.timestamp}\n**Project:** ${report.project.path}\n\n## Project Overview\n- **Total Files:** ${report.project.totalFiles}\n- **Analyzed Files:** ${report.project.analyzedFiles}\n- **Languages:** ${report.project.languages.join(', ')}\n- **Package Managers:** ${report.project.packageManagers.join(', ') || 'None detected'}\n\n## Summary\n\n### Health Score: ${report.summary.healthScore}/100\n### Debt Score: ${report.summary.debtScore}/100\n\n### Issues by Severity\n| Severity | Count |\n|----------|-------|\n| 🔴 Critical | ${report.summary.bySeverity.critical} |\n| 🟠 High | ${report.summary.bySeverity.high} |\n| 🟡 Medium | ${report.summary.bySeverity.medium} |\n| 🟢 Low | ${report.summary.bySeverity.low} |\n\n### Issues by Category\n${Object.entries(report.summary.byCategory).filter(([_, count]) => count > 0).map(([cat, count]) => `- **${cat}:** ${count}`).join('\n')}\n\n### Issues by Language\n${Object.entries(report.summary.byLanguage).map(([lang, count]) => `- **${lang}:** ${count}`).join('\n')}\n\n## Top Issues\n\n${report.issues.sort((a, b) => { const severityOrder: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 }; return severityOrder[a.severity] - severityOrder[b.severity]; }).slice(0, 20).map(i => `### ${getSeverityEmoji(i.severity)} ${i.title}\n- **File:** ${i.file}${i.line ? `:${i.line}` : ''}\n- **Category:** ${i.category}\n- **Severity:** ${i.severity}\n${i.description}\n${i.suggestion ? `\n💡 **Suggestion:** ${i.suggestion}` : ''}`).join('\n---\n\n')}\n\n${report.issues.length > 20 ? `\n... and ${report.issues.length - 20} more issues.\n` : ''}\n\n## Recommendations\n\n${report.recommendations.map((r, i) => `### ${i + 1}. ${r.title}\n${r.description}\n\n**Effort:** ${r.effort} | **Impact:** ${r.impact}\n\n**Action Items:**\n${r.actionItems.map(a => `- ${a}`).join('\n')}\n`).join('\n')}`;
-}
-
-function getSeverityEmoji(severity: Severity): string {
-  switch (severity) {
-    case 'critical': return '🔴';
-    case 'high': return '🟠';
-    case 'medium': return '🟡';
-    case 'low': return '🟢';
-  }
 }
 
 // Custom Rules Handlers

@@ -173,27 +173,5 @@ export const TOOL_DEFINITIONS = [
       required: ['path'],
     },
   },
-  {
-    name: 'validate_config',
-    description: 'Validate a .techdebtrc.json configuration file for syntax and schema correctness.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        path: { type: 'string', description: 'Absolute path to the project root directory or directly to a .techdebtrc.json file' },
-      },
-      required: ['path'],
-    },
-  },
-  {
-    name: 'get_vulnerability_report',
-    description: 'Generate an offline dependency report listing all project dependencies for vulnerability review. Note: actual CVE lookups require Phase 2b online integration.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        path: { type: 'string', description: 'Absolute path to the project root directory' },
-        includeDev: { type: 'boolean', description: 'Optional: include development dependencies (default: false)' },
-      },
-      required: ['path'],
-    },
-  },
+
 ] as const;

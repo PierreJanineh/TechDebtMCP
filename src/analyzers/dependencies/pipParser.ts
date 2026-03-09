@@ -224,7 +224,7 @@ export class PipParser extends BaseDependencyParser {
       for (const [groupName, groupData] of Object.entries(groups)) {
         if (typeof groupData === 'object') {
           const group = groupData as Record<string, unknown>;
-          const isDev = groupName === 'dev' || (group.optional === false);
+          const isDev = groupName === 'dev';
 
           if (group.dependencies && typeof group.dependencies === 'object') {
             const groupDeps = group.dependencies as Record<string, unknown>;

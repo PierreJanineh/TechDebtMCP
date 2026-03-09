@@ -214,6 +214,7 @@ sphinx = "^4.0"`;
       expect(pytest?.isDev).toBe(true);
       const sphinx = deps.find(d => d.name === 'sphinx');
       expect(sphinx).toBeDefined();
+      expect(sphinx?.isDev).toBe(false);
     });
 
     it('should handle invalid TOML', async () => {
