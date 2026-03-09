@@ -32,7 +32,14 @@ Tech Debt MCP is a Model Context Protocol server that analyzes technical debt ac
 ```
 TechDebtMCP/
 ├── src/
-│   ├── index.ts                 # MCP Server entry point and tool handlers
+│   ├── index.ts                 # Entry point — creates server, attaches handlers, runs
+│   ├── server/
+│   │   ├── setup.ts             # McpServer instantiation and transport wiring
+│   │   ├── handlers.ts          # Core MCP tool request handlers & dispatch
+│   │   ├── tools.ts             # Centralized TOOL_DEFINITIONS array
+│   │   ├── formatters.ts        # Output formatting helpers
+│   │   ├── configValidator.ts   # .techdebtrc.json validation handler
+│   │   └── dependencyHandlers.ts # Dependency analysis & vulnerability report handlers
 │   ├── types/
 │   │   └── index.ts             # All TypeScript interfaces (single source of truth)
 │   ├── config/
@@ -40,21 +47,19 @@ TechDebtMCP/
 │   ├── core/
 │   │   ├── analysisEngine.ts    # Main orchestrator for analysis
 │   │   ├── sqaleEngine.ts       # ✅ SQALE metrics calculations (Phase 1 - COMPLETE)
-│   │   ├── customRulesEngine.ts # ✅ Custom rules engine (Phase 5 - COMPLETE)
-│   │   ├── snapshotManager.ts   # Snapshot & trend tracking (Phase 3)
-│   │   └── complexityAnalyzer.ts # Code complexity calculations (Phase 4)
+│   │   └── customRulesEngine.ts # ✅ Custom rules engine (Phase 5 - COMPLETE)
 │   ├── analyzers/
 │   │   ├── baseAnalyzer.ts      # Abstract base class for all language analyzers
-│   │   ├── index.ts             # Analyzer factory
-│   │   ├── [language]Analyzer.ts # Language-specific analyzers (one per supported language)
-│   │   └── dependencies/        # Dependency parsers (Phase 2, future)
-│   │       ├── baseParser.ts
-│   │       └── [ecosystem]Parser.ts
+│   │   ├── index.ts             # Analyzer factory (createAnalyzer)
+│   │   ├── [language]Analyzer.ts # 14 language-specific analyzers
+│   │   └── dependencies/        # ✅ Dependency parsers (Phase 2 - COMPLETE)
+│   │       ├── baseParser.ts    # Abstract base parser
+│   │       ├── index.ts         # Parser factory (createDependencyParser)
+│   │       └── [ecosystem]Parser.ts # 10 ecosystem parsers
 │   ├── services/
 │   │   └── vulnerabilityService.ts # External API integration (Phase 2b, future)
 │   └── utils/
 │       └── fileUtils.ts         # File system utilities
-├── __tests__/                   # Repository-level test suite
 ├── dist/                        # Compiled output
 ├── package.json
 ├── tsconfig.json
@@ -80,7 +85,7 @@ createAnalyzer(language) → Switch statement
 
 **Files involved:**
 - `src/analyzers/index.ts` — `createAnalyzer()` factory
-- `src/analyzers/dependencies/index.ts` — Dependency parser factory (future)
+- `src/analyzers/dependencies/index.ts` — `createDependencyParser()` factory (10 ecosystems)
 
 ### 2. Abstract Base Class with Inheritance
 
@@ -633,7 +638,9 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
    src/
    ├── index.ts (entry point, ~50 lines)
    └── server/
-       ├── handlers.ts (tool handlers, ~400 lines)
+       ├── handlers.ts (core tool handlers, ~325 lines)
+       ├── configValidator.ts (config validation handler)
+       ├── dependencyHandlers.ts (dependency & vulnerability handlers)
        └── setup.ts (server setup, ~300 lines)
    ```
 

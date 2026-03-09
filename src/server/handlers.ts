@@ -8,20 +8,17 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { AnalysisEngine } from '../core/analysisEngine.js';
 import { CustomRulesEngine } from '../core/customRulesEngine.js';
 import { analyzeFile } from '../analyzers/index.js';
-import { createDependencyParser, getAllPackageFileNames } from '../analyzers/dependencies/index.js';
 import { getSupportedLanguages, LANGUAGE_CONFIGS } from '../config/languages.js';
-import { getRelativePath, readFile, fileExists } from '../utils/fileUtils.js';
-import { readdir, stat } from 'node:fs/promises';
-import { join } from 'node:path';
+import { readFile, fileExists } from '../utils/fileUtils.js';
 import { formatReport, formatMinutes } from './formatters.js';
 import { TOOL_DEFINITIONS } from './tools.js';
+import { handleValidateConfig } from './configValidator.js';
+import { handleCheckDependencies, handleGetVulnerabilityReport } from './dependencyHandlers.js';
 import {
   SupportedLanguage,
   DebtCategory,
   Severity,
   CustomPattern,
-  ParsedDependency,
-  PackageManager,
 } from '../types/index.js';
 
 /**
@@ -71,6 +68,10 @@ export function attachHandlers(mcpServer: McpServer): void {
           return handleValidateCustomPattern(args as Record<string, unknown>);
         case 'check_dependencies':
           return await handleCheckDependencies(args as Record<string, unknown>);
+        case 'validate_config':
+          return await handleValidateConfig(args as Record<string, unknown>);
+        case 'get_vulnerability_report':
+          return await handleGetVulnerabilityReport(args as Record<string, unknown>);
         default:
           throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
       }
@@ -322,102 +323,3 @@ function handleValidateCustomPattern(args: Record<string, unknown>): { content: 
   return { content: [{ type: 'text', text: `❌ Pattern validation failed:\n${validation.errors.map(e => `- ${e}`).join('\n')}` }] };
 }
 
-// Dependency checker
-async function handleCheckDependencies(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const projectPath = args.path as string;
-  const includeDev = args.includeDev !== false;
-  if (!(await fileExists(projectPath))) throw new McpError(ErrorCode.InvalidParams, `Project path not found: ${projectPath}`);
-
-  const packageFileNames = getAllPackageFileNames();
-  const packageFiles: string[] = [];
-  const failedParses: Array<{ file: string; error: string }> = [];
-  const dependencies: Array<{ file: string; ecosystem: PackageManager | string; dependencies: ParsedDependency[] }> = [];
-  await findPackageFiles(projectPath, packageFileNames, packageFiles);
-
-  for (const filePath of packageFiles) {
-    const parser = createDependencyParser(filePath);
-    if (parser) {
-      try {
-        const content = await readFile(filePath);
-        const deps = await parser.parse(filePath, content);
-        const filteredDeps = includeDev ? deps : deps.filter(d => !d.isDev);
-
-        if (filteredDeps.length > 0) {
-          dependencies.push({
-            file: getRelativePath(projectPath, filePath),
-            ecosystem: parser.getEcosystem(),
-            dependencies: filteredDeps,
-          });
-        }
-      } catch (error) {
-        const rel = getRelativePath(projectPath, filePath);
-        console.error(`Failed to parse ${filePath} (${rel}):`, error instanceof Error ? error.message : String(error));
-        failedParses.push({ file: rel, error: error instanceof Error ? error.message : String(error) });
-      }
-    }
-  }
-
-  const totalDeps = dependencies.reduce((sum: number, f: { dependencies: ParsedDependency[] }) => sum + f.dependencies.length, 0);
-  const ecosystems = [...new Set(dependencies.map((d: { ecosystem: PackageManager | string }) => d.ecosystem))];
-
-  let report = `# Dependency Analysis\n\n**Project:** ${projectPath}\n**Found:** ${packageFiles.length} package file(s) across ${ecosystems.length} ecosystem(s)\n**Total Dependencies:** ${totalDeps}\n**Ecosystems:** ${ecosystems.join(', ')}\n\n`;
-
-  for (const fileInfo of dependencies) {
-    report += `## ${fileInfo.file} (${fileInfo.ecosystem})\n\n`;
-    report += `**Dependencies:** ${fileInfo.dependencies.length}\n\n`;
-
-    const prodDeps = fileInfo.dependencies.filter((d: ParsedDependency) => !d.isDev);
-    const devDeps = fileInfo.dependencies.filter((d: ParsedDependency) => d.isDev);
-
-    if (prodDeps.length > 0) {
-      report += `### Production (${prodDeps.length})\n`;
-      report += prodDeps.map((d: ParsedDependency) => `- ${d.name}@${d.version}`).join('\n') + '\n\n';
-    }
-
-    if (devDeps.length > 0 && includeDev) {
-      report += `### Development (${devDeps.length})\n`;
-      report += devDeps.map((d: ParsedDependency) => `- ${d.name}@${d.version}`).join('\n') + '\n\n';
-    }
-  }
-
-  if (failedParses.length > 0) {
-    report += `## ⚠️ Failed to parse ${failedParses.length} file(s)\n\n`;
-    report += failedParses.map(f => `- ${f.file}: ${f.error}`).join('\n') + '\n\n';
-  }
-
-  return { content: [{ type: 'text', text: report }] };
-}
-
-async function findPackageFiles(
-  dir: string,
-  targetFiles: string[],
-  results: string[],
-  maxDepth: number = 10,
-  currentDepth: number = 0
-): Promise<void> {
-  if (currentDepth >= maxDepth) return;
-
-  try {
-    const entries = await readdir(dir);
-
-    for (const entry of entries) {
-      if (['node_modules', '.git', 'dist', 'build', 'target', '.venv', '__pycache__'].includes(entry)) {
-        continue;
-      }
-
-      const fullPath = join(dir, entry);
-      const stats = await stat(fullPath);
-
-      if (stats.isDirectory()) {
-        await findPackageFiles(fullPath, targetFiles, results, maxDepth, currentDepth + 1);
-      } else if (stats.isFile()) {
-        if (targetFiles.includes(entry) || entry.endsWith('.csproj')) {
-          results.push(fullPath);
-        }
-      }
-    }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error(`findPackageFiles: failed to scan directory "${dir}": ${message}`);
-  }
-}

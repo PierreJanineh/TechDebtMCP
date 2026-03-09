@@ -137,13 +137,13 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 
 ## Current Status
 
-**Active Development:** Quality & Compliance Release - Ready for tagging and publishing
+**Active Development:** Phase 2 - Dependency Analysis complete, pending PR merge and v2.0.0 release
 
 **Latest Release:** v1.1.0 (SwiftUI Analysis) - 2026-02-07
 
-**Unreleased Changes:** Quality & Compliance Release with CODE_OF_CONDUCT, .techdebtrc.json, TECH_DEBT_SCAN.md, and documentation updates
+**Unreleased Changes:** Quality & Compliance + Phase 2 — 10 dependency parsers, 3 new MCP tools (`check_dependencies`, `validate_config`, `get_vulnerability_report`), index.ts refactor into `src/server/` modules
 
-**Next Phase:** Phase 2 - Dependency Analysis Infrastructure (v2.0.0)
+**Next Phase:** Phase 3 - Snapshot & Trend Tracking (v2.1.0)
 
 ## Phase Overview
 
@@ -154,7 +154,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 | Phase 5 | v1.0.0 | ✅ Complete | Custom rules engine |
 | v1.1.0 | v1.1.0 | ✅ Complete | SwiftUI-specific analysis (14 checks) |
 | Quality & Compliance | Unreleased | ✅ Ready | Code of Conduct, .techdebtrc.json, TECH_DEBT_SCAN.md, documentation |
-| Phase 2 | v2.0.0 | 📋 Planned | Dependency analysis infrastructure ready; parser implementations pending |
+| Phase 2 | v2.0.0 | ✅ Complete | Dependency analysis — 10 parsers, 3 MCP tools, index.ts refactor |
 | Phase 3 | v2.1.0 | 📋 Planned | Snapshot & trend tracking |
 | Phase 4 | v2.2.0 | 📋 Planned | Code complexity analysis |
 
@@ -162,56 +162,32 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 
 ### Phase 2: Dependency Analysis (v2.0.0)
 
-**Status:** 📋 **PLANNED** (After Quality & Compliance Release)
+**Status:** ✅ **COMPLETE** (Pending PR merge and v2.0.0 tag)
 
-**Objective:** Parse and analyze project dependencies across multiple package managers, detect outdated packages and security vulnerabilities.
+**Objective:** Parse and analyze project dependencies across multiple package managers.
 
-#### Key Features
+#### Delivered
 
-- **Dependency Parsing:**
-  - npm (package.json, package-lock.json)
-  - pip (requirements.txt, Pipfile, setup.py)
-  - Maven (pom.xml)
-  - Gradle (build.gradle, build.gradle.kts)
-  - Cargo (Cargo.toml, Cargo.lock)
-  - Go Modules (go.mod, go.sum)
-  - Composer (composer.json, composer.lock)
-  - Bundler (Gemfile, Gemfile.lock)
+- **10 Dependency Parsers** (`src/analyzers/dependencies/`):
+  - npm (package.json) — `npmParser.ts`
+  - pip (requirements.txt, pyproject.toml, Pipfile) — `pipParser.ts`
+  - Maven/Gradle (pom.xml, build.gradle, build.gradle.kts) — `gradleParser.ts`
+  - Swift (Package.swift, Podfile, Cartfile) — `swiftPackageParser.ts`
+  - NuGet (.csproj, packages.config) — `nugetParser.ts`
+  - Cargo (Cargo.toml) — `cargoParser.ts`
+  - Go Modules (go.mod) — `goModParser.ts`
+  - Composer (composer.json) — `composerParser.ts`
+  - Bundler (Gemfile) — `bundlerParser.ts`
+  - C/C++ (CMakeLists.txt, conanfile, vcpkg.json) — `cppParser.ts`
 
-- **Vulnerability Detection:**
-  - Offline-first architecture
-  - Optional integration with external APIs (OSV.dev, npm audit, Snyk)
-  - CVE database lookup
-  - Severity assessment
+- **3 New MCP Tools:**
+  - `check_dependencies` — scans manifests, returns production/dev split per ecosystem
+  - `validate_config` — validates `.techdebtrc.json` schema and custom patterns
+  - `get_vulnerability_report` — offline dependency inventory (online CVE lookup in Phase 2b)
 
-#### Implementation Plan
+- **`src/index.ts` refactored** — split into `src/server/` modules (setup, handlers, tools, formatters)
 
-**New Files:**
-```
-src/
-├── analyzers/
-│   └── dependencies/
-│       ├── baseParser.ts          # Abstract base parser
-│       ├── index.ts                # Parser factory
-│       ├── npmParser.ts            # npm/Node.js
-│       ├── pipParser.ts            # pip/Python
-│       ├── mavenParser.ts          # Maven/Java
-│       ├── gradleParser.ts         # Gradle/Java/Kotlin
-│       ├── cargoParser.ts          # Cargo/Rust
-│       ├── goModParser.ts          # Go Modules
-│       ├── composerParser.ts       # Composer/PHP
-│       └── bundlerParser.ts        # Bundler/Ruby
-└── services/
-    └── vulnerabilityService.ts     # External API integration (optional)
-```
-
-**New MCP Tools:**
-- `check_dependencies` - Analyze project dependencies
-- `validate_config` - Validate dependency configurations
-- `get_vulnerability_report` - Get security vulnerability details
-
-**Types Already Defined:**
-- `DependencyInfo` (in `src/types/index.ts`)
+- **Offline-first** — no external API calls; Phase 2b adds optional OSV API integration
 - `VulnerabilityInfo` (in `src/types/index.ts`)
 
 **New Types Needed:**

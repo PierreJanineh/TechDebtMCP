@@ -27,8 +27,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Returns a structured dependency report with production vs development dependencies
   - Includes failed-parse reporting for troubleshooting
   - Parsers for npm, pip, Maven/Gradle, Cargo, Go Modules, Composer, Bundler, NuGet, C/C++, and Swift Package Manager added under `src/analyzers/dependencies/`
+- **validate_config** MCP tool (Phase 2 - Config Validation)
+  - Validates `.techdebtrc.json` syntax and schema
+  - Checks `ignore`, `rules`, `severity`, and `customPatterns` fields
+  - Reuses `CustomRulesEngine.validatePattern()` for custom pattern validation
+  - Returns detailed errors and warnings with actionable messages
+- **get_vulnerability_report** MCP tool (Phase 2 - Offline Vulnerability Inventory)
+  - Generates an offline dependency inventory for vulnerability review
+  - Lists all dependencies by ecosystem in tabular format
+  - Offline-first; online CVE lookup planned for Phase 2b (OSV API)
+  - Accepts `includeDev` flag (default: false) to focus on production dependencies
 
 ### Changed
+- **src/index.ts refactored** — split 883-line monolith into focused modules:
+  - `src/server/setup.ts` — server instantiation and transport wiring
+  - `src/server/handlers.ts` — all MCP tool request handlers
+  - `src/server/tools.ts` — centralized `TOOL_DEFINITIONS` array
+  - `src/server/formatters.ts` — output formatting helpers
+  - `src/index.ts` now a 16-line entry point only
 - **README.md** - Added Code Quality section with updated SQALE rating
   - Self-scan results (A rating, 2.9% debt ratio, down from 3.4%)
   - Link to TECH_DEBT_SCAN.md with before/after comparison
