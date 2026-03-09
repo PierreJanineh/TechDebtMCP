@@ -27,8 +27,8 @@ export class JavaScriptAnalyzer extends BaseAnalyzer {
       tags: ['debug', 'cleanup'],
     }));
 
-    // Debugger statements
-    issues.push(...this.checkPattern(filePath, content, /\bdebugger\b/g, {
+    // Debugger statements - exclude matches inside strings/comments
+    issues.push(...this.checkPattern(filePath, content, /(?<!["'])debugger\b/g, {
       category: 'code-quality',
       severity: 'high',
       title: 'Debugger statement found',

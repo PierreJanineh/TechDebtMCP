@@ -132,82 +132,113 @@ export class PipParser extends BaseDependencyParser {
       const data = toml.parse(content) as Record<string, unknown>;
 
       // PEP 517/518 standard format
-      if (data.project && typeof data.project === 'object') {
-        const project = data.project as Record<string, unknown>;
-        if (Array.isArray(project.dependencies)) {
-          for (const dep of project.dependencies) {
-            const parsed = this.parseDependencyString(dep as string);
-            if (parsed) {
-              dependencies.push({
-                ...parsed,
-                isDev: false,
-                source: filePath,
-              });
-            }
-          }
-        }
-
-        // Optional dependencies
-        if (project['optional-dependencies'] && typeof project['optional-dependencies'] === 'object') {
-          const optDeps = project['optional-dependencies'] as Record<string, unknown[]>;
-          for (const depList of Object.values(optDeps)) {
-            if (Array.isArray(depList)) {
-              for (const dep of depList) {
-                const parsed = this.parseDependencyString(dep as string);
-                if (parsed) {
-                  dependencies.push({
-                    ...parsed,
-                    isDev: false,
-                    source: filePath,
-                  });
-                }
-              }
-            }
-          }
-        }
-      }
+      this.parsePep517Dependencies(data, dependencies, filePath);
 
       // Poetry format
-      if (data.tool && typeof data.tool === 'object') {
-        const tool = data.tool as Record<string, unknown>;
-        if (tool.poetry && typeof tool.poetry === 'object') {
-          const poetry = tool.poetry as Record<string, unknown>;
+      this.parsePoetryDependencies(data, dependencies, filePath);
 
-          // Poetry dependencies
-          if (poetry.dependencies && typeof poetry.dependencies === 'object') {
-            const deps = poetry.dependencies as Record<string, unknown>;
-            for (const [name, version] of Object.entries(deps)) {
-              if (name !== 'python') {
-                dependencies.push({
-                  name,
-                  version: typeof version === 'string' ? version : JSON.stringify(version),
-                  isDev: false,
-                  source: filePath,
-                });
-              }
-            }
-          }
-
-          // Poetry dev-dependencies
-          if (poetry['dev-dependencies'] && typeof poetry['dev-dependencies'] === 'object') {
-            const devDeps = poetry['dev-dependencies'] as Record<string, unknown>;
-            for (const [name, version] of Object.entries(devDeps)) {
-              dependencies.push({
-                name,
-                version: typeof version === 'string' ? version : JSON.stringify(version),
-                isDev: true,
-                source: filePath,
-              });
-            }
-          }
-        }
-      }
-
-      return dependencies;
     } catch (error) {
       throw new Error(
         `Failed to parse pyproject.toml: ${error instanceof Error ? error.message : String(error)}`
       );
+    }
+
+    return dependencies;
+  }
+
+  private parsePep517Dependencies(data: Record<string, unknown>, dependencies: ParsedDependency[], filePath: string): void {
+    const project = data.project as Record<string, unknown>;
+    if (!project) return;
+
+    // Main dependencies
+    this.parseDependencyArray(project.dependencies, dependencies, filePath, false);
+
+    // Optional dependencies
+    this.parseOptionalDependencies(project, dependencies, filePath);
+  }
+
+  private parseDependencyArray(depArray: unknown, dependencies: ParsedDependency[], filePath: string, isDev: boolean): void {
+    if (!Array.isArray(depArray)) return;
+
+    for (const dep of depArray) {
+      const parsed = this.parseDependencyString(dep as string);
+      if (parsed) {
+        dependencies.push({
+          ...parsed,
+          isDev,
+          source: filePath,
+        });
+      }
+    }
+  }
+
+  private parseOptionalDependencies(project: Record<string, unknown>, dependencies: ParsedDependency[], filePath: string): void {
+    const optDeps = project['optional-dependencies'];
+    if (!optDeps || typeof optDeps !== 'object') return;
+
+    const optionalDeps = optDeps as Record<string, unknown[]>;
+    for (const depList of Object.values(optionalDeps)) {
+      this.parseDependencyArray(depList, dependencies, filePath, false);
+    }
+  }
+
+  private parsePoetryDependencies(data: Record<string, unknown>, dependencies: ParsedDependency[], filePath: string): void {
+    if (!data.tool || typeof data.tool !== 'object') return;
+
+    const tool = data.tool as Record<string, unknown>;
+    if (!tool.poetry || typeof tool.poetry !== 'object') return;
+
+    const poetry = tool.poetry as Record<string, unknown>;
+
+    // Poetry dependencies
+    if (poetry.dependencies && typeof poetry.dependencies === 'object') {
+      const deps = poetry.dependencies as Record<string, unknown>;
+      for (const [name, version] of Object.entries(deps)) {
+        if (name !== 'python') {
+          dependencies.push({
+            name,
+            version: typeof version === 'string' ? version : JSON.stringify(version),
+            isDev: false,
+            source: filePath,
+          });
+        }
+      }
+    }
+
+    // Poetry dev-dependencies
+    if (poetry['dev-dependencies'] && typeof poetry['dev-dependencies'] === 'object') {
+      const devDeps = poetry['dev-dependencies'] as Record<string, unknown>;
+      for (const [name, version] of Object.entries(devDeps)) {
+        dependencies.push({
+          name,
+          version: typeof version === 'string' ? version : JSON.stringify(version),
+          isDev: true,
+          source: filePath,
+        });
+      }
+    }
+
+    // Poetry group dependencies (Poetry 1.2+)
+    if (poetry.group && typeof poetry.group === 'object') {
+      const groups = poetry.group as Record<string, unknown>;
+      for (const [groupName, groupData] of Object.entries(groups)) {
+        if (typeof groupData === 'object') {
+          const group = groupData as Record<string, unknown>;
+          const isDev = groupName === 'dev' || (group.optional === false);
+
+          if (group.dependencies && typeof group.dependencies === 'object') {
+            const groupDeps = group.dependencies as Record<string, unknown>;
+            for (const [name, version] of Object.entries(groupDeps)) {
+              dependencies.push({
+                name,
+                version: typeof version === 'string' ? version : JSON.stringify(version),
+                isDev: isDev,
+                source: filePath,
+              });
+            }
+          }
+        }
+      }
     }
   }
 
