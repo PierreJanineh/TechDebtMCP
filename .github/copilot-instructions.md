@@ -9,7 +9,7 @@ Tech Debt MCP is a Model Context Protocol server for analyzing technical debt ac
 
 ```
 src/
-├── index.ts              # MCP Server entry point and tool routing
+├── index.ts              # Thin entry point — delegates to src/server/
 ├── types/
 │   └── index.ts          # All TypeScript interfaces (single source of truth)
 ├── config/
@@ -18,10 +18,22 @@ src/
 │   ├── analysisEngine.ts    # Main orchestrator
 │   ├── sqaleEngine.ts       # ✅ SQALE metrics (Phase 1 - COMPLETE)
 │   └── customRulesEngine.ts # ✅ Custom rules (Phase 5 - COMPLETE)
+├── server/
+│   ├── setup.ts          # Server creation, version resolution, stdio transport
+│   ├── handlers.ts       # Tool call dispatch + all handler implementations
+│   ├── tools.ts          # Centralized TOOL_DEFINITIONS array (single source of truth)
+│   ├── formatters.ts     # Report formatting helpers (formatReport, getSeverityEmoji, formatMinutes)
+│   └── __tests__/
+│       └── handlers.test.ts
 ├── analyzers/
 │   ├── baseAnalyzer.ts   # Abstract base class (shared logic)
-│   ├── index.ts          # Factory pattern for creating analyzers
-│   └── [language]Analyzer.ts # One file per language (14 total)
+│   ├── index.ts          # Factory pattern: createAnalyzer()
+│   ├── [language]Analyzer.ts # One file per language (14 total)
+│   └── dependencies/
+│       ├── baseParser.ts        # Abstract BaseDependencyParser
+│       ├── index.ts             # Factory: createDependencyParser(), getAllPackageFileNames()
+│       ├── [ecosystem]Parser.ts # One file per ecosystem (10 total)
+│       └── __tests__/
 └── utils/
     └── fileUtils.ts      # File system helpers
 ```
@@ -51,8 +63,8 @@ src/
 > **📊 See [TECH_DEBT_SCAN.md](../TECH_DEBT_SCAN.md)** for complete analysis showing how `.techdebtrc.json` reduced false positives from 101 to 81 issues (-19.8%).
 
 ### File Size & Complexity Limits
-- **Max file length:** 500 lines (current: `src/index.ts` is 883 lines - needs refactoring)
-- **Max nesting depth:** 4 levels (current violations in `csharpAnalyzer.ts:267` with 14 levels)
+- **Max file length:** 500 lines
+- **Max nesting depth:** 4 levels
 - **Max function length:** 50 lines
 - **Max function complexity:** 10 (cyclomatic complexity)
 
@@ -71,25 +83,11 @@ src/
 
 ### Refactoring Priorities (Apply when touching these files)
 
-1. **Large Files to Split:**
-   - `src/index.ts` (883 lines) → Split into:
-     - `src/server/handlers.ts` - Tool handlers
-     - `src/server/setup.ts` - Server configuration
-     - `src/index.ts` - Entry point only
-   
-2. **Deep Nesting to Fix:**
-   - `src/analyzers/csharpAnalyzer.ts:267` - 14 levels (extract nested logic to helper functions)
-   - `src/index.ts:63` - 8 levels (use early returns)
+1. **Deep Nesting to Fix:**
    - `src/core/customRulesEngine.ts:129` - 7 levels (extract helper functions)
    - `src/core/analysisEngine.ts:93` - 5 levels (use guard clauses)
 
-3. **Non-null Assertions to Replace:**
-   - `src/index.ts:804, 809` - Using `!` operator
-   - Use optional chaining (`?.`) instead of `!` operator
-   - Add proper null checks before accessing properties
-   - Example: Replace `value!` with `value ?? defaultValue` or guard clauses
-
-4. **False Positives in Analyzers (13 high-severity):**
+2. **False Positives in Analyzers:**
    - Pattern definitions in analyzer files (not actual issues)
    - String references like 'debugger' in config files
    - See TECH_DEBT_SCAN.md for complete list and exclusion strategy
@@ -149,7 +147,9 @@ src/
 
 ## Adding a New MCP Tool
 
-1. Add tool definition in `ListToolsRequestSchema` handler in `src/index.ts`:
+> ⚠️ **CRITICAL:** Always add the definition and the handler together. A tool in `TOOL_DEFINITIONS` with no handler case will throw "Unknown tool" at runtime. A handler case with no definition is invisible to MCP clients.
+
+1. Add tool definition to `TOOL_DEFINITIONS` in `src/server/tools.ts`:
    ```typescript
    {
      name: 'tool_name',
@@ -161,17 +161,32 @@ src/
      },
    }
    ```
-2. Add case in `CallToolRequestSchema` switch:
+2. Add case in `CallToolRequestSchema` switch in `src/server/handlers.ts`:
    ```typescript
    case 'tool_name':
-     return await this.handleToolName(args);
+     return await handleToolName(args as Record<string, unknown>);
    ```
-3. Create handler method:
+3. Create handler function in `src/server/handlers.ts`:
    ```typescript
-   private async handleToolName(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
+   async function handleToolName(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
      // Implementation
    }
    ```
+4. The `ListToolsRequestSchema` handler uses `[...TOOL_DEFINITIONS]` automatically — no changes needed there.
+
+## Adding a New Dependency Parser
+
+1. Create `src/analyzers/dependencies/[ecosystem]Parser.ts` extending `BaseDependencyParser`
+2. Register in `src/analyzers/dependencies/index.ts` factory (`createDependencyParser`) and `getAllPackageFileNames()`
+3. Add tests in `src/analyzers/dependencies/__tests__/[ecosystem]Parser.test.ts`
+
+### isDev Convention for Dependency Parsers
+
+When determining whether a dependency is a dev dependency:
+- **npm:** `devDependencies` key → `isDev: true`
+- **Poetry 1.2+ groups:** only `groupName === 'dev'` → `isDev: true`. `optional = false` means the group is *required* (production), NOT dev.
+- **Pipfile:** `[dev-packages]` section → `isDev: true`
+- **Always test isDev for ALL groups** in tests — not just the ones you expect to be `true`. Asserting `isDev: false` for non-dev groups catches logic bugs.
 
 ## Using BaseAnalyzer's checkPattern Helper
 
@@ -413,6 +428,8 @@ git push origin master
    - ✅ **ARCHITECTURE.md** - Design patterns, module descriptions, data flow
    - ✅ **CONTRIBUTING.md** - Contribution guidelines (if process changed)
    - ✅ **CHANGELOG.md** - Version history and changes
+   - ✅ **.github/copilot-instructions.md** - Architecture, workflows, lessons learned
+   - ✅ **CLAUDE.md** - Commands, architecture summary for Claude Code
    
 4. **Verify tests pass** — Run `npm test` and check output for:
    - All `PASS` (no `FAIL`)
@@ -481,6 +498,7 @@ Example response to Copilot:
 - ❌ Add features without updating README language table or feature list
 - ❌ Add checks without documenting in ARCHITECTURE.md
 - ❌ Change phases without updating ROADMAP.md
+- ❌ Learn new conventions or fix architectural bugs without updating copilot-instructions.md and CLAUDE.md
 
 **ALWAYS do these:**
 - ✅ Run `npm test` BEFORE staging changes
@@ -495,6 +513,7 @@ Example response to Copilot:
 - ✅ **Update ROADMAP.md with phase progress**
 - ✅ **Update ARCHITECTURE.md with design changes**
 - ✅ **Update CHANGELOG.md with version notes**
+- ✅ **Update copilot-instructions.md and CLAUDE.md with new conventions/lessons**
 - ✅ Read and address Copilot review suggestions
 - ✅ **Commit message should reference documentation updates**
 
@@ -525,6 +544,14 @@ Before creating a PR, verify:
   - [ ] Features listed under version
   - [ ] Bug fixes documented
   - [ ] Breaking changes noted
+
+- [ ] **copilot-instructions.md updated:**
+  - [ ] Architecture diagram reflects current module structure
+  - [ ] New conventions or lessons learned documented
+  - [ ] Workflows updated if process changed
+
+- [ ] **CLAUDE.md updated:**
+  - [ ] Commands and architecture summary current
 
 - [ ] **Code comments added:**
   - [ ] JSDoc on all new public methods

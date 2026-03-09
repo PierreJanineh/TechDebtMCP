@@ -194,6 +194,29 @@ black = "22.12.0"`;
       expect(deps.find(d => d.name === 'requests')).toBeDefined();
     });
 
+    it('should parse Poetry 1.2+ group dependencies', async () => {
+      const content = `[tool.poetry.dependencies]
+python = "^3.9"
+requests = "^2.28.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0"
+black = "22.12.0"
+
+[tool.poetry.group.docs.dependencies]
+sphinx = "^4.0"`;
+
+      const deps = await parser.parse('pyproject.toml', content);
+
+      expect(deps.find(d => d.name === 'requests')).toBeDefined();
+      const pytest = deps.find(d => d.name === 'pytest');
+      expect(pytest).toBeDefined();
+      expect(pytest?.isDev).toBe(true);
+      const sphinx = deps.find(d => d.name === 'sphinx');
+      expect(sphinx).toBeDefined();
+      expect(sphinx?.isDev).toBe(false);
+    });
+
     it('should handle invalid TOML', async () => {
       const content = `[invalid toml
 dependencies = [`;
