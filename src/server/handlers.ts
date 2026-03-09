@@ -37,7 +37,6 @@ export function attachHandlers(mcpServer: McpServer): void {
     tools: [...TOOL_DEFINITIONS],
   }));
 
-  // For brevity we'll register the full set of tools using the same logic as before
   // Handle tool calls
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args = {} } = request.params;
