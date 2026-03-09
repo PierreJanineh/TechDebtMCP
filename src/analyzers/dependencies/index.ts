@@ -79,8 +79,8 @@ export function createDependencyParser(filePath: string): BaseDependencyParser |
     // return new SwiftParser();
   }
 
-  if (fileName === 'packages.config' || fileName.endsWith('.csproj')) {
-    // return new NugetParser();
+  if (fileName.endsWith('.csproj')) {
+    return new NugetParser();
   }
 
   if (fileName === 'CMakeLists.txt' || fileName === 'conanfile.txt' || fileName === 'vcpkg.json') {

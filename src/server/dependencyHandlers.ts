@@ -54,7 +54,7 @@ export async function handleGetVulnerabilityReport(args: Record<string, unknown>
   report += `**Total dependencies inventoried:** ${totalDeps}\n`;
   report += `**Dev dependencies included:** ${includeDev ? 'Yes' : 'No'}\n\n`;
 
-  if (ecosystems.length === 0) {
+  if (packageFiles.length === 0) {
     report += `No package manifests detected. Ensure your project root contains supported manifest files.\n`;
     return { content: [{ type: 'text', text: report }] };
   }
@@ -84,6 +84,11 @@ export async function handleGetVulnerabilityReport(args: Record<string, unknown>
 
 // --- Internal helpers ---
 
+/**
+ * Recursively discover package manifest files in a directory tree.
+ * Skips common non-source directories (node_modules, .git, dist, etc.) and
+ * limits traversal depth to avoid runaway recursion in deep trees.
+ */
 async function findPackageFiles(
   dir: string,
   targetFiles: string[],
@@ -139,13 +144,11 @@ async function parseAllDependencies(
         const deps = await parser.parse(filePath, content);
         const filteredDeps = includeDev ? deps : deps.filter(d => !d.isDev);
 
-        if (filteredDeps.length > 0) {
-          dependencies.push({
-            file: getRelativePath(projectPath, filePath),
-            ecosystem: parser.getEcosystem(),
-            dependencies: filteredDeps,
-          });
-        }
+        dependencies.push({
+          file: getRelativePath(projectPath, filePath),
+          ecosystem: parser.getEcosystem(),
+          dependencies: filteredDeps,
+        });
       } catch (error) {
         const rel = getRelativePath(projectPath, filePath);
         failedParses.push({ file: rel, error: error instanceof Error ? error.message : String(error) });

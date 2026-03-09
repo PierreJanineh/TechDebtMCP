@@ -10,8 +10,8 @@ import { join } from 'node:path';
 import { CustomPattern } from '../types/index.js';
 
 /** Known valid keys for .techdebtrc.json */
-const VALID_CONFIG_KEYS = new Set(['ignore', 'rules', 'severity', 'customPatterns']);
-const VALID_RULE_KEYS = new Set(['maxFileLines', 'maxFunctionLines', 'maxComplexity', 'maxNestingDepth']);
+const VALID_CONFIG_KEYS = new Set(['ignore', 'include', 'rules', 'severity', 'customPatterns', 'languageOverrides']);
+const VALID_RULE_KEYS = new Set(['maxFileLines', 'maxFunctionLines', 'maxComplexity', 'maxNestingDepth', 'maxParameters', 'minCommentRatio']);
 const VALID_SEVERITIES = new Set(['low', 'medium', 'high', 'critical']);
 
 /**
@@ -38,7 +38,11 @@ export async function handleValidateConfig(args: Record<string, unknown>): Promi
 
   try {
     const raw = await fsReadFile(configPath, 'utf-8');
-    config = JSON.parse(raw) as Record<string, unknown>;
+    const parsed: unknown = JSON.parse(raw);
+    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return { content: [{ type: 'text', text: `❌ Invalid config in ${configPath}:\n  Top-level value must be a JSON object, got ${parsed === null ? 'null' : Array.isArray(parsed) ? 'array' : typeof parsed}.` }] };
+    }
+    config = parsed as Record<string, unknown>;
   } catch (err) {
     return { content: [{ type: 'text', text: `❌ Invalid JSON in ${configPath}:\n  ${err instanceof Error ? err.message : String(err)}` }] };
   }

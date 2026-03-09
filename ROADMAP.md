@@ -188,7 +188,6 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 - **`src/index.ts` refactored** — split into `src/server/` modules (setup, handlers, tools, formatters)
 
 - **Offline-first** — no external API calls; Phase 2b adds optional OSV API integration
-- `VulnerabilityInfo` (in `src/types/index.ts`)
 
 **New Types Needed:**
 - `PackageManager` - Enum of supported package managers
