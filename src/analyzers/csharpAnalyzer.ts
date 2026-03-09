@@ -268,26 +268,31 @@ export class CSharpAnalyzer extends BaseAnalyzer {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      for (const type of disposableTypes) {
-        if (line.includes(`new ${type}(`) && !line.includes('using ') && !line.includes('using(')) {
-          // Check if it's assigned to a using declaration
-          if (!line.includes('using var') && !line.includes('using ')) {
-            issues.push({
-              id: `dispose-not-called-${i + 1}`,
-              category: 'code-quality',
-              severity: 'high',
-              file: filePath,
-              line: i + 1,
-              title: `${type} not disposed properly`,
-              description: `${type} should be disposed after use`,
-              suggestion: 'Use a using statement or using declaration',
-              effort: 'small',
-              language: this.language,
-              rule: 'dispose-not-called',
-              tags: ['memory', 'resources'],
-            });
-          }
-        }
+      issues.push(...this.checkDisposableType(line, disposableTypes, filePath, i + 1));
+    }
+
+    return issues;
+  }
+
+  private checkDisposableType(line: string, disposableTypes: string[], filePath: string, lineNumber: number): TechDebtIssue[] {
+    const issues: TechDebtIssue[] = [];
+
+    for (const type of disposableTypes) {
+      if (line.includes(`new ${type}(`) && !line.includes('using ') && !line.includes('using(')) {
+        issues.push({
+          id: `dispose-not-called-${lineNumber}`,
+          category: 'code-quality',
+          severity: 'high',
+          file: filePath,
+          line: lineNumber,
+          title: `${type} not disposed properly`,
+          description: `${type} should be disposed after use`,
+          suggestion: 'Use a using statement or using declaration',
+          effort: 'small',
+          language: this.language,
+          rule: 'dispose-not-called',
+          tags: ['memory', 'resources'],
+        });
       }
     }
 

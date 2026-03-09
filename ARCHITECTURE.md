@@ -32,7 +32,14 @@ Tech Debt MCP is a Model Context Protocol server that analyzes technical debt ac
 ```
 TechDebtMCP/
 ├── src/
-│   ├── index.ts                 # MCP Server entry point and tool handlers
+│   ├── index.ts                 # Entry point — creates server, attaches handlers, runs
+│   ├── server/
+│   │   ├── setup.ts             # McpServer instantiation and transport wiring
+│   │   ├── handlers.ts          # Core MCP tool request handlers & dispatch
+│   │   ├── tools.ts             # Centralized TOOL_DEFINITIONS array
+│   │   ├── formatters.ts        # Output formatting helpers
+│   │   ├── configValidator.ts   # .techdebtrc.json validation handler
+│   │   └── dependencyHandlers.ts # Dependency analysis & vulnerability report handlers
 │   ├── types/
 │   │   └── index.ts             # All TypeScript interfaces (single source of truth)
 │   ├── config/
@@ -40,21 +47,19 @@ TechDebtMCP/
 │   ├── core/
 │   │   ├── analysisEngine.ts    # Main orchestrator for analysis
 │   │   ├── sqaleEngine.ts       # ✅ SQALE metrics calculations (Phase 1 - COMPLETE)
-│   │   ├── customRulesEngine.ts # ✅ Custom rules engine (Phase 5 - COMPLETE)
-│   │   ├── snapshotManager.ts   # Snapshot & trend tracking (Phase 3)
-│   │   └── complexityAnalyzer.ts # Code complexity calculations (Phase 4)
+│   │   └── customRulesEngine.ts # ✅ Custom rules engine (Phase 5 - COMPLETE)
 │   ├── analyzers/
 │   │   ├── baseAnalyzer.ts      # Abstract base class for all language analyzers
-│   │   ├── index.ts             # Analyzer factory
-│   │   ├── [language]Analyzer.ts # Language-specific analyzers (one per supported language)
-│   │   └── dependencies/        # Dependency parsers (Phase 2, future)
-│   │       ├── baseParser.ts
-│   │       └── [ecosystem]Parser.ts
+│   │   ├── index.ts             # Analyzer factory (createAnalyzer)
+│   │   ├── [language]Analyzer.ts # 14 language-specific analyzers
+│   │   └── dependencies/        # ✅ Dependency parsers (Phase 2 - COMPLETE)
+│   │       ├── baseParser.ts    # Abstract base parser
+│   │       ├── index.ts         # Parser factory (createDependencyParser)
+│   │       └── [ecosystem]Parser.ts # 10 ecosystem parsers
 │   ├── services/
 │   │   └── vulnerabilityService.ts # External API integration (Phase 2b, future)
 │   └── utils/
 │       └── fileUtils.ts         # File system utilities
-├── __tests__/                   # Repository-level test suite
 ├── dist/                        # Compiled output
 ├── package.json
 ├── tsconfig.json
@@ -80,7 +85,7 @@ createAnalyzer(language) → Switch statement
 
 **Files involved:**
 - `src/analyzers/index.ts` — `createAnalyzer()` factory
-- `src/analyzers/dependencies/index.ts` — Dependency parser factory (future)
+- `src/analyzers/dependencies/index.ts` — `createDependencyParser()` factory (10 ecosystems)
 
 ### 2. Abstract Base Class with Inheritance
 
@@ -595,6 +600,130 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
 
 **No External Dependencies:** Uses only Node.js built-ins (string/array manipulation)
 
+## Code Quality Standards
+
+### Project Health Metrics (Self-Scan)
+
+**Current Status (Feb 14, 2026):**
+- **SQALE Rating:** A ⭐⭐⭐⭐⭐ (Excellent)
+- **Debt Ratio:** 2.9% (Target: <5%)
+- **Health Score:** 51.8/100
+- **Total Issues:** 81 (0 critical, 14 high, 38 medium, 29 low)
+- **Remediation Time:** ~60 hours
+
+**Configuration Impact:**
+- **Before .techdebtrc.json:** 101 issues, 70 hours
+- **After .techdebtrc.json:** 81 issues, 60 hours
+- **Improvement:** -20 false positives (-19.8%), -10 hours (-14.3%)
+
+> See [TECH_DEBT_SCAN.md](../TECH_DEBT_SCAN.md) for complete analysis including before/after comparison.
+
+### File Size & Complexity Limits
+
+| Metric | Limit | Current Max | Status |
+|--------|-------|-------------|--------|
+| File length | 500 lines | 883 (`src/index.ts`) | ⚠️ Needs refactoring |
+| Nesting depth | 4 levels | 14 (`csharpAnalyzer.ts:267`) | ⚠️ Needs refactoring |
+| Function length | 50 lines | Compliant | ✅ Good |
+| Cyclomatic complexity | 10 | Compliant | ✅ Good |
+
+**Note:** After test exclusion, 8 files reduced from previous scan (34 → 26 files analyzed).
+
+### Known Technical Debt Items
+
+#### High Priority (Address when touching these files)
+
+1. **`src/index.ts` (883 lines)** - Split into modules:
+   ```
+   src/
+   ├── index.ts (entry point, ~50 lines)
+   └── server/
+       ├── handlers.ts (core tool handlers, ~325 lines)
+       ├── configValidator.ts (config validation handler)
+       ├── dependencyHandlers.ts (dependency & vulnerability handlers)
+       └── setup.ts (server setup, ~300 lines)
+   ```
+
+2. **`src/analyzers/csharpAnalyzer.ts:267`** - Deep nesting (14 levels)
+   - Extract nested logic into helper methods
+   - Use early returns to reduce indentation
+   - Apply guard clauses pattern
+
+3. **Non-null assertions (`!`)** - Found at src/index.ts:804, 809
+   - Replace with optional chaining (`?.`)
+   - Add proper null checks with guard clauses
+   - Use nullish coalescing (`??`) for defaults
+
+4. **False positives in analyzers** (13 high-severity false positives)
+   - Pattern definitions mistaken for actual issues
+   - Need file-specific exclusions in `.techdebtrc.json`
+   - See [TECH_DEBT_SCAN.md](../TECH_DEBT_SCAN.md) for details
+
+#### Medium Priority (Gradual improvement)
+
+5. **Deep nesting in multiple files:**
+   - `src/index.ts:63` - 8 levels of nesting
+   - `src/core/customRulesEngine.ts:129` - 7 levels
+   - `src/core/analysisEngine.ts:93` - 5 levels
+
+6. **Test file organization** - Previously had 9-level deep nesting
+   - Now excluded from production analysis via `.techdebtrc.json`
+   - Can still be improved for test maintainability
+
+### Code Quality Enforcement
+
+These rules are enforced via `.techdebtrc.json` and CI checks:
+
+- ❌ **Forbidden in production code:**
+  - `debugger` statements
+  - `@ts-ignore` comments (use `@ts-expect-error` with explanation)
+  - `console.log` statements (use proper logging or remove)
+  
+- ✅ **Required patterns:**
+  - JSDoc on all public APIs
+  - Early returns to reduce nesting
+  - Optional chaining for nullable access
+  - Helper functions for complex logic
+
+### Self-Scan Strategy
+
+**Prevent False Positives:**
+- Test files are ignored (contain test patterns, not production issues)
+- Analyzer files may reference keywords (e.g., "debugger" in pattern definitions)
+- Configuration in `.techdebtrc.json` excludes test directories
+
+**Configuration Impact (Measured):**
+```bash
+# Without .techdebtrc.json:
+- 101 issues, 70 hours remediation
+- 33 files analyzed (including tests)
+- 17 high-severity issues (includes test false positives)
+
+# With .techdebtrc.json:
+- 81 issues, 60 hours remediation  
+- 25 files analyzed (production only)
+- 14 high-severity issues (13 are analyzer pattern definitions)
+
+# Improvement:
+- -20 false positives (-19.8%)
+- -10 hours remediation time (-14.3%)
+- Better focus on real production issues
+```
+
+**Regular Health Checks:**
+```bash
+# Run self-scan before major releases
+npx tech-debt-mcp analyze_project --path=/path/to/TechDebtMCP
+
+# Target metrics:
+# - SQALE Rating: A (≤5% debt ratio)
+# - Critical issues: 0
+# - High issues: <10 (excluding analyzer patterns)
+# - File length violations: 0
+```
+
+**See [TECH_DEBT_SCAN.md](../TECH_DEBT_SCAN.md)** for complete before/after analysis and detailed findings.
+
 ## Future Enhancements
 
 - **Parallel file processing** — Analyze multiple files concurrently
@@ -602,3 +731,33 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
 - **Plugin system** — Load analyzers dynamically
 - **Custom severity weights** — User-configurable issue scoring
 - **Integration with CI/CD** — GitHub Actions, GitLab CI, etc.
+
+## Phase 2: Dependency Analysis (Added)
+
+Phase 2 introduces a modular dependency parsing subsystem and a new MCP tool, `check_dependencies`.
+
+Key points:
+
+- Parsers are implemented under `src/analyzers/dependencies/` following the same factory + base class pattern as language analyzers.
+- Each parser focuses on one ecosystem and exposes a common async `parse(filePath, content)` interface that returns `Promise<ParsedDependency[]>`.
+- A `check_dependencies` MCP tool scans the repository for recognized package files, invokes these async parsers, and returns a human-readable markdown report with production vs development dependencies and any failed parse entries.
+- The design is offline-first and describes extension points for future vulnerability scanning services (e.g., a dedicated vulnerability scanning module in a later phase) without adding an immediate implementation path.
+
+**Files added in Phase 2:**
+```
+src/analyzers/dependencies/
+  ├── baseParser.ts
+  ├── index.ts (factory)
+  ├── npmParser.ts
+  ├── pipParser.ts
+  ├── cargoParser.ts
+  ├── goModParser.ts
+  ├── gradleParser.ts
+  ├── composerParser.ts
+  ├── bundlerParser.ts
+  ├── nugetParser.ts
+  ├── cppParser.ts
+  └── swiftPackageParser.ts
+```
+
+These modules follow the existing analyzer conventions and are covered by unit tests in `src/analyzers/dependencies/__tests__/`.

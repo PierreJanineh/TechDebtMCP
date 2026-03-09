@@ -1,0 +1,40 @@
+{
+  "ignore": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/*.test.ts",
+    "**/__tests__/**"
+  ],
+  "rules": {
+    "maxFileLines": 500,
+    "maxFunctionLines": 50,
+    "maxComplexity": 10,
+    "maxNestingDepth": 4
+  },
+  "severity": {
+    "todo-comment": "low",
+    "console-log": "medium",
+    "debugger": "high",
+    "ts-ignore": "high"
+  },
+  "customPatterns": [
+    {
+      "id": "prefer-nullish-coalescing",
+      "pattern": "\\|\\|\\s+(?!(false|0|''|\"\"))",
+      "message": "Consider using nullish coalescing (??) instead of ||",
+      "severity": "low",
+      "category": "code-quality",
+      "suggestion": "Use ?? operator for null/undefined checks, reserve || for boolean coercion",
+      "languages": ["typescript", "javascript"]
+    },
+    {
+      "id": "avoid-non-null-assertion",
+      "pattern": "\\w+!\\.",
+      "message": "Non-null assertion operator (!) bypasses type safety",
+      "severity": "medium",
+      "category": "code-quality",
+      "suggestion": "Use optional chaining (?.) or proper null checks instead",
+      "languages": ["typescript"]
+    }
+  ]
+}

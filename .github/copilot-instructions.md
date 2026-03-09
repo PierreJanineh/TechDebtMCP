@@ -1,5 +1,7 @@
 # AI Agent Instructions for Tech Debt MCP
 
+> **📝 LIVE DOCUMENT** — This document evolves as the project grows. When adding new workflows, practices, or processes, update this file to reflect the current standards. This ensures consistency and clarity for all team members and AI agents working on the project.
+
 ## Project Overview
 
 Tech Debt MCP is a Model Context Protocol server for analyzing technical debt across **14 programming languages**. It integrates with GitHub Copilot and other MCP-compatible clients.
@@ -7,7 +9,7 @@ Tech Debt MCP is a Model Context Protocol server for analyzing technical debt ac
 
 ```
 src/
-├── index.ts              # MCP Server entry point and tool routing
+├── index.ts              # Thin entry point — delegates to src/server/
 ├── types/
 │   └── index.ts          # All TypeScript interfaces (single source of truth)
 ├── config/
@@ -16,10 +18,22 @@ src/
 │   ├── analysisEngine.ts    # Main orchestrator
 │   ├── sqaleEngine.ts       # ✅ SQALE metrics (Phase 1 - COMPLETE)
 │   └── customRulesEngine.ts # ✅ Custom rules (Phase 5 - COMPLETE)
+├── server/
+│   ├── setup.ts          # Server creation, version resolution, stdio transport
+│   ├── handlers.ts       # Tool call dispatch + all handler implementations
+│   ├── tools.ts          # Centralized TOOL_DEFINITIONS array (single source of truth)
+│   ├── formatters.ts     # Report formatting helpers (formatReport, getSeverityEmoji, formatMinutes)
+│   └── __tests__/
+│       └── handlers.test.ts
 ├── analyzers/
 │   ├── baseAnalyzer.ts   # Abstract base class (shared logic)
-│   ├── index.ts          # Factory pattern for creating analyzers
-│   └── [language]Analyzer.ts # One file per language (14 total)
+│   ├── index.ts          # Factory pattern: createAnalyzer()
+│   ├── [language]Analyzer.ts # One file per language (14 total)
+│   └── dependencies/
+│       ├── baseParser.ts        # Abstract BaseDependencyParser
+│       ├── index.ts             # Factory: createDependencyParser(), getAllPackageFileNames()
+│       ├── [ecosystem]Parser.ts # One file per ecosystem (10 total)
+│       └── __tests__/
 └── utils/
     └── fileUtils.ts      # File system helpers
 ```
@@ -41,6 +55,65 @@ src/
 - No `any` types (use `unknown` if absolutely needed)
 - Prefer `const` over `let`
 - Use ES modules with `.js` extensions in imports (required for `module: NodeNext` / `moduleResolution: NodeNext` in tsconfig.json)
+
+## Tech Debt Refactoring Rules (Self-Scan Compliance)
+
+**Current Project Health:** SQALE Rating A ⭐⭐⭐⭐⭐ (2.9% debt ratio)
+
+> **📊 See [TECH_DEBT_SCAN.md](../TECH_DEBT_SCAN.md)** for complete analysis showing how `.techdebtrc.json` reduced false positives from 101 to 81 issues (-19.8%).
+
+### File Size & Complexity Limits
+- **Max file length:** 500 lines
+- **Max nesting depth:** 4 levels
+- **Max function length:** 50 lines
+- **Max function complexity:** 10 (cyclomatic complexity)
+
+### Configuration Impact (Measured)
+**Before .techdebtrc.json:**
+- 101 issues (17 high, 46 medium, 38 low)
+- 70 hours remediation time
+- 33 files analyzed (including tests)
+
+**After .techdebtrc.json:**
+- 81 issues (14 high, 38 medium, 29 low)
+- 60 hours remediation time
+- 25 files analyzed (production only)
+
+**Improvement:** -20 false positives (-19.8%), -10 hours (-14.3%)
+
+### Refactoring Priorities (Apply when touching these files)
+
+1. **Deep Nesting to Fix:**
+   - `src/core/customRulesEngine.ts:129` - 7 levels (extract helper functions)
+   - `src/core/analysisEngine.ts:93` - 5 levels (use guard clauses)
+
+2. **False Positives in Analyzers:**
+   - Pattern definitions in analyzer files (not actual issues)
+   - String references like 'debugger' in config files
+   - See TECH_DEBT_SCAN.md for complete list and exclusion strategy
+
+### Code Quality Rules (Enforced)
+
+- ❌ **NO `debugger` statements** in production code (allowed in tests with clear TODOs)
+- ❌ **NO `@ts-ignore`** - Use `@ts-expect-error` with explanation comments
+- ❌ **NO console.log** in production code - Use proper logging or remove
+- ✅ **USE early returns** to reduce nesting instead of deep if-else chains
+- ✅ **EXTRACT complex logic** into well-named helper functions
+- ✅ **ADD JSDoc** to all public functions, classes, and complex private methods
+
+### When Refactoring Any File
+
+**Before making changes, check:**
+1. Current file length (if >300 lines, consider splitting)
+2. Maximum nesting depth (if >4, refactor first)
+3. Number of functions (if >10, consider splitting)
+4. Public API surface (keep minimal, extract internals)
+
+**After making changes:**
+1. Run `npm test` to ensure all tests pass
+2. Run `npm run build` to verify TypeScript compilation
+3. Check for new tech debt: Run tech-debt-mcp scan on modified files
+4. Update JSDoc comments for any changed public APIs
 
 ## Adding a New Language Analyzer
 
@@ -74,7 +147,9 @@ src/
 
 ## Adding a New MCP Tool
 
-1. Add tool definition in `ListToolsRequestSchema` handler in `src/index.ts`:
+> ⚠️ **CRITICAL:** Always add the definition and the handler together. A tool in `TOOL_DEFINITIONS` with no handler case will throw "Unknown tool" at runtime. A handler case with no definition is invisible to MCP clients.
+
+1. Add tool definition to `TOOL_DEFINITIONS` in `src/server/tools.ts`:
    ```typescript
    {
      name: 'tool_name',
@@ -86,17 +161,32 @@ src/
      },
    }
    ```
-2. Add case in `CallToolRequestSchema` switch:
+2. Add case in `CallToolRequestSchema` switch in `src/server/handlers.ts`:
    ```typescript
    case 'tool_name':
-     return await this.handleToolName(args);
+     return await handleToolName(args as Record<string, unknown>);
    ```
-3. Create handler method:
+3. Create handler function in `src/server/handlers.ts`:
    ```typescript
-   private async handleToolName(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
+   async function handleToolName(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
      // Implementation
    }
    ```
+4. The `ListToolsRequestSchema` handler uses `[...TOOL_DEFINITIONS]` automatically — no changes needed there.
+
+## Adding a New Dependency Parser
+
+1. Create `src/analyzers/dependencies/[ecosystem]Parser.ts` extending `BaseDependencyParser`
+2. Register in `src/analyzers/dependencies/index.ts` factory (`createDependencyParser`) and `getAllPackageFileNames()`
+3. Add tests in `src/analyzers/dependencies/__tests__/[ecosystem]Parser.test.ts`
+
+### isDev Convention for Dependency Parsers
+
+When determining whether a dependency is a dev dependency:
+- **npm:** `devDependencies` key → `isDev: true`
+- **Poetry 1.2+ groups:** only `groupName === 'dev'` → `isDev: true`. `optional = false` means the group is *required* (production), NOT dev.
+- **Pipfile:** `[dev-packages]` section → `isDev: true`
+- **Always test isDev for ALL groups** in tests — not just the ones you expect to be `true`. Asserting `isDev: false` for non-dev groups catches logic bugs.
 
 ## Using BaseAnalyzer's checkPattern Helper
 
@@ -338,6 +428,8 @@ git push origin master
    - ✅ **ARCHITECTURE.md** - Design patterns, module descriptions, data flow
    - ✅ **CONTRIBUTING.md** - Contribution guidelines (if process changed)
    - ✅ **CHANGELOG.md** - Version history and changes
+   - ✅ **.github/copilot-instructions.md** - Architecture, workflows, lessons learned
+   - ✅ **CLAUDE.md** - Commands, architecture summary for Claude Code
    
 4. **Verify tests pass** — Run `npm test` and check output for:
    - All `PASS` (no `FAIL`)
@@ -406,6 +498,7 @@ Example response to Copilot:
 - ❌ Add features without updating README language table or feature list
 - ❌ Add checks without documenting in ARCHITECTURE.md
 - ❌ Change phases without updating ROADMAP.md
+- ❌ Learn new conventions or fix architectural bugs without updating copilot-instructions.md and CLAUDE.md
 
 **ALWAYS do these:**
 - ✅ Run `npm test` BEFORE staging changes
@@ -420,6 +513,7 @@ Example response to Copilot:
 - ✅ **Update ROADMAP.md with phase progress**
 - ✅ **Update ARCHITECTURE.md with design changes**
 - ✅ **Update CHANGELOG.md with version notes**
+- ✅ **Update copilot-instructions.md and CLAUDE.md with new conventions/lessons**
 - ✅ Read and address Copilot review suggestions
 - ✅ **Commit message should reference documentation updates**
 
@@ -451,6 +545,14 @@ Before creating a PR, verify:
   - [ ] Bug fixes documented
   - [ ] Breaking changes noted
 
+- [ ] **copilot-instructions.md updated:**
+  - [ ] Architecture diagram reflects current module structure
+  - [ ] New conventions or lessons learned documented
+  - [ ] Workflows updated if process changed
+
+- [ ] **CLAUDE.md updated:**
+  - [ ] Commands and architecture summary current
+
 - [ ] **Code comments added:**
   - [ ] JSDoc on all new public methods
   - [ ] Inline comments on complex logic
@@ -469,3 +571,146 @@ git commit -m "feat: add SwiftUI checks - update README, ROADMAP, ARCHITECTURE
 - Added JSDoc comments to all new analyzer methods
 - Fixes #58"
 ```
+
+## Progress Documentation & GitHub Issue Comments
+
+**IMPORTANT: Maintain transparency through documented progress in GitHub issues**
+
+### When to Post Progress Comments
+
+Whenever you create a markdown summary file documenting progress or work completed:
+- ✅ **Post it as a comment in the GitHub issue** you're working on
+- ✅ **If no specific issue exists**, create one and post the progress there
+- ✅ **Use this for any milestone completion**, not just final PR merge
+
+### Progress Comment Guidelines
+
+**Format:**
+```markdown
+## ✅ [Task/Phase Name] - Progress Summary
+
+**Date:** [Date]
+**Status:** [In Progress / Completed / Blocked]
+
+### What Was Done
+- Item 1 completed with details
+- Item 2 with specific outcome
+- Metrics or test results
+
+### Files Changed
+- src/file1.ts - Description
+- src/file2.ts - Description
+
+### Testing
+- Tests: XX passing (or XX/XX)
+- Coverage: XX%
+- All tests passing? ✅ YES / ❌ NO
+
+### Next Steps
+- What comes next
+- Blockers if any
+- Related issues
+```
+
+**Examples of When to Post:**
+1. ✅ Closing resolved GitHub issues (post closure summary)
+2. ✅ Completing each sub-task in a multi-part issue
+3. ✅ Finishing a code review cycle
+4. ✅ Completing infrastructure setup
+5. ✅ Finishing test suite implementation
+6. ✅ Merging complex features
+
+### Issue Creation for Untracked Work
+
+**If working on something without a specific issue:**
+
+1. Check if issue exists:
+   ```bash
+   git branch -v | grep issue
+   ```
+
+2. If no issue, create one:
+   - **Title:** Descriptive task name
+   - **Description:** What you're doing and why
+   - **Labels:** Add relevant phase/enhancement/bug labels
+   - **Milestone:** Link to current phase if applicable
+
+3. Then post progress comment in the new issue
+
+### Example Workflows
+
+#### Scenario A: Closing Completed Issues
+```
+User: "Let's close all resolved issues"
+Agent Action:
+  1. Identify resolved issues from codebase
+  2. Close each on GitHub
+  3. Post summary comment in issue #1 (or create issue #X)
+     - Lists all closed issues
+     - Explains why each was closed
+     - Shows current project state
+     - Links to next steps
+```
+
+#### Scenario B: Multi-Part Feature Implementation
+```
+User: "Implement Phase 2 Dependency Analysis"
+Agent Action:
+  1. Create issue #65: "Phase 2: Dependency Analysis Infrastructure"
+  2. Complete baseParser implementation
+  3. Post progress comment in #65:
+     - "✅ Completed: baseParser abstract class"
+     - Test results
+     - Next: npm parser implementation
+  4. Repeat for each parser implementation
+  5. Final comment when all complete, then close issue
+```
+
+#### Scenario C: Test Suite Completion
+```
+User: "Add tests for npm parser"
+Agent Action:
+  1. Create issue #66: "Add npm parser tests" (if needed)
+  2. Implement test suite
+  3. Post progress comment in #66:
+     - "✅ npm parser tests complete"
+     - XX test cases passing
+     - Coverage: XX%
+     - Ready for next parser tests
+  4. Link to related parser issues
+```
+
+### GitHub Issue Comments Best Practices
+
+**DO:**
+- ✅ Use clear markdown formatting
+- ✅ Include metrics (test count, coverage %, time spent)
+- ✅ Link related issues using `#issue-number`
+- ✅ Include code snippets if relevant
+- ✅ Update original issue description if status changes
+- ✅ Cross-reference related work
+- ✅ Mention blocking dependencies
+
+**DON'T:**
+- ❌ Post redundant comments (consolidate updates)
+- ❌ Commit to GitHub before progress is verified locally
+- ❌ Skip commenting on major milestones
+- ❌ Leave issues without closure summaries
+- ❌ Forget to link between related issues
+
+### Commit Message Convention for Issue Comments
+
+When committing work that updates an issue, reference it:
+
+```bash
+git commit -m "feat: implement npm parser - closes #19, relates to #30
+
+- Parses dependencies from package.json
+- Handles dev and production dependencies
+- 5+ test cases passing
+- Ready for pip parser implementation
+- See #30 for dependency parser suite status"
+```
+
+Then post comprehensive progress comment in the issue for full transparency.
+
