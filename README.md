@@ -17,6 +17,8 @@ A Model Context Protocol (MCP) server for analyzing technical debt across multip
 - **SQALE Metrics**: Calculate technical debt with SQALE rating system (A-E scale)
 - **SwiftUI Analysis**: Specialized checks for SwiftUI patterns, state management, memory leaks, view nesting, and concurrency issues
 - **Custom Rules**: Define your own pattern-based checks with regex support
+- **Dependency Analysis**: Parse package manifests across 10 ecosystems (npm, pip, Maven/Gradle, Cargo, Go Modules, Composer, Bundler, NuGet, C/C++, Swift)
+- **Config Validation**: Validate `.techdebtrc.json` configuration files for schema correctness
 - **Actionable recommendations**: Provides prioritized suggestions for addressing technical debt
 - **Flexible filtering**: Filter results by severity, category, or language
 
@@ -340,48 +342,31 @@ Key capabilities:
 - Reports files that failed to parse for troubleshooting
 - Offline-first design with future integration points for vulnerability databases
 
-### `check_dependencies` Usage
+### `check_dependencies`
 
-Tool parameters:
+Scan a project for package manifests and return a structured dependency report.
+
+**Parameters:**
 
 - `path` (required): Absolute path to the project root
 - `includeDev` (optional): boolean (default: true) — include dev/test dependencies
 
-Example (MCP call, abbreviated):
+### `validate_config`
 
-```json
-{
-  "name": "check_dependencies",
-  "arguments": {
-    "path": "/absolute/path/to/project",
-    "includeDev": true
-  }
-}
-```
+Validate a `.techdebtrc.json` configuration file for schema correctness.
 
-Example output (abbreviated):
+**Parameters:**
 
-```
-# Dependency Analysis
+- `path` (required): Absolute path to the project root directory or directly to a `.techdebtrc.json` file
 
-**Project:** /absolute/path/to/project
-**Found:** 1 package file(s) across 1 ecosystem(s)
-**Total Dependencies:** 45
+### `get_vulnerability_report`
 
-## package.json (npm)
-**Dependencies:** 30
-### Production (25)
-- express@4.18.0
-- react@18.2.0
-...
-### Development (5)
-- jest@29.0.0
-- typescript@5.3.0
-...
+Generate an offline dependency inventory for vulnerability review. Lists all dependencies by ecosystem in a tabular format. Online CVE lookup is planned for Phase 2b.
 
-## ⚠️ Failed to parse 1 file(s)
-- path/to/bad-file: Unexpected token
-```
+**Parameters:**
+
+- `path` (required): Absolute path to the project root
+- `includeDev` (optional): boolean (default: false) — include dev dependencies in the report
 
 
 

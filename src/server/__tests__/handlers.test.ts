@@ -70,6 +70,8 @@ describe('Handlers', () => {
         'execute_custom_rules',
         'validate_custom_pattern',
         'check_dependencies',
+        'validate_config',
+        'get_vulnerability_report',
       ];
 
       expectedTools.forEach(toolName => {
