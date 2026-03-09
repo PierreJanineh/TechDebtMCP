@@ -106,9 +106,9 @@ export class AnalysisEngine {
 
         allIssues.push(...categoryFiltered);
         analyzedCount++;
-      } catch (error) {
-        // Skip files that can't be analyzed
-        console.error(`Error analyzing ${file}:`, error);
+      } catch {
+        // Skip files that cannot be analyzed (e.g., encoding or permission errors).
+        // Individual file failures should not abort the whole project scan.
       }
     }
 

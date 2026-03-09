@@ -24,17 +24,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Provides actionable roadmap for continuous improvement
 - **check_dependencies** MCP tool (Phase 2 - Dependency Analysis)
   - Scans project for package manifests across multiple ecosystems
+  - Validates that the provided path is a directory (rejects file paths)
   - Returns a structured dependency report with production vs development dependencies
-  - Includes failed-parse reporting for troubleshooting
+  - Includes failed-parse reporting and filesystem scan error surfacing
+  - Filters empty manifest sections from reports (e.g., dev-only with `includeDev=false`)
   - Parsers for npm, pip, Maven/Gradle, Cargo, Go Modules, Composer, Bundler, NuGet, C/C++, and Swift Package Manager added under `src/analyzers/dependencies/`
 - **validate_config** MCP tool (Phase 2 - Config Validation)
   - Validates `.techdebtrc.json` syntax and schema
-  - Checks `ignore`, `rules`, `severity`, and `customPatterns` fields
+  - Checks `ignore`, `include`, `rules`, `severity`, `languageOverrides`, and `customPatterns` fields
+  - Guards against non-object top-level values (null, array, primitives)
   - Reuses `CustomRulesEngine.validatePattern()` for custom pattern validation
   - Returns detailed errors and warnings with actionable messages
 - **get_vulnerability_report** MCP tool (Phase 2 - Offline Vulnerability Inventory)
   - Generates an offline dependency inventory for vulnerability review
+  - Validates that the provided path is a directory
   - Lists all dependencies by ecosystem in tabular format
+  - Filters empty manifest sections and surfaces filesystem scan errors
   - Offline-first; online CVE lookup planned for Phase 2b (OSV API)
   - Accepts `includeDev` flag (default: false) to focus on production dependencies
 

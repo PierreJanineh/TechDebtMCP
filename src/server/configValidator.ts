@@ -61,6 +61,14 @@ export async function handleValidateConfig(args: Record<string, unknown>): Promi
     }
   }
 
+  if ('include' in config) {
+    if (!Array.isArray(config.include)) {
+      errors.push('"include" must be an array of glob strings');
+    } else if (config.include.some(v => typeof v !== 'string')) {
+      errors.push('"include" array must contain only strings');
+    }
+  }
+
   if ('rules' in config) {
     if (config.rules === null || typeof config.rules !== 'object' || Array.isArray(config.rules)) {
       errors.push('"rules" must be an object');
@@ -87,6 +95,12 @@ export async function handleValidateConfig(args: Record<string, unknown>): Promi
           errors.push(`"severity.${rule}" has invalid value "${level}" — must be a string: low, medium, high, critical`);
         }
       }
+    }
+  }
+
+  if ('languageOverrides' in config) {
+    if (config.languageOverrides === null || typeof config.languageOverrides !== 'object' || Array.isArray(config.languageOverrides)) {
+      errors.push('"languageOverrides" must be an object keyed by language name');
     }
   }
 
