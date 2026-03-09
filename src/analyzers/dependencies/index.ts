@@ -49,42 +49,14 @@ export function createDependencyParser(filePath: string): BaseDependencyParser |
     return parserMap[fileName];
   }
 
-  // Check for requirements.txt variants
+  // Check for requirements.txt variants (requirements-dev.txt, etc.)
   if (fileName.startsWith('requirements') && fileName.endsWith('.txt')) {
     return new PipParser();
   }
 
-  // Check for build files
-  if (fileName === 'pom.xml' || fileName === 'build.gradle' || fileName === 'build.gradle.kts') {
-    // return new GradleParser();
-  }
-
-  if (fileName === 'Cargo.toml') {
-    // return new CargoParser();
-  }
-
-  if (fileName === 'go.mod') {
-    // return new GoModParser();
-  }
-
-  if (fileName === 'composer.json') {
-    // return new ComposerParser();
-  }
-
-  if (fileName === 'Gemfile') {
-    // return new BundlerParser();
-  }
-
-  if (fileName === 'Package.swift' || fileName === 'Podfile') {
-    // return new SwiftParser();
-  }
-
+  // Check for .csproj files (dynamic file names not in parserMap)
   if (fileName.endsWith('.csproj')) {
     return new NugetParser();
-  }
-
-  if (fileName === 'CMakeLists.txt' || fileName === 'conanfile.txt' || fileName === 'vcpkg.json') {
-    // return new CppParser();
   }
 
   return null;

@@ -145,6 +145,15 @@ describe('handleValidateConfig', () => {
     expect(result.content[0].text).toContain('badKey');
   });
 
+  it('should error when severity is not an object', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
+    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ severity: 'bad' }) as any);
+
+    const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
+    expect(result.content[0].text).toContain('"severity" must be an object');
+  });
+
   it('should error on invalid severity values', async () => {
     mockFileExists.mockResolvedValue(true);
     mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
