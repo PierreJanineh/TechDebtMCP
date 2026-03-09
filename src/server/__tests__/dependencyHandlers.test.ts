@@ -54,8 +54,15 @@ describe('handleCheckDependencies', () => {
     await expect(handleCheckDependencies({ path: '/missing' })).rejects.toThrow('Project path not found');
   });
 
+  it('should throw when path is not a directory', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
+    await expect(handleCheckDependencies({ path: '/project/file.txt' })).rejects.toThrow('Path is not a directory');
+  });
+
   it('should return report with no package files found', async () => {
     mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
     mockReaddir.mockResolvedValue([] as any);
 
     const result = await handleCheckDependencies({ path: '/project' });
@@ -65,6 +72,7 @@ describe('handleCheckDependencies', () => {
 
   it('should parse dependencies from discovered files', async () => {
     mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
     mockReaddir.mockResolvedValueOnce(['package.json'] as any);
     mockStat.mockResolvedValueOnce({ isDirectory: () => false, isFile: () => true } as any);
 
@@ -82,6 +90,7 @@ describe('handleCheckDependencies', () => {
 
   it('should exclude dev dependencies when includeDev is false', async () => {
     mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
     mockReaddir.mockResolvedValueOnce(['package.json'] as any);
     mockStat.mockResolvedValueOnce({ isDirectory: () => false, isFile: () => true } as any);
 
@@ -99,6 +108,7 @@ describe('handleCheckDependencies', () => {
 
   it('should report parse failures', async () => {
     mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
     mockReaddir.mockResolvedValueOnce(['package.json'] as any);
     mockStat.mockResolvedValueOnce({ isDirectory: () => false, isFile: () => true } as any);
 
@@ -118,6 +128,7 @@ describe('handleCheckDependencies', () => {
 
   it('should surface filesystem scan errors', async () => {
     mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
     mockReaddir.mockRejectedValueOnce(new Error('EACCES: permission denied'));
 
     const result = await handleCheckDependencies({ path: '/project' });
@@ -137,8 +148,15 @@ describe('handleGetVulnerabilityReport', () => {
     await expect(handleGetVulnerabilityReport({ path: '/missing' })).rejects.toThrow('Project path not found');
   });
 
+  it('should throw when path is not a directory', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
+    await expect(handleGetVulnerabilityReport({ path: '/project/file.txt' })).rejects.toThrow('Path is not a directory');
+  });
+
   it('should default includeDev to false', async () => {
     mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
     mockReaddir.mockResolvedValueOnce(['package.json'] as any);
     mockStat.mockResolvedValueOnce({ isDirectory: () => false, isFile: () => true } as any);
 
@@ -155,6 +173,7 @@ describe('handleGetVulnerabilityReport', () => {
 
   it('should include dev dependencies when explicitly enabled', async () => {
     mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
     mockReaddir.mockResolvedValueOnce(['package.json'] as any);
     mockStat.mockResolvedValueOnce({ isDirectory: () => false, isFile: () => true } as any);
 
@@ -172,6 +191,7 @@ describe('handleGetVulnerabilityReport', () => {
 
   it('should report when no package manifests are found', async () => {
     mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
     mockReaddir.mockResolvedValue([] as any);
 
     const result = await handleGetVulnerabilityReport({ path: '/project' });
@@ -180,6 +200,7 @@ describe('handleGetVulnerabilityReport', () => {
 
   it('should omit empty manifest sections from report', async () => {
     mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
     mockReaddir.mockResolvedValueOnce(['package.json'] as any);
     mockStat.mockResolvedValueOnce({ isDirectory: () => false, isFile: () => true } as any);
 
@@ -197,6 +218,7 @@ describe('handleGetVulnerabilityReport', () => {
 
   it('should surface filesystem scan errors in report', async () => {
     mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
     mockReaddir.mockRejectedValueOnce(new Error('EACCES: permission denied'));
 
     const result = await handleGetVulnerabilityReport({ path: '/project' });
@@ -206,6 +228,7 @@ describe('handleGetVulnerabilityReport', () => {
 
   it('should report failed parses', async () => {
     mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
     mockReaddir.mockResolvedValueOnce(['package.json'] as any);
     mockStat.mockResolvedValueOnce({ isDirectory: () => false, isFile: () => true } as any);
 

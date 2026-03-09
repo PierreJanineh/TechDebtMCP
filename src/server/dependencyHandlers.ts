@@ -15,7 +15,7 @@ import { ParsedDependency, PackageManager } from '../types/index.js';
 export async function handleCheckDependencies(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
   const projectPath = args.path as string;
   const includeDev = args.includeDev !== false;
-  if (!(await fileExists(projectPath))) throw new McpError(ErrorCode.InvalidParams, `Project path not found: ${projectPath}`);
+  await validateDirectoryPath(projectPath);
 
   const packageFileNames = getAllPackageFileNames();
   const packageFiles: string[] = [];
@@ -34,10 +34,7 @@ export async function handleCheckDependencies(args: Record<string, unknown>): Pr
 export async function handleGetVulnerabilityReport(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
   const projectPath = args.path as string;
   const includeDev = args.includeDev === true; // default false for vulnerability reports
-
-  if (!(await fileExists(projectPath))) {
-    throw new McpError(ErrorCode.InvalidParams, `Project path not found: ${projectPath}`);
-  }
+  await validateDirectoryPath(projectPath);
 
   const packageFileNames = getAllPackageFileNames();
   const packageFiles: string[] = [];
@@ -98,6 +95,21 @@ export async function handleGetVulnerabilityReport(args: Record<string, unknown>
 }
 
 // --- Internal helpers ---
+
+/**
+ * Validate that the given path exists and is a directory.
+ * @param projectPath Path to validate
+ * @throws McpError if the path does not exist or is not a directory
+ */
+async function validateDirectoryPath(projectPath: string): Promise<void> {
+  if (!(await fileExists(projectPath))) {
+    throw new McpError(ErrorCode.InvalidParams, `Project path not found: ${projectPath}`);
+  }
+  const stats = await stat(projectPath);
+  if (!stats.isDirectory()) {
+    throw new McpError(ErrorCode.InvalidParams, `Path is not a directory: ${projectPath}`);
+  }
+}
 
 /** Directories that should be skipped during recursive file discovery. */
 const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'target', '.venv', '__pycache__']);
