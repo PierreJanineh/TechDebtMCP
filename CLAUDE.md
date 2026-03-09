@@ -54,7 +54,7 @@ src/
 
 - **Imports use `.js` extensions** — required for `module: NodeNext` / `moduleResolution: NodeNext` in tsconfig.
 - **All types in `src/types/index.ts`** — never define types locally.
-- **Factory pattern** — use `createAnalyzer(language, config)` and `createDependencyParser(ecosystem)`.
+- **Factory pattern** — use `createAnalyzer(language, config)` and `createDependencyParser(filePath)`.
 - **BaseAnalyzer.checkPattern()** — the standard way to match regex patterns and emit `TechDebtIssue` objects.
 - **No `any`** — use `unknown` if truly needed; no `@ts-ignore` (use `@ts-expect-error` with a comment).
 - **No `console.log`** in production code.
