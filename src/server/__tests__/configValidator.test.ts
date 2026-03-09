@@ -173,6 +173,17 @@ describe('handleValidateConfig', () => {
     expect(result.content[0].text).toContain('"languageOverrides" must be an object');
   });
 
+  it('should accept valid languageOverrides with nested objects', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
+    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({
+      languageOverrides: { typescript: { rules: { maxFileLines: 600 } } },
+    }) as any);
+
+    const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
+    expect(result.content[0].text).toContain('valid');
+  });
+
   it('should validate customPatterns entries', async () => {
     mockFileExists.mockResolvedValue(true);
     mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);

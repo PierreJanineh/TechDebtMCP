@@ -40,8 +40,6 @@ export function createDependencyParser(filePath: string): BaseDependencyParser |
     'conanfile.txt': new CppParser(),
     'conanfile.py': new CppParser(),
     'vcpkg.json': new CppParser(),
-    // 'requirements.txt': new PipParser(), // handled by requirements check
-    // ... other parsers
   };
 
   // Check file extension/name patterns
@@ -78,7 +76,6 @@ export function getAllParsers(): BaseDependencyParser[] {
     new SwiftPackageParser(),
     new NugetParser(),
     new CppParser(),
-    // ... other parsers
   ];
 
   return parsers;
@@ -100,5 +97,3 @@ export function getAllPackageFileNames(): string[] {
 
 // Re-export types and base classes
 export { BaseDependencyParser, ParsedDependency };
-
-
