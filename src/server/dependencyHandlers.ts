@@ -19,10 +19,11 @@ export async function handleCheckDependencies(args: Record<string, unknown>): Pr
 
   const packageFileNames = getAllPackageFileNames();
   const packageFiles: string[] = [];
-  await findPackageFiles(projectPath, packageFileNames, packageFiles);
+  const scanErrors: string[] = [];
+  await findPackageFiles(projectPath, packageFileNames, packageFiles, scanErrors);
 
   const { dependencies, failedParses } = await parseAllDependencies(packageFiles, projectPath, includeDev);
-  const report = generateDependencyReport(projectPath, packageFiles, dependencies, failedParses);
+  const report = generateDependencyReport(projectPath, packageFiles, dependencies, failedParses, scanErrors);
 
   return { content: [{ type: 'text', text: report }] };
 }
@@ -40,12 +41,15 @@ export async function handleGetVulnerabilityReport(args: Record<string, unknown>
 
   const packageFileNames = getAllPackageFileNames();
   const packageFiles: string[] = [];
-  await findPackageFiles(projectPath, packageFileNames, packageFiles);
+  const scanErrors: string[] = [];
+  await findPackageFiles(projectPath, packageFileNames, packageFiles, scanErrors);
 
   const { dependencies, failedParses } = await parseAllDependencies(packageFiles, projectPath, includeDev);
 
-  const totalDeps = dependencies.reduce((sum, f) => sum + f.dependencies.length, 0);
-  const ecosystems = [...new Set(dependencies.map(d => d.ecosystem))];
+  // Filter out manifests with zero dependencies after dev-filtering
+  const nonEmptyDeps = dependencies.filter(d => d.dependencies.length > 0);
+  const totalDeps = nonEmptyDeps.reduce((sum, f) => sum + f.dependencies.length, 0);
+  const ecosystems = [...new Set(nonEmptyDeps.map(d => d.ecosystem))];
 
   let report = `# Vulnerability Report (Offline)\n\n`;
   report += `> **Note:** This is an offline dependency inventory. Actual CVE lookups will be available in Phase 2b via the OSV API.\n\n`;
@@ -56,22 +60,33 @@ export async function handleGetVulnerabilityReport(args: Record<string, unknown>
 
   if (packageFiles.length === 0) {
     report += `No package manifests detected. Ensure your project root contains supported manifest files.\n`;
+    if (scanErrors.length > 0) {
+      report += `\n## ⚠️ Filesystem scan errors (${scanErrors.length})\n\n`;
+      report += scanErrors.map(e => `- ${e}`).join('\n') + '\n';
+    }
     return { content: [{ type: 'text', text: report }] };
   }
 
-  report += `## Dependency Inventory by Ecosystem\n\n`;
-  for (const fileInfo of dependencies) {
-    report += `### ${fileInfo.ecosystem} — \`${fileInfo.file}\`\n\n`;
-    report += `| Package | Version |\n|---------|----------|\n`;
-    for (const dep of fileInfo.dependencies) {
-      report += `| ${dep.name} | \`${dep.version}\` |\n`;
+  if (nonEmptyDeps.length > 0) {
+    report += `## Dependency Inventory by Ecosystem\n\n`;
+    for (const fileInfo of nonEmptyDeps) {
+      report += `### ${fileInfo.ecosystem} — \`${fileInfo.file}\`\n\n`;
+      report += `| Package | Version |\n|---------|----------|\n`;
+      for (const dep of fileInfo.dependencies) {
+        report += `| ${dep.name} | \`${dep.version}\` |\n`;
+      }
+      report += `\n`;
     }
-    report += `\n`;
   }
 
   if (failedParses.length > 0) {
     report += `## ⚠️ Failed to parse ${failedParses.length} file(s)\n\n`;
     report += failedParses.map(f => `- \`${f.file}\`: ${f.error}`).join('\n') + '\n\n';
+  }
+
+  if (scanErrors.length > 0) {
+    report += `## ⚠️ Filesystem scan errors (${scanErrors.length})\n\n`;
+    report += scanErrors.map(e => `- ${e}`).join('\n') + '\n\n';
   }
 
   report += `## Next Steps\n\n`;
@@ -84,15 +99,25 @@ export async function handleGetVulnerabilityReport(args: Record<string, unknown>
 
 // --- Internal helpers ---
 
+/** Directories that should be skipped during recursive file discovery. */
+const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'target', '.venv', '__pycache__']);
+
 /**
  * Recursively discover package manifest files in a directory tree.
  * Skips common non-source directories (node_modules, .git, dist, etc.) and
  * limits traversal depth to avoid runaway recursion in deep trees.
+ * @param dir Root directory to begin searching from
+ * @param targetFiles Array of package file names to look for
+ * @param results Accumulator array for discovered file paths (mutated in place)
+ * @param scanErrors Accumulator array for filesystem errors encountered during traversal
+ * @param maxDepth Maximum directory nesting depth before stopping recursion
+ * @param currentDepth Current recursion depth (used internally)
  */
 async function findPackageFiles(
   dir: string,
   targetFiles: string[],
   results: string[],
+  scanErrors: string[] = [],
   maxDepth: number = 10,
   currentDepth: number = 0
 ): Promise<void> {
@@ -102,7 +127,7 @@ async function findPackageFiles(
     const entries = await readdir(dir);
 
     for (const entry of entries) {
-      if (['node_modules', '.git', 'dist', 'build', 'target', '.venv', '__pycache__'].includes(entry)) {
+      if (SKIP_DIRS.has(entry)) {
         continue;
       }
 
@@ -110,15 +135,15 @@ async function findPackageFiles(
       const stats = await stat(fullPath);
 
       if (stats.isDirectory()) {
-        await findPackageFiles(fullPath, targetFiles, results, maxDepth, currentDepth + 1);
+        await findPackageFiles(fullPath, targetFiles, results, scanErrors, maxDepth, currentDepth + 1);
       } else if (stats.isFile()) {
         if (targetFiles.includes(entry) || entry.endsWith('.csproj')) {
           results.push(fullPath);
         }
       }
     }
-  } catch {
-    // Silently skip inaccessible directories; parse failures are surfaced via failedParses
+  } catch (error) {
+    scanErrors.push(`${dir}: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -166,14 +191,16 @@ function generateDependencyReport(
   projectPath: string,
   packageFiles: string[],
   dependencies: Array<{ file: string; ecosystem: PackageManager | string; dependencies: ParsedDependency[] }>,
-  failedParses: Array<{ file: string; error: string }>
+  failedParses: Array<{ file: string; error: string }>,
+  scanErrors: string[] = []
 ): string {
-  const totalDeps = dependencies.reduce((sum, f) => sum + f.dependencies.length, 0);
-  const ecosystems = [...new Set(dependencies.map(d => d.ecosystem))];
+  const nonEmptyDeps = dependencies.filter(d => d.dependencies.length > 0);
+  const totalDeps = nonEmptyDeps.reduce((sum, f) => sum + f.dependencies.length, 0);
+  const ecosystems = [...new Set(nonEmptyDeps.map(d => d.ecosystem))];
 
   let report = `# Dependency Analysis\n\n**Project:** ${projectPath}\n**Found:** ${packageFiles.length} package file(s) across ${ecosystems.length} ecosystem(s)\n**Total Dependencies:** ${totalDeps}\n**Ecosystems:** ${ecosystems.join(', ')}\n\n`;
 
-  for (const fileInfo of dependencies) {
+  for (const fileInfo of nonEmptyDeps) {
     report += `## ${fileInfo.file} (${fileInfo.ecosystem})\n\n`;
     report += `**Dependencies:** ${fileInfo.dependencies.length}\n\n`;
 
@@ -194,6 +221,11 @@ function generateDependencyReport(
   if (failedParses.length > 0) {
     report += `## ⚠️ Failed to parse ${failedParses.length} file(s)\n\n`;
     report += failedParses.map(f => `- ${f.file}: ${f.error}`).join('\n') + '\n\n';
+  }
+
+  if (scanErrors.length > 0) {
+    report += `## ⚠️ Filesystem scan errors (${scanErrors.length})\n\n`;
+    report += scanErrors.map(e => `- ${e}`).join('\n') + '\n\n';
   }
 
   return report;
