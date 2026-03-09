@@ -146,6 +146,9 @@ export class PipParser extends BaseDependencyParser {
     return dependencies;
   }
 
+  /**
+   * Parse PEP 517/518 standard dependencies from pyproject.toml
+   */
   private parsePep517Dependencies(data: Record<string, unknown>, dependencies: ParsedDependency[], filePath: string): void {
     const project = data.project as Record<string, unknown>;
     if (!project) return;
@@ -157,6 +160,9 @@ export class PipParser extends BaseDependencyParser {
     this.parseOptionalDependencies(project, dependencies, filePath);
   }
 
+  /**
+   * Parse an array of PEP 508 dependency strings
+   */
   private parseDependencyArray(depArray: unknown, dependencies: ParsedDependency[], filePath: string, isDev: boolean): void {
     if (!Array.isArray(depArray)) return;
 
@@ -172,6 +178,9 @@ export class PipParser extends BaseDependencyParser {
     }
   }
 
+  /**
+   * Parse [project.optional-dependencies] groups from pyproject.toml
+   */
   private parseOptionalDependencies(project: Record<string, unknown>, dependencies: ParsedDependency[], filePath: string): void {
     const optDeps = project['optional-dependencies'];
     if (!optDeps || typeof optDeps !== 'object') return;
@@ -182,6 +191,9 @@ export class PipParser extends BaseDependencyParser {
     }
   }
 
+  /**
+   * Parse Poetry-style dependencies including 1.2+ group format
+   */
   private parsePoetryDependencies(data: Record<string, unknown>, dependencies: ParsedDependency[], filePath: string): void {
     if (!data.tool || typeof data.tool !== 'object') return;
 
@@ -224,6 +236,8 @@ export class PipParser extends BaseDependencyParser {
       for (const [groupName, groupData] of Object.entries(groups)) {
         if (typeof groupData === 'object') {
           const group = groupData as Record<string, unknown>;
+          // Only 'dev' is universally understood as dev-only; groups like 'test', 'lint', 'docs'
+          // vary by project convention, so we conservatively treat them as production.
           const isDev = groupName === 'dev';
 
           if (group.dependencies && typeof group.dependencies === 'object') {

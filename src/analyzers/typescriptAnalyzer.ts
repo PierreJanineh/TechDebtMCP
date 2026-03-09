@@ -78,7 +78,7 @@ export class TypeScriptAnalyzer extends BaseAnalyzer {
       tags: ['debug', 'cleanup'],
     }));
 
-    // Debugger statements - exclude matches inside strings/comments
+    // Debugger statements - heuristic: lookbehind reduces false positives from quoted pattern names but does not fully exclude all string/comment contexts
     issues.push(...this.checkPattern(filePath, content, /(?<!["'])debugger\b/g, {
       category: 'code-quality',
       severity: 'high',

@@ -3,12 +3,7 @@
     "**/node_modules/**",
     "**/dist/**",
     "**/*.test.ts",
-    "**/__tests__/**",
-    "src/config/languages.ts",
-    "src/core/analysisEngine.ts",
-    "src/analyzers/typescriptAnalyzer.ts",
-    "src/analyzers/javascriptAnalyzer.ts",
-    "src/analyzers/rubyAnalyzer.ts"
+    "**/__tests__/**"
   ],
   "rules": {
     "maxFileLines": 500,

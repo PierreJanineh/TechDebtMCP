@@ -13,7 +13,7 @@ import { getSupportedLanguages, LANGUAGE_CONFIGS } from '../config/languages.js'
 import { getRelativePath, readFile, fileExists } from '../utils/fileUtils.js';
 import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
-import { formatReport, getSeverityEmoji, formatMinutes } from './formatters.js';
+import { formatReport, formatMinutes } from './formatters.js';
 import { TOOL_DEFINITIONS } from './tools.js';
 import {
   SupportedLanguage,
@@ -293,10 +293,11 @@ async function handleExecuteCustomRules(customRulesEngine: CustomRulesEngine, ar
   let code = args.code as string | undefined;
   const language = args.language as string | undefined;
   if (!path && !code) return { content: [{ type: 'text', text: '❌ Either path or code must be provided' }] };
-  if (!code) {
-    if (!await fileExists(path!)) return { content: [{ type: 'text', text: `❌ File not found: ${path}` }] };
-    code = await readFile(path!);
+  if (!code && path) {
+    if (!await fileExists(path)) return { content: [{ type: 'text', text: `❌ File not found: ${path}` }] };
+    code = await readFile(path);
   }
+  if (!code) return { content: [{ type: 'text', text: '❌ Could not read code from path or input' }] };
 
   const filePath = path || 'inline-code';
   const issues = customRulesEngine.executeRules(filePath, code, language);
@@ -421,6 +422,3 @@ async function findPackageFiles(
     console.error(`findPackageFiles: failed to scan directory "${dir}": ${message}`);
   }
 }
-
-export {};
-

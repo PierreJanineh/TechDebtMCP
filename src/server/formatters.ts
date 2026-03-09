@@ -10,7 +10,7 @@ export function formatReport(report: TechDebtReport): string {
 /**
  * Get emoji representation for severity level
  */
-export function getSeverityEmoji(severity: Severity): string {
+function getSeverityEmoji(severity: Severity): string {
   switch (severity) {
     case 'critical': return '🔴';
     case 'high': return '🟠';
