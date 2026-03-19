@@ -20,43 +20,44 @@ Approach: batch quick wins first, then one PR per major phase.
 
 ### Phase 6: MCP Resources (#50, #51, #52)
 
-**Goal:** Expose `debt://summary/{projectPath}` and `debt://issues/{projectPath}` as MCP resources for passive data access.
+**Goal:** Expose `debt://summary/{+projectPath}` and `debt://issues/{+projectPath}` as MCP resources for passive data access.
 
-#### Files to modify
+#### Files modified
 
 | File | Change |
 |------|--------|
-| `src/server/setup.ts` | Add `resources: {}` to capabilities object |
-| `src/server/handlers.ts` | Add `ListResourcesRequestSchema` and `ReadResourceRequestSchema` handlers |
-| `src/server/__tests__/resourceHandlers.test.ts` | New — test URI parsing, query params, error handling |
+| `src/server/resourceHandlers.ts` | New — registers resource templates via `McpServer.registerResource()` |
+| `src/server/__tests__/resourceHandlers.test.ts` | New — 8 tests covering registration, reads, filters, limits, error paths |
+| `src/index.ts` | Wires `attachResources()` into server startup |
 
-No new types needed — resources return existing `TechDebtReport` / `DebtSummary` data as JSON.
+No changes to `setup.ts` or `handlers.ts` — the SDK auto-registers `resources` capability on first `registerResource()` call.
 
 #### Resource definitions
 
 | URI Template | Name | Returns |
 |---|---|---|
-| `debt://summary/{projectPath}` | Tech Debt Summary | `{ timestamp, healthScore, debtScore, totalIssues, bySeverity, byCategory, sqale }` |
-| `debt://issues/{projectPath}` | Tech Debt Issues | `{ timestamp, totalCount, issues[] }` |
+| `debt://summary/{+projectPath}` | Tech Debt Summary | `{ timestamp, healthScore, debtScore, totalIssues, bySeverity, byCategory, sqale }` |
+| `debt://issues/{+projectPath}` | Tech Debt Issues | `{ timestamp, totalCount, issues[] }` |
+
+RFC 6570 `{+projectPath}` reserved expansion allows slashes in path variables.
 
 #### Query parameters (issues resource)
 
 - `severity` — Filter by severity level
 - `category` — Filter by category
-- `limit` — Max issues to return (default: 100)
+- `limit` — Max issues to return (default: 100, validated as finite positive integer)
 
 #### Implementation
 
-1. `setup.ts`: Add `resources: {}` alongside `tools: {}` in capabilities
-2. `handlers.ts`: Import schemas from SDK, register list and read handlers
-3. List handler returns the two resource templates with descriptions
-4. Read handler:
-   - Parses URI to extract `projectPath` and optional query params
+1. `resourceHandlers.ts`: `attachResources(mcpServer)` registers both resource templates
+2. Uses `McpServer.registerResource()` high-level API (not low-level schema handlers)
+3. `ResourceTemplate` constructed with `{ list: undefined }` (required by SDK types, marks as non-enumerable)
+4. Each callback:
+   - Extracts `projectPath` from SDK-provided `variables`
    - Runs `AnalysisEngine.analyzeProject({ path: projectPath })`
-   - For `debt://summary/...`: returns summary + SQALE as `application/json`
-   - For `debt://issues/...`: returns filtered issues array
-   - Returns error for unrecognized URIs
-5. If handler code exceeds ~80 lines, extract to `src/server/resourceHandlers.ts`
+   - Returns JSON response with `application/json` mime type
+   - Catches errors and returns `{ error: message }` JSON
+5. Issues resource parses `uri.searchParams` for filtering/limiting
 
 ### Bug #73: Custom Rule Suppression (#73)
 
