@@ -161,7 +161,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 
 ### Phase 2: Dependency Analysis (v2.0.0)
 
-**Status:** ✅ **COMPLETE** (Pending PR merge and v2.0.0 tag)
+**Status:** ✅ **COMPLETE** (Released as v2.0.0)
 
 **Objective:** Parse and analyze project dependencies across multiple package managers.
 
