@@ -2,10 +2,12 @@
 
 import { createServer, runServer } from './server/setup.js';
 import { attachHandlers } from './server/handlers.js';
+import { attachResources } from './server/resourceHandlers.js';
 
 async function main(): Promise<void> {
   const server = createServer();
   attachHandlers(server);
+  attachResources(server);
   await runServer(server);
 }
 
