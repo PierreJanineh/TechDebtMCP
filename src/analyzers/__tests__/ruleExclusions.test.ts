@@ -90,6 +90,18 @@ function broken() {
     expect(debuggerIssues).toHaveLength(0);
   });
 
+  it('matches paths with backslash separators (Windows)', async () => {
+    const config = {
+      ruleExclusions: {
+        debugger: ['**/src/analyzers/**'],
+      },
+    };
+    const analyzer = new TypeScriptAnalyzer(config);
+    const result = await analyzer.analyze('src\\analyzers\\typescriptAnalyzer.ts', codeWithDebugger);
+    const debuggerIssues = result.issues.filter(i => i.rule === 'debugger');
+    expect(debuggerIssues).toHaveLength(0);
+  });
+
   it('supports multiple glob patterns per rule', async () => {
     const config = {
       ruleExclusions: {

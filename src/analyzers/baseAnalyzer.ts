@@ -243,7 +243,9 @@ export abstract class BaseAnalyzer {
   }
 
   /**
-   * Filter out issues matching ruleExclusions config
+   * Filter out issues matching ruleExclusions config.
+   * Normalizes file paths to POSIX separators before matching
+   * so glob patterns work consistently across platforms.
    */
   private applyRuleExclusions(
     filePath: string,
@@ -254,12 +256,14 @@ export abstract class BaseAnalyzer {
       return issues;
     }
 
+    const normalizedPath = filePath.replace(/\\/g, '/');
+
     return issues.filter(issue => {
       const patterns = exclusions[issue.rule];
       if (!patterns || patterns.length === 0) {
         return true;
       }
-      return !patterns.some(pattern => minimatch(filePath, pattern));
+      return !patterns.some(pattern => minimatch(normalizedPath, pattern));
     });
   }
 

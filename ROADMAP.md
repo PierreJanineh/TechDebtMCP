@@ -41,7 +41,7 @@ Focus on project quality, code compliance, and transparent metrics.
 - Improvement: -20 false positives, -10 hours remediation time
 - Files Analyzed: 25 (down from 33, test files excluded)
 - Critical Issues: 0
-- High Issues: 14 (false positives eliminated via `ruleExclusions` in .techdebtrc.json)
+- High Issues: 14 (post-`ruleExclusions` in .techdebtrc.json; all known false positives excluded)
 
 **Community**
 - Improved Snyk package health score with Code of Conduct
