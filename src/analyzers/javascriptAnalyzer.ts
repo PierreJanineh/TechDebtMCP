@@ -27,8 +27,8 @@ export class JavaScriptAnalyzer extends BaseAnalyzer {
       tags: ['debug', 'cleanup'],
     }));
 
-    // Debugger statements - heuristic: lookbehind reduces false positives from quoted pattern names but does not fully exclude all string/comment contexts
-    issues.push(...this.checkPattern(filePath, content, /(?<!["'])debugger\b/g, {
+    // Debugger statements — match only standalone debugger statements
+    issues.push(...this.checkPattern(filePath, content, /^\s*debugger\s*;?\s*$/gm, {
       category: 'code-quality',
       severity: 'high',
       title: 'Debugger statement found',

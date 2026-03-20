@@ -1,6 +1,73 @@
 import { TypeScriptAnalyzer } from '../typescriptAnalyzer.js';
 import { JavaScriptAnalyzer } from '../javascriptAnalyzer.js';
 
+describe('false positive prevention', () => {
+  it('does not flag the word "debugger" inside string literals', async () => {
+    const code = `const msg = 'Remove debugger statements';\n`;
+    const analyzer = new TypeScriptAnalyzer({});
+    const result = await analyzer.analyze('src/core/engine.ts', code);
+    const debuggerIssues = result.issues.filter(i => i.rule === 'debugger');
+    expect(debuggerIssues).toHaveLength(0);
+  });
+
+  it('does not flag "debugger" inside comments', async () => {
+    const code = `// binding.pry (debugger calls)\nconst x = 1;\n`;
+    const analyzer = new TypeScriptAnalyzer({});
+    const result = await analyzer.analyze('src/analyzers/foo.ts', code);
+    const debuggerIssues = result.issues.filter(i => i.rule === 'debugger');
+    expect(debuggerIssues).toHaveLength(0);
+  });
+
+  it('does not flag "debugger" inside regex pattern definitions', async () => {
+    const code = `const re = /(?<!["'])debugger\\b/g;\n`;
+    const analyzer = new TypeScriptAnalyzer({});
+    const result = await analyzer.analyze('src/analyzers/foo.ts', code);
+    const debuggerIssues = result.issues.filter(i => i.rule === 'debugger');
+    expect(debuggerIssues).toHaveLength(0);
+  });
+
+  it('does not flag @ts-ignore inside regex pattern definitions', async () => {
+    const code = `const re = /@ts-ignore/g;\n`;
+    const analyzer = new TypeScriptAnalyzer({});
+    const result = await analyzer.analyze('src/analyzers/foo.ts', code);
+    const tsIgnoreIssues = result.issues.filter(i => i.rule === 'ts-ignore');
+    expect(tsIgnoreIssues).toHaveLength(0);
+  });
+
+  it('still detects genuine standalone debugger statements', async () => {
+    const code = `function broken() {\n  debugger;\n  return 1;\n}\n`;
+    const analyzer = new TypeScriptAnalyzer({});
+    const result = await analyzer.analyze('src/foo.ts', code);
+    const debuggerIssues = result.issues.filter(i => i.rule === 'debugger');
+    expect(debuggerIssues).toHaveLength(1);
+    expect(debuggerIssues[0].line).toBe(2);
+  });
+
+  it('detects debugger without semicolon', async () => {
+    const code = `function broken() {\n  debugger\n  return 1;\n}\n`;
+    const analyzer = new TypeScriptAnalyzer({});
+    const result = await analyzer.analyze('src/foo.ts', code);
+    const debuggerIssues = result.issues.filter(i => i.rule === 'debugger');
+    expect(debuggerIssues).toHaveLength(1);
+  });
+
+  it('still detects genuine // @ts-ignore directives', async () => {
+    const code = `// @ts-ignore\nconst x: any = 1;\n`;
+    const analyzer = new TypeScriptAnalyzer({});
+    const result = await analyzer.analyze('src/foo.ts', code);
+    const tsIgnoreIssues = result.issues.filter(i => i.rule === 'ts-ignore');
+    expect(tsIgnoreIssues).toHaveLength(1);
+  });
+
+  it('does not flag debugger in JS regex pattern definitions', async () => {
+    const code = `const re = /(?<!["'])debugger\\b/g;\n`;
+    const analyzer = new JavaScriptAnalyzer({});
+    const result = await analyzer.analyze('src/analyzers/foo.js', code);
+    const debuggerIssues = result.issues.filter(i => i.rule === 'debugger');
+    expect(debuggerIssues).toHaveLength(0);
+  });
+});
+
 describe('ruleExclusions', () => {
   const codeWithDebugger = `
 function broken() {
