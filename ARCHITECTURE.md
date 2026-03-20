@@ -39,7 +39,8 @@ TechDebtMCP/
 │   │   ├── tools.ts             # Centralized TOOL_DEFINITIONS array
 │   │   ├── formatters.ts        # Output formatting helpers
 │   │   ├── configValidator.ts   # .techdebtrc.json validation handler
-│   │   └── dependencyHandlers.ts # Dependency analysis & vulnerability report handlers
+│   │   ├── dependencyHandlers.ts # Dependency analysis & vulnerability report handlers
+│   │   └── resourceHandlers.ts  # ✅ MCP resource templates (Phase 6 - COMPLETE)
 │   ├── types/
 │   │   └── index.ts             # All TypeScript interfaces (single source of truth)
 │   ├── config/
@@ -233,29 +234,33 @@ BaseAnalyzer (abstract)
 TypeScriptAnalyzer, PythonAnalyzer, JavaAnalyzer, ... (10 languages)
 ```
 
-### 3. MCP Server (`src/index.ts`)
+### 3. MCP Server (`src/server/`)
 
-**Responsibility:** Expose analysis capabilities as MCP tools.
+**Responsibility:** Expose analysis capabilities as MCP tools and resources.
 
-**Key Methods:**
-- `setupHandlers()` — Register tool and resource handlers
-- `handleAnalyzeProject()` — `analyze_project` tool
-- `handleAnalyzeFile()` — `analyze_file` tool
-- `handleGetDebtSummary()` — `get_debt_summary` tool
-- `handleListSupportedLanguages()` — `list_supported_languages` tool
-- `handleGetRecommendations()` — `get_recommendations` tool
-- `handleGetIssuesBySeverity()` — `get_issues_by_severity` tool
-- `handleGetIssuesByCategory()` — `get_issues_by_category` tool
-- ✅ `handleAddCustomRule()` — `add_custom_rule` tool (Phase 5 - COMPLETE)
-- ✅ `handleRemoveCustomRule()` — `remove_custom_rule` tool (Phase 5 - COMPLETE)
-- ✅ `handleListCustomRules()` — `list_custom_rules` tool (Phase 5 - COMPLETE)
-- ✅ `handleExecuteCustomRules()` — `execute_custom_rules` tool (Phase 5 - COMPLETE)
-- ✅ `handleValidateCustomPattern()` — `validate_custom_pattern` tool (Phase 5 - COMPLETE)
+The server is split into focused modules under `src/server/`:
 
-**Future Tools (phases 2-4):**
-- `check_dependencies` (Phase 2)
-- `validate_config` (Phase 2)
-- `save_baseline`, `compare_with_baseline`, `get_trend` (Phase 3)
+- **`setup.ts`** — McpServer instantiation and stdio transport wiring
+- **`tools.ts`** — `TOOL_DEFINITIONS` array (16 tool schemas/descriptions)
+- **`handlers.ts`** — `CallToolRequestSchema` switch dispatching to handler functions
+- **`formatters.ts`** — Output formatting helpers
+- **`configValidator.ts`** — `.techdebtrc.json` validation handler
+- **`dependencyHandlers.ts`** — `check_dependencies` and `get_vulnerability_report` handlers
+- **`resourceHandlers.ts`** — MCP resource templates (`debt://summary`, `debt://issues`)
+
+**Entry point:** `src/index.ts` (16 lines) creates server, attaches handlers + resources, runs.
+
+**16 MCP Tools:**
+- Core: `analyze_project`, `analyze_file`, `get_debt_summary`, `list_supported_languages`, `get_recommendations`, `get_issues_by_severity`, `get_issues_by_category`, `get_sqale_metrics`
+- Custom Rules (Phase 5): `add_custom_rule`, `remove_custom_rule`, `list_custom_rules`, `execute_custom_rules`, `validate_custom_pattern`
+- Dependencies (Phase 2): `check_dependencies`, `validate_config`, `get_vulnerability_report`
+
+**2 MCP Resources (Phase 6):**
+- `debt://summary/{+projectPath}` — Health score, SQALE metrics, issue counts
+- `debt://issues/{+projectPath}` — Filterable issues list (severity, category, limit)
+
+**Future Tools:**
+- `save_baseline`, `compare_with_baseline`, `get_trend`, `list_snapshots`, `delete_snapshot` (Phase 3)
 - `get_complexity_report` (Phase 4)
 
 ### 4. Types (`src/types/index.ts`)
@@ -404,7 +409,7 @@ executeRules(filePath, content, language)
 
 ### Adding a New MCP Tool
 
-1. **Add to tool list** (`src/index.ts`):
+1. **Add tool schema** (`src/server/tools.ts`):
    ```typescript
    {
      name: 'my_new_tool',
@@ -413,21 +418,13 @@ executeRules(filePath, content, language)
    }
    ```
 
-2. **Add handler case** (`src/index.ts`):
+2. **Add handler case** (`src/server/handlers.ts`):
    ```typescript
    case 'my_new_tool':
-     return await this.handleMyNewTool(args);
+     return await handleMyNewTool(args);
    ```
 
-3. **Implement handler** (`src/index.ts`):
-   ```typescript
-   private async handleMyNewTool(args: Record<string, unknown>) {
-     // Implementation
-     return {
-       content: [{ type: 'text', text: 'Result' }],
-     };
-   }
-   ```
+3. **Implement handler** — in `handlers.ts` for core tools, or in a dedicated file (e.g., `configValidator.ts`, `dependencyHandlers.ts`) for domain-specific tools. Keep `handlers.ts` under 500 lines.
 
 ### Adding a New Core Engine
 
@@ -436,26 +433,28 @@ For major new functionality (like SQALE, dependency checking, trend tracking):
 1. **Create engine file:** `src/core/[feature]Engine.ts`
 2. **Export types:** Add to `src/types/index.ts`
 3. **Integrate with AnalysisEngine:** Call from `analyzeProject()`
-4. **Add MCP tool:** Expose via new tool in `src/index.ts`
+4. **Add MCP tool:** Schema in `src/server/tools.ts`, handler in `src/server/handlers.ts` (or dedicated file)
 5. **Write tests:** `src/core/__tests__/[feature]Engine.test.ts`
 
 ## Dependency Graph
 
 ```
-index.ts (MCP Server)
-  ├─ AnalysisEngine
-  │   ├─ Analyzer (via factory)
-  │   │   └─ BaseAnalyzer
-  │   │       └─ src/config/languages.ts
-  │   └─ fileUtils
-  ├─ ✅ SQALEEngine (Phase 1 - COMPLETE)
-  ├─ ✅ CustomRulesEngine (Phase 5 - COMPLETE)
-  ├─ src/config/languages.ts
-  └─ fileUtils
+index.ts (Entry point)
+  ├─ server/setup.ts (McpServer + transport)
+  ├─ server/handlers.ts (tool dispatch)
+  │   ├─ AnalysisEngine
+  │   │   ├─ Analyzer (via factory)
+  │   │   │   └─ BaseAnalyzer → src/config/languages.ts
+  │   │   └─ fileUtils
+  │   ├─ ✅ SQALEEngine (Phase 1)
+  │   ├─ ✅ CustomRulesEngine (Phase 5)
+  │   ├─ ✅ configValidator.ts (Phase 2)
+  │   └─ ✅ dependencyHandlers.ts (Phase 2)
+  │       └─ DependencyParsers (10 ecosystems, via factory)
+  └─ server/resourceHandlers.ts (Phase 6)
+      └─ AnalysisEngine (passive data access)
 
 Future additions:
-  ├─ DependencyAnalyzer (Phase 2)
-  ├─ VulnerabilityService (Phase 2b)
   ├─ SnapshotManager (Phase 3)
   └─ ComplexityAnalyzer (Phase 4)
 ```
@@ -622,7 +621,7 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
 
 | Metric | Limit | Current Max | Status |
 |--------|-------|-------------|--------|
-| File length | 500 lines | 883 (`src/index.ts`) | ⚠️ Needs refactoring |
+| File length | 500 lines | ~325 (`src/server/handlers.ts`) | ✅ Good (index.ts split in v2.0.0) |
 | Nesting depth | 4 levels | 14 (`csharpAnalyzer.ts:267`) | ⚠️ Needs refactoring |
 | Function length | 50 lines | Compliant | ✅ Good |
 | Cyclomatic complexity | 10 | Compliant | ✅ Good |
@@ -633,28 +632,14 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
 
 #### High Priority (Address when touching these files)
 
-1. **`src/index.ts` (883 lines)** - Split into modules:
-   ```
-   src/
-   ├── index.ts (entry point, ~50 lines)
-   └── server/
-       ├── handlers.ts (core tool handlers, ~325 lines)
-       ├── configValidator.ts (config validation handler)
-       ├── dependencyHandlers.ts (dependency & vulnerability handlers)
-       └── setup.ts (server setup, ~300 lines)
-   ```
+1. ~~**`src/index.ts` (883 lines)** - Split into modules~~ ✅ **DONE** (v2.0.0) — now 16 lines, split into `src/server/` modules
 
 2. **`src/analyzers/csharpAnalyzer.ts:267`** - Deep nesting (14 levels)
    - Extract nested logic into helper methods
    - Use early returns to reduce indentation
    - Apply guard clauses pattern
 
-3. **Non-null assertions (`!`)** - Found at src/index.ts:804, 809
-   - Replace with optional chaining (`?.`)
-   - Add proper null checks with guard clauses
-   - Use nullish coalescing (`??`) for defaults
-
-4. **False positives in analyzers** (13 high-severity false positives)
+3. **False positives in analyzers** (13 high-severity false positives)
    - Pattern definitions mistaken for actual issues
    - Need file-specific exclusions in `.techdebtrc.json`
    - See [TECH_DEBT_SCAN.md](../TECH_DEBT_SCAN.md) for details

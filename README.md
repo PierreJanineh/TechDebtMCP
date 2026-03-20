@@ -330,6 +330,23 @@ Validate a custom pattern before adding it as a rule.
 - `severity` (required): low, medium, high, or critical
 - `category` (required): One of the debt categories
 
+## MCP Resources (Phase 6)
+
+In addition to tools, Tech Debt MCP exposes passive MCP resources for reading tech debt data without triggering explicit tool calls:
+
+### `debt://summary/{projectPath}`
+
+Returns a JSON summary of technical debt including health score, debt score, issue counts by severity/category, and SQALE metrics.
+
+### `debt://issues/{projectPath}`
+
+Returns a filterable list of all technical debt issues.
+
+**Query parameters:**
+- `severity` — Filter by severity level (e.g., `high`)
+- `category` — Filter by category (e.g., `security`)
+- `limit` — Max issues to return (default: 100)
+
 ## Dependency Analysis (Phase 2)
 
 Phase 2 adds comprehensive dependency parsing across multiple ecosystems and a new MCP tool `check_dependencies` that scans a project for package manifests and returns a structured dependency report.
