@@ -76,7 +76,7 @@ git config user.email "GH-LLM-Bot@pierrejanineh.com"
 ```
 
 ```bash
-[ ! -d node_modules ] && ln -s /Users/pierrejanineh/Documents/GitHub.nosync/TechDebtMCP/node_modules ./node_modules
+ln -sf /Users/pierrejanineh/Documents/GitHub.nosync/TechDebtMCP/node_modules ./node_modules 2>/dev/null || true
 ```
 
 **Token generation** — generate a fresh token before each batch of GitHub API calls (tokens expire after ~10 minutes):

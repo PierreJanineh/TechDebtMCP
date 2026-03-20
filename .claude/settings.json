@@ -3,7 +3,10 @@
     "defaultMode": "dontAsk",
     "allow": [
       "Bash(git:*)",
+      "Bash(gh:*)",
       "Bash(GH_TOKEN=:*)",
+      "Bash(export:*)",
+      "Bash(ln:*)",
       "Bash(npm:*)",
       "Bash(npx:*)",
       "Bash(jq:*)",
