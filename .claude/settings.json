@@ -20,7 +20,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "COMMAND=$(echo $TOOL_INPUT | jq -r '.command // empty'); if echo \"$COMMAND\" | grep -qE '^git commit'; then if [ -f /tmp/.techdebt-review-done ]; then rm -f /tmp/.techdebt-review-done; exit 0; else echo 'BLOCKED: Run /superpowers:requesting-code-review before committing. After the review passes, create /tmp/.techdebt-review-done and retry the commit.'; exit 2; fi; fi"
+            "command": "COMMAND=$(echo $TOOL_INPUT | jq -r '.command // empty'); if echo \"$COMMAND\" | grep -qE 'git push.* develop$'; then if [ -f /tmp/.techdebt-review-done ]; then rm -f /tmp/.techdebt-review-done; exit 0; else echo 'BLOCKED: Run /superpowers:requesting-code-review before pushing directly to develop. After the review passes, create /tmp/.techdebt-review-done and retry.'; exit 2; fi; fi"
           }
         ]
       }
