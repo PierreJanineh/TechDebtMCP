@@ -130,6 +130,22 @@ Implementation details for planned phases are in `docs/superpowers/specs/2026-03
 - **Phase 3 (v2.1.0):** Snapshot & Trend Tracking — Issues #39-44
 - **Phase 4 (v2.2.0):** Complexity Metrics — Issues #45-49
 
+## Documentation Maintenance
+
+**After every implementation PR**, update the following files to reflect the changes:
+
+| File | What to update |
+|------|----------------|
+| `CLAUDE.md` | Architecture tree, request flow, recipes (if new patterns introduced) |
+| `ARCHITECTURE.md` | Project structure, component descriptions, dependency graph, data flow diagrams |
+| `README.md` | Features list, tool/resource documentation, usage examples |
+| `ROADMAP.md` | Phase status, current status section, "Last Updated" date |
+| `CHANGELOG.md` | Add version entry when tagging a release |
+
+`.github/copilot-instructions.md` is only used for Copilot PR reviews — update its architecture diagram only if the high-level structure changes.
+
+Do not defer docs to a separate PR — include them in the implementation PR.
+
 ## Git & PR Workflow
 
 - **Branch from `develop`**, never commit to `master` directly.
