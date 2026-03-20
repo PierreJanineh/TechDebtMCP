@@ -1,13 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git *)",
-      "Bash(GH_TOKEN=*)",
-      "Bash(npm *)",
-      "Bash(npx *)",
-      "Bash(jq *)",
-      "Bash(touch *)",
-      "Bash(rm *)",
+      "Bash(git:*)",
+      "Bash(GH_TOKEN=:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(jq:*)",
+      "Bash(touch:*)",
+      "Bash(rm:*)",
       "Edit",
       "Write",
       "mcp__plugin_github_github__request_copilot_review"
