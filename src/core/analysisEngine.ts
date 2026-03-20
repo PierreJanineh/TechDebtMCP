@@ -95,13 +95,14 @@ export class AnalysisEngine {
         }));
 
         // Filter by severity if specified
-        const filteredIssues = options.severity
-          ? issues.filter(i => this.severityMeetsThreshold(i.severity, options.severity!))
+        const { severity, categories } = options;
+        const filteredIssues = severity
+          ? issues.filter(i => this.severityMeetsThreshold(i.severity, severity))
           : issues;
 
         // Filter by categories if specified
-        const categoryFiltered = options.categories
-          ? filteredIssues.filter(i => options.categories!.includes(i.category))
+        const categoryFiltered = categories
+          ? filteredIssues.filter(i => categories.includes(i.category))
           : filteredIssues;
 
         allIssues.push(...categoryFiltered);
