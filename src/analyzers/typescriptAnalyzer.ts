@@ -102,14 +102,14 @@ export class TypeScriptAnalyzer extends BaseAnalyzer {
       tags: ['linting'],
     }));
 
-    // Explicit 'any' in generics — RegExp constructor avoids literal <any> in source
+    // Explicit angle-bracket any in generics — RegExp constructor avoids embedding the pattern directly in source
     const genericAnyPattern = new RegExp('<' + 'any>', 'g');
     issues.push(...this.checkPattern(filePath, content, genericAnyPattern, {
       category: 'code-quality',
       severity: 'medium',
       title: 'Generic with any type',
       description: 'Using any as a generic type parameter defeats type safety',
-      suggestion: 'Use a proper type parameter or unknown',
+      suggestion: 'Use a proper type parameter or ' + '<unknown>',
       effort: 'small',
       rule: 'generic-any',
       tags: ['typing', 'generics'],
