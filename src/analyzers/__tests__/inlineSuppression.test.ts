@@ -137,10 +137,10 @@ describe('inline suppression (techdebt-ignore-next-line)', () => {
     });
 
     it('works with Python analyzer using # comment syntax in source', async () => {
-      // The suppression comment uses // syntax even in Python files,
-      // since it is a tool-level directive, not a language comment.
+      // The suppression comment uses Python's # syntax to match the language's
+      // single-line comment style and LANGUAGE_CONFIGS.python.commentPatterns.single.
       const code = [
-        '// techdebt-ignore-next-line',
+        '# techdebt-ignore-next-line',
         'print("debug output")',
       ].join('\n');
 

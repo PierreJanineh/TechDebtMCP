@@ -9,14 +9,14 @@ import { getLanguageConfig } from '../config/languages.js';
 import { countLines } from '../utils/fileUtils.js';
 import { minimatch } from 'minimatch';
 
-/** Regex matching `// techdebt-ignore-next-line [optional-rule]` suppression comments. */
-const SUPPRESSION_NEXT_LINE = /\/\/\s*techdebt-ignore-next-line(?:\s+(\S+))?\s*$/;
+/** Regex matching `// techdebt-ignore-next-line [optional-rule]` or `# techdebt-ignore-next-line [optional-rule]` suppression comments. */
+const SUPPRESSION_NEXT_LINE = /^\s*(?:\/\/|#)\s*techdebt-ignore-next-line(?:\s+(\S+))?\s*$/;
 
-/** Regex matching `// techdebt-ignore-start [optional-rule]` block-start comments. */
-const SUPPRESSION_BLOCK_START = /\/\/\s*techdebt-ignore-start(?:\s+(\S+))?\s*$/;
+/** Regex matching `// techdebt-ignore-start [optional-rule]` or `# techdebt-ignore-start [optional-rule]` block-start comments. */
+const SUPPRESSION_BLOCK_START = /^\s*(?:\/\/|#)\s*techdebt-ignore-start(?:\s+(\S+))?\s*$/;
 
-/** Regex matching `// techdebt-ignore-end [optional-rule]` block-end comments. */
-const SUPPRESSION_BLOCK_END = /\/\/\s*techdebt-ignore-end(?:\s+(\S+))?\s*$/;
+/** Regex matching `// techdebt-ignore-end [optional-rule]` or `# techdebt-ignore-end [optional-rule]` block-end comments. */
+const SUPPRESSION_BLOCK_END = /^\s*(?:\/\/|#)\s*techdebt-ignore-end(?:\s+(\S+))?\s*$/;
 
 /**
  * Build a set of line indices that fall within `techdebt-ignore-start/end` blocks.

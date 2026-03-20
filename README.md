@@ -594,6 +594,8 @@ Use `ruleExclusions` to suppress specific rules for files matching glob patterns
 
 Suppress specific issues directly in source code using inline comments. This is useful when a particular line or block should not be flagged (e.g., pattern definitions in analyzer source files).
 
+Both `//` and `#` comment prefixes are supported, so suppression directives work across all analyzed languages (e.g., `#` for Python/Ruby, `//` for TypeScript/JavaScript/Java/Go/etc.).
+
 **Single-line suppression** — suppresses the immediately following line:
 
 ```typescript
@@ -602,6 +604,11 @@ debugger; // will not be reported
 
 // techdebt-ignore-next-line debugger
 debugger; // only the 'debugger' rule is suppressed
+```
+
+```python
+# techdebt-ignore-next-line print-statement
+print("debug output")  # will not be reported
 ```
 
 **Block suppression** — suppresses all lines between start and end:
@@ -615,7 +622,7 @@ issues.push(...this.checkPattern(filePath, content, /@ts-ignore/g, {
 // techdebt-ignore-end ts-ignore
 ```
 
-Both forms accept an optional rule name. Without a rule name, all rules are suppressed. Blocks can be nested for multiple rules.
+Both forms accept an optional rule name. Without a rule name, all rules are suppressed. Blocks can be nested for multiple rules. Suppression comments must appear on their own line (not appended to code).
 
 ## Example Output
 

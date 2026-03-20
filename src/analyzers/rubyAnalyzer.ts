@@ -32,7 +32,7 @@ export class RubyAnalyzer extends BaseAnalyzer {
       category: 'code-quality',
       severity: 'high',
       title: 'binding.pry debug call found',
-      description: 'Debugger calls should never be committed to production code',
+      description: 'The binding.pry debug call should never be committed to production code',
       suggestion: 'Remove the binding.pry statement immediately',
       effort: 'trivial',
       rule: 'binding-pry',
