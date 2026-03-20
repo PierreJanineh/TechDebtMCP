@@ -203,4 +203,42 @@ describe('handleValidateConfig', () => {
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('"customPatterns" must be an array');
   });
+
+  it('should accept valid ruleExclusions', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
+    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({
+      ruleExclusions: { debugger: ['**/src/analyzers/**'], 'ts-ignore': ['**/src/analyzers/**'] },
+    }) as any);
+
+    const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
+    expect(result.content[0].text).toContain('valid');
+  });
+
+  it('should error when ruleExclusions is not an object', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
+    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ ruleExclusions: 'bad' }) as any);
+
+    const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
+    expect(result.content[0].text).toContain('"ruleExclusions" must be an object');
+  });
+
+  it('should error when ruleExclusions values are not arrays', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
+    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ ruleExclusions: { debugger: 'bad' } }) as any);
+
+    const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
+    expect(result.content[0].text).toContain('"ruleExclusions.debugger" must be an array');
+  });
+
+  it('should error when ruleExclusions arrays contain non-strings', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
+    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ ruleExclusions: { debugger: ['valid', 42] } }) as any);
+
+    const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
+    expect(result.content[0].text).toContain('"ruleExclusions.debugger" array must contain only strings');
+  });
 });

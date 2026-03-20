@@ -171,6 +171,9 @@ export interface TechDebtConfig {
     maxNestingDepth?: number;
     minCommentRatio?: number;
   };
+  ruleExclusions?: {
+    [rule: string]: string[];
+  };
   customPatterns?: CustomPattern[];
   languageOverrides?: {
     [lang: string]: Partial<LanguageConfig>;

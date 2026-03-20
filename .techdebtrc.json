@@ -17,6 +17,15 @@
     "debugger": "high",
     "ts-ignore": "high"
   },
+  "ruleExclusions": {
+    "debugger": [
+      "**/src/analyzers/**",
+      "**/src/core/**"
+    ],
+    "ts-ignore": [
+      "**/src/analyzers/**"
+    ]
+  },
   "customPatterns": [
     {
       "id": "prefer-nullish-coalescing",
