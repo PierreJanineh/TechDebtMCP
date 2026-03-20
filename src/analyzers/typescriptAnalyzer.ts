@@ -79,7 +79,8 @@ export class TypeScriptAnalyzer extends BaseAnalyzer {
     }));
 
     // Debugger statements — match debugger as a statement (standalone, inline, with trailing comment)
-    issues.push(...this.checkPattern(filePath, content, /\bdebugger\s*;?\s*(?:\/\/.*)?$/gm, {
+    // Negative lookbehind rejects lines where debugger appears inside // or /* or * comments
+    issues.push(...this.checkPattern(filePath, content, /(?<!\/\/.*|\/\*.*|\*\s*)\bdebugger\s*;?\s*(?:\/\/.*)?$/gm, {
       category: 'code-quality',
       severity: 'high',
       title: 'Debugger statement found',
