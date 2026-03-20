@@ -177,6 +177,14 @@ EOF
 git push
 ```
 
+After pushing, request a new Copilot code review so it can re-evaluate the changes. Use the MCP tool (Copilot is not a regular collaborator so the REST API won't work):
+
+```
+mcp__plugin_github_github__request_copilot_review(owner: "PierreJanineh", repo: "TechDebtMCP", pullNumber: <number>)
+```
+
+If the MCP tool is unavailable, skip this step — it can be done manually.
+
 ### 5. Reply to Each Thread
 
 **Only reply AFTER any code fixes are committed and pushed.**
