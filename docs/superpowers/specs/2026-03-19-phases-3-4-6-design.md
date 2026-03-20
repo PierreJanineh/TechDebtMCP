@@ -8,9 +8,9 @@
 
 Three PRs delivering remaining roadmap phases plus docs cleanup:
 
-1. **PR 1 (v2.0.1):** Phase 6 MCP Resources + Bug #73 doc fix + docs update
-2. **PR 2 (v2.1.0):** Phase 3 Snapshot & Trend Tracking
-3. **PR 3 (v2.2.0):** Phase 4 Complexity Metrics
+1. **PR 1 (v2.0.1):** Phase 6 MCP Resources + Bug #73 doc fix + docs update — ✅ **Merged** (PR #77, 2026-03-20)
+2. **PR 2 (v2.1.0):** Phase 3 Snapshot & Trend Tracking — 📋 **Next** (Issues #39-44)
+3. **PR 3 (v2.2.0):** Phase 4 Complexity Metrics — 📋 **Planned** (Issues #45-49)
 
 Approach: batch quick wins first, then one PR per major phase.
 
@@ -322,8 +322,18 @@ class ComplexityAnalyzer {
 
 ## Execution Order
 
-1. **PR 1 (v2.0.1):** Phase 6 + #73 + docs → branch `feature/issue-50-mcp-resources`
-2. **PR 2 (v2.1.0):** Phase 3 → branch `feature/issue-39-trend-tracking`
-3. **PR 3 (v2.2.0):** Phase 4 → branch `feature/issue-45-complexity-metrics`
+1. ~~**PR 1 (v2.0.1):** Phase 6 + #73 + docs → branch `feature/issue-50-mcp-resources`~~ ✅ Merged (PR #77)
+2. **PR 2 (v2.1.0):** Phase 3 → branch `feature/issue-39-trend-tracking` from `develop`
+3. **PR 3 (v2.2.0):** Phase 4 → branch `feature/issue-45-complexity-metrics` from `develop`
 
 Each PR: branch from `develop`, target `develop`, run `npm test && npm run build` before merge.
+
+### For Claude agents picking up PR 2 or PR 3
+
+1. Read `CLAUDE.md` for coding conventions, recipes, and architecture
+2. Read this spec's relevant PR section for types, API surface, file changes, and tool definitions
+3. Branch from `develop` using the branch name above
+4. Follow TDD: write tests first, then implement
+5. Run `npm test && npm run build` before committing
+6. Create PR targeting `develop`
+7. Close the relevant GitHub issues (#39-44 for Phase 3, #45-49 for Phase 4)

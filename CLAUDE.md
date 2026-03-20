@@ -96,6 +96,15 @@ issues.push(...this.checkPattern(filePath, content, /pattern/g, {
 4. Add `LanguageConfig` in `src/config/languages.ts`.
 5. Add the language to `SupportedLanguage` union in `src/types/index.ts`.
 
+## Adding a New MCP Resource
+
+1. Add a `mcpServer.registerResource()` call in `src/server/resourceHandlers.ts`.
+2. Use `ResourceTemplate` with `{ list: undefined }` for non-enumerable templates.
+3. RFC 6570 `{+variable}` expansion allows slashes in path variables.
+4. Return `{ contents: [{ uri: uri.href, mimeType: 'application/json', text: JSON.stringify(data, null, 2) }] }`.
+5. Wrap callback body in try/catch returning `{ error: message }` on failure.
+6. No changes needed in `setup.ts` — SDK auto-registers `resources` capability.
+
 ## Adding a New MCP Tool
 
 1. Add the tool schema to `TOOL_DEFINITIONS` in `src/server/tools.ts`.
@@ -114,6 +123,12 @@ issues.push(...this.checkPattern(filePath, content, /pattern/g, {
 - **Poetry 1.2+ groups:** only `groupName === 'dev'` → `isDev: true`. `optional = false` means required (production), NOT dev.
 - **Pipfile:** `[dev-packages]` section → `isDev: true`
 - **Always test `isDev` for ALL groups** — asserting `isDev: false` for non-dev groups catches logic bugs.
+
+## Design Specs
+
+Implementation details for planned phases are in `docs/superpowers/specs/2026-03-19-phases-3-4-6-design.md`. This includes types, API surfaces, file changes, algorithms, and tool definitions for:
+- **Phase 3 (v2.1.0):** Snapshot & Trend Tracking — Issues #39-44
+- **Phase 4 (v2.2.0):** Complexity Metrics — Issues #45-49
 
 ## Git & PR Workflow
 

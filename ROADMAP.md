@@ -139,9 +139,13 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 
 **Latest Release:** v2.0.0 (Dependency Analysis) - 2026-03-09
 
-**Active Development:** Phase 6 - MCP Resources (v2.0.1)
+**Latest Merge:** Phase 6 - MCP Resources (v2.0.1) — merged to `develop` 2026-03-20
 
-**Next Phase:** Phase 3 - Snapshot & Trend Tracking (v2.1.0)
+**Next Up:**
+- **Phase 3 (v2.1.0):** Snapshot & Trend Tracking — Issues #39-44 — branch `feature/issue-39-trend-tracking`
+- **Phase 4 (v2.2.0):** Complexity Metrics — Issues #45-49 — branch `feature/issue-45-complexity-metrics`
+
+**Design Spec:** See `docs/superpowers/specs/2026-03-19-phases-3-4-6-design.md` for full implementation details for both phases.
 
 ## Phase Overview
 
@@ -153,7 +157,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 | v1.1.0 | v1.1.0 | ✅ Complete | SwiftUI-specific analysis (14 checks) |
 | Quality & Compliance | Unreleased | ✅ Ready | Code of Conduct, .techdebtrc.json, TECH_DEBT_SCAN.md, documentation |
 | Phase 2 | v2.0.0 | ✅ Complete | Dependency analysis — 10 parsers, 3 MCP tools, index.ts refactor |
-| Phase 6 | v2.0.1 | 🚧 In Progress | MCP Resources (debt://summary, debt://issues) |
+| Phase 6 | v2.0.1 | ✅ Complete | MCP Resources (debt://summary, debt://issues) |
 | Phase 3 | v2.1.0 | 📋 Planned | Snapshot & trend tracking |
 | Phase 4 | v2.2.0 | 📋 Planned | Code complexity analysis |
 
@@ -214,72 +218,61 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 
 ### Phase 3: Snapshot & Trend Tracking (v2.1.0)
 
-**Status:** 📋 **PLANNED**
+**Status:** 📋 **PLANNED** — Issues #39-44
 
 **Objective:** Enable baseline snapshots and historical trend analysis to track technical debt changes over time.
 
-#### Key Features
+**Branch:** `feature/issue-39-trend-tracking` (from `develop`)
 
-- **Snapshot Management:**
-  - Save analysis results as baseline snapshots
-  - Store in `.techdebt/snapshots/` directory
-  - JSON format with timestamps
-  - Configurable retention policy (default: 30 snapshots)
+**Design Spec:** See `docs/superpowers/specs/2026-03-19-phases-3-4-6-design.md` → "PR 2: Phase 3" section for full implementation details including types, API surface, storage format, and tool definitions.
 
-- **Trend Analysis:**
-  - Compare current analysis with baseline
-  - Track debt increase/decrease over time
-  - Identify improvement or regression patterns
-  - Visualize trends with delta reporting
+#### Issues
 
-- **Delta Reporting:**
-  - New issues introduced
-  - Resolved issues
-  - Net change in debt score
-  - Category and severity trends
+| Issue | Title | Description |
+|-------|-------|-------------|
+| #39 | Add Snapshot and TrendData types | Add `AnalysisSnapshot`, `SnapshotComparison`, `TrendData` to `src/types/index.ts` |
+| #40 | Implement snapshot manager | Create `src/core/snapshotManager.ts` — save, load, compare, trend, prune |
+| #41 | Add `save_baseline` MCP tool | Tool definition + handler to save analysis as baseline snapshot |
+| #42 | Add `compare_with_baseline` MCP tool | Tool definition + handler to diff current vs saved baseline |
+| #43 | Add `get_trend` MCP tool | Tool definition + handler to calculate trajectory from snapshot history |
+| #44 | Add tests for snapshot manager and trend tools | Tests in `src/core/__tests__/snapshotManager.test.ts` |
 
-#### Implementation Plan
+#### New files
 
-**New Files:**
+| File | Purpose |
+|------|---------|
+| `src/core/snapshotManager.ts` | Save, load, compare, trend calculation, prune |
+| `src/core/__tests__/snapshotManager.test.ts` | Unit tests with mocked file system |
+| `src/server/snapshotHandlers.ts` | MCP tool handlers (keeps handlers.ts under 500 lines) |
+
+#### Modified files
+
+| File | Change |
+|------|--------|
+| `src/types/index.ts` | Add `AnalysisSnapshot`, `SnapshotComparison`, `TrendData` |
+| `src/server/tools.ts` | Add 5 tool definitions (`save_baseline`, `compare_with_baseline`, `get_trend`, `list_snapshots`, `delete_snapshot`) |
+| `src/server/handlers.ts` | Add 5 cases dispatching to `snapshotHandlers.ts` |
+
+#### Storage
+
 ```
-src/
-└── core/
-    └── snapshotManager.ts          # Snapshot storage and comparison
-```
-
-**Storage Structure:**
-```
-.techdebt/
+.techdebt/                        # auto-created by save_baseline
+├── .gitignore                    # contains "*" — snapshots are local-only
 └── snapshots/
-    ├── baseline.json               # Primary baseline
-    ├── 2026-02-07T10-30-00.json   # Timestamped snapshots
-    └── 2026-02-06T15-45-00.json
+    ├── baseline.json
+    └── 2026-03-19T10-30-00.json
 ```
-
-**New MCP Tools:**
-- `save_baseline` - Save current analysis as baseline
-- `compare_with_baseline` - Compare current state with baseline
-- `get_trend` - Get historical trend data
-- `list_snapshots` - List all saved snapshots
-- `delete_snapshot` - Remove old snapshots
-
-**New Types:**
-- `Snapshot` - Snapshot data structure
-- `TrendData` - Historical trend information
-- `ComparisonResult` - Baseline comparison result
-- `DeltaReport` - Changes between snapshots
-- `SnapshotMetadata` - Snapshot metadata (date, version, etc.)
 
 #### Acceptance Criteria
 
-- ✅ Snapshots save/load correctly
-- ✅ Baseline comparison accurate
-- ✅ Trend calculations correct
-- ✅ Retention policy works
-- ✅ 5 new MCP tools functional
-- ✅ Tests for snapshot manager (min 80% coverage)
-- ✅ README and ARCHITECTURE updated
-- ✅ All existing tests still pass
+- [ ] Snapshots save/load correctly
+- [ ] Baseline comparison accurate
+- [ ] Trend calculations correct (`improving`/`stable`/`degrading` based on ±5% health score delta)
+- [ ] Retention policy works (default: 5 snapshots)
+- [ ] 5 new MCP tools functional
+- [ ] Tests for snapshot manager (min 80% coverage)
+- [ ] `npm test && npm run build` pass
+- [ ] All existing tests still pass
 
 #### Effort Estimate
 
@@ -291,83 +284,57 @@ src/
 
 ### Phase 4: Code Complexity Analysis (v2.2.0)
 
-**Status:** 📋 **PLANNED**
+**Status:** 📋 **PLANNED** — Issues #45-49
 
-**Objective:** Calculate cyclomatic and cognitive complexity to identify overly complex functions and files.
+**Objective:** Calculate cyclomatic and cognitive complexity to identify overly complex functions across all 14 languages.
 
-#### Key Features
+**Branch:** `feature/issue-45-complexity-metrics` (from `develop`)
 
-- **Complexity Metrics:**
-  - Cyclomatic complexity (McCabe)
-  - Cognitive complexity (SonarSource methodology)
-  - Nesting depth
-  - Function length
-  - Parameter count
+**Design Spec:** See `docs/superpowers/specs/2026-03-19-phases-3-4-6-design.md` → "PR 3: Phase 4" section for full implementation details including types, algorithms per language family, function extraction patterns, and BaseAnalyzer integration.
 
-- **AST Parsing:**
-  - Tree-sitter for accurate parsing (preferred)
-  - Language-specific parsers as fallback
-  - Regex-based heuristics for unsupported languages
+**Approach:** Regex-based, no tree-sitter. Tree-sitter is a heavy native dependency for an MCP server distributed via `npx`. Regex-based function extraction is sufficient for hotspot identification.
 
-- **Reporting:**
-  - Per-function complexity scores
-  - Per-file aggregated metrics
-  - Complexity thresholds and warnings
-  - Hotspot identification
+#### Issues
 
-#### Implementation Plan
+| Issue | Title | Description |
+|-------|-------|-------------|
+| #45 | Add ComplexityMetrics interface | Add `FunctionComplexity`, `FileComplexity`, `ComplexityReport`, `ComplexityThresholds` to `src/types/index.ts` |
+| #46 | Implement complexity calculator | Create `src/core/complexityAnalyzer.ts` — function extraction, cyclomatic + cognitive calculation for all 14 languages |
+| #47 | Integrate complexity into analyzers | Wire `ComplexityAnalyzer.analyzeFile()` into `BaseAnalyzer.calculateMetrics()`, emit `maintainability` issues for high complexity |
+| #48 | Add `get_complexity_report` MCP tool | Tool definition + handler — summary stats, health breakdown, hotspots ranked by complexity |
+| #49 | Add tests for complexity calculator | Tests in `src/core/__tests__/complexityAnalyzer.test.ts` per language family |
 
-**New Files:**
-```
-src/
-└── core/
-    └── complexityAnalyzer.ts       # Complexity calculations
-```
+#### New files
 
-**New MCP Tools:**
-- `get_complexity_report` - Get complexity analysis for project
-- `get_function_complexity` - Get complexity for specific function
-- `get_complexity_hotspots` - Identify most complex code areas
+| File | Purpose |
+|------|---------|
+| `src/core/complexityAnalyzer.ts` | Function extraction, cyclomatic + cognitive calculation |
+| `src/core/__tests__/complexityAnalyzer.test.ts` | Unit tests per language family |
 
-**New Types:**
-- `ComplexityMetrics` - Complete complexity data
-- `ComplexityThresholds` - Configurable thresholds
-- `FunctionComplexity` - Per-function metrics
-- `ComplexityReport` - Full complexity report
+#### Modified files
 
-**Configuration:**
-```json
-{
-  "complexity": {
-    "enabled": false,  // Opt-in for performance
-    "thresholds": {
-      "cyclomatic": 10,
-      "cognitive": 15,
-      "nesting": 4,
-      "functionLength": 50,
-      "parameters": 5
-    }
-  }
-}
-```
+| File | Change |
+|------|--------|
+| `src/types/index.ts` | Add `FunctionComplexity`, `FileComplexity`, `ComplexityReport`, `ComplexityThresholds` |
+| `src/server/tools.ts` | Add `get_complexity_report` tool definition |
+| `src/server/handlers.ts` | Add 1 case |
+| `src/analyzers/baseAnalyzer.ts` | Integrate complexity into `calculateMetrics()` |
 
 #### Acceptance Criteria
 
-- ✅ Cyclomatic complexity accurate
-- ✅ Cognitive complexity implemented
-- ✅ AST parsing works for major languages
-- ✅ Opt-in configuration functional
-- ✅ 3 new MCP tools functional
-- ✅ Tests for complexity analyzer (min 80% coverage)
-- ✅ Performance benchmarks acceptable
-- ✅ README and ARCHITECTURE updated
-- ✅ All existing tests still pass
+- [ ] Cyclomatic complexity accurate (McCabe method)
+- [ ] Cognitive complexity implemented (SonarQube-style)
+- [ ] Regex-based function extraction works for all 14 languages
+- [ ] `get_complexity_report` MCP tool functional
+- [ ] Tests for complexity analyzer (min 80% coverage)
+- [ ] `npm test && npm run build` pass
+- [ ] All existing tests still pass
 
 #### Effort Estimate
 
 **Size:** Large (2-4 weeks)
 
-**Complexity:** High (AST parsing, multiple complexity algorithms, performance optimization)
+**Complexity:** High (multiple complexity algorithms, 14 language families, performance)
 
 ---
 
@@ -527,5 +494,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
 
 ---
 
-**Last Updated:** 2026-03-19
+**Last Updated:** 2026-03-20
 
