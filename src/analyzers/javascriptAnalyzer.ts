@@ -27,8 +27,8 @@ export class JavaScriptAnalyzer extends BaseAnalyzer {
       tags: ['debug', 'cleanup'],
     }));
 
-    // Debugger statements — match only standalone debugger statements
-    issues.push(...this.checkPattern(filePath, content, /^\s*debugger\s*;?\s*$/gm, {
+    // Debugger statements — match debugger as a statement (standalone, inline, with trailing comment)
+    issues.push(...this.checkPattern(filePath, content, /\bdebugger\s*;?\s*(?:\/\/.*)?$/gm, {
       category: 'code-quality',
       severity: 'high',
       title: 'Debugger statement found',
