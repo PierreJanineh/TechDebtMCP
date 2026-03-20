@@ -1,4 +1,24 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(jq *)",
+      "Bash(gh issue *)",
+      "Bash(gh pr *)",
+      "Bash(gh api *)",
+      "Bash(gh token *)",
+      "Bash(GH_TOKEN=* gh *)",
+      "Bash(npm test*)",
+      "Bash(npm run build*)",
+      "Bash(npm install*)",
+      "Bash(npx jest*)",
+      "Bash(touch *)",
+      "Bash(rm -f *)",
+      "Edit",
+      "Write",
+      "mcp__plugin_github_github__request_copilot_review"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
