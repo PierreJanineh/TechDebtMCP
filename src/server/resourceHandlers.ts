@@ -7,7 +7,32 @@
  */
 
 import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { Variables } from '@modelcontextprotocol/sdk/shared/uriTemplate.js';
 import { AnalysisEngine } from '../core/analysisEngine.js';
+
+/**
+ * Build a resource error response for a given URI and error message.
+ */
+function jsonErrorResponse(uri: URL, message: string) {
+  return {
+    contents: [
+      {
+        uri: uri.href,
+        mimeType: 'application/json',
+        text: JSON.stringify({ error: message }, null, 2),
+      },
+    ],
+  };
+}
+
+/**
+ * Extract a string variable from the MCP resource template variables.
+ * Returns the string value, or null if the variable is missing or not a string.
+ */
+function getStringVariable(variables: Variables, key: string): string | null {
+  const value = variables[key];
+  return typeof value === 'string' ? value : null;
+}
 
 /**
  * Attach MCP resource templates to the given McpServer instance.
@@ -25,19 +50,10 @@ export function attachResources(mcpServer: McpServer): void {
       mimeType: 'application/json',
     },
     async (uri, variables) => {
-      const rawPath = variables.projectPath;
-      if (typeof rawPath !== 'string') {
-        return {
-          contents: [
-            {
-              uri: uri.href,
-              mimeType: 'application/json',
-              text: JSON.stringify({ error: 'projectPath must be a string' }, null, 2),
-            },
-          ],
-        };
+      const projectPath = getStringVariable(variables, 'projectPath');
+      if (projectPath === null) {
+        return jsonErrorResponse(uri, 'projectPath must be a string');
       }
-      const projectPath = rawPath;
 
       try {
         const report = await engine.analyzeProject({ path: projectPath });
@@ -67,15 +83,7 @@ export function attachResources(mcpServer: McpServer): void {
         };
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
-        return {
-          contents: [
-            {
-              uri: uri.href,
-              mimeType: 'application/json',
-              text: JSON.stringify({ error: message }, null, 2),
-            },
-          ],
-        };
+        return jsonErrorResponse(uri, message);
       }
     }
   );
@@ -89,19 +97,10 @@ export function attachResources(mcpServer: McpServer): void {
       mimeType: 'application/json',
     },
     async (uri, variables) => {
-      const rawPath = variables.projectPath;
-      if (typeof rawPath !== 'string') {
-        return {
-          contents: [
-            {
-              uri: uri.href,
-              mimeType: 'application/json',
-              text: JSON.stringify({ error: 'projectPath must be a string' }, null, 2),
-            },
-          ],
-        };
+      const projectPath = getStringVariable(variables, 'projectPath');
+      if (projectPath === null) {
+        return jsonErrorResponse(uri, 'projectPath must be a string');
       }
-      const projectPath = rawPath;
 
       try {
         const report = await engine.analyzeProject({ path: projectPath });
@@ -139,15 +138,7 @@ export function attachResources(mcpServer: McpServer): void {
         };
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
-        return {
-          contents: [
-            {
-              uri: uri.href,
-              mimeType: 'application/json',
-              text: JSON.stringify({ error: message }, null, 2),
-            },
-          ],
-        };
+        return jsonErrorResponse(uri, message);
       }
     }
   );
