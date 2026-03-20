@@ -248,6 +248,20 @@ Agent(subagent_type: "general-purpose", isolation: "worktree", prompt: "...")
 - **Thread references code that was already changed**: Check if a subsequent commit already addressed the concern
 - **Thread references lines NOT in the PR diff**: Note this in your reply — the concern may be valid but out of scope for this PR
 
+## Cleanup (Always Final Step)
+
+After all threads are resolved, remove the worktree:
+
+```bash
+# Get the current worktree path
+WORKTREE=$(git worktree list | grep -v "^$(git rev-parse --show-toplevel)" | awk 'NR==1{print $1}')
+if [ -n "$WORKTREE" ]; then
+  git worktree remove --force "$WORKTREE"
+fi
+```
+
+The remote branch stays — it is needed for the open PR. Do **not** delete it.
+
 ## Output Format
 
 Return a summary containing:

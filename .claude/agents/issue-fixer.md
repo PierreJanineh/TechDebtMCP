@@ -163,6 +163,20 @@ GH_TOKEN=$GH_TOKEN_PR gh api graphql -f query='mutation { resolveReviewThread(in
 - Do not modify files unrelated to the issue
 - Do not add features beyond what the issue asks for
 
+## Cleanup (Always Final Step)
+
+After the PR is created and Copilot review is requested, remove the worktree:
+
+```bash
+# Get the current worktree path
+WORKTREE=$(git worktree list | grep -v "^$(git rev-parse --show-toplevel)" | awk 'NR==1{print $1}')
+if [ -n "$WORKTREE" ]; then
+  git worktree remove --force "$WORKTREE"
+fi
+```
+
+The remote branch stays — it is needed for the open PR. Do **not** delete it.
+
 ## Output Format
 
 Return a summary containing:
