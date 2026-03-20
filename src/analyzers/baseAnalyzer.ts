@@ -7,6 +7,7 @@ import {
 } from '../types/index.js';
 import { getLanguageConfig } from '../config/languages.js';
 import { countLines } from '../utils/fileUtils.js';
+import { minimatch } from 'minimatch';
 
 /**
  * Base analyzer that all language-specific analyzers extend
@@ -36,13 +37,16 @@ export abstract class BaseAnalyzer {
     // Language-specific checks
     issues.push(...await this.performLanguageSpecificChecks(filePath, content));
 
+    // Apply rule exclusions
+    const filteredIssues = this.applyRuleExclusions(filePath, issues);
+
     // Calculate metrics
     const metrics = this.calculateMetrics(content);
 
     return {
       file: filePath,
       language: this.language,
-      issues,
+      issues: filteredIssues,
       metrics,
     };
   }
@@ -236,6 +240,27 @@ export abstract class BaseAnalyzer {
       commentLines: lineCounts.comment,
       blankLines: lineCounts.blank,
     };
+  }
+
+  /**
+   * Filter out issues matching ruleExclusions config
+   */
+  private applyRuleExclusions(
+    filePath: string,
+    issues: TechDebtIssue[]
+  ): TechDebtIssue[] {
+    const exclusions = this.config.ruleExclusions;
+    if (!exclusions || Object.keys(exclusions).length === 0) {
+      return issues;
+    }
+
+    return issues.filter(issue => {
+      const patterns = exclusions[issue.rule];
+      if (!patterns || patterns.length === 0) {
+        return true;
+      }
+      return !patterns.some(pattern => minimatch(filePath, pattern));
+    });
   }
 
   /**

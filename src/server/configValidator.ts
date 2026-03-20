@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { CustomPattern } from '../types/index.js';
 
 /** Known valid keys for .techdebtrc.json */
-const VALID_CONFIG_KEYS = new Set(['ignore', 'include', 'rules', 'severity', 'customPatterns', 'languageOverrides']);
+const VALID_CONFIG_KEYS = new Set(['ignore', 'include', 'rules', 'severity', 'ruleExclusions', 'customPatterns', 'languageOverrides']);
 const VALID_RULE_KEYS = new Set(['maxFileLines', 'maxFunctionLines', 'maxComplexity', 'maxNestingDepth', 'maxParameters', 'minCommentRatio']);
 const VALID_SEVERITIES = new Set(['low', 'medium', 'high', 'critical']);
 
@@ -93,6 +93,21 @@ export async function handleValidateConfig(args: Record<string, unknown>): Promi
       for (const [rule, level] of Object.entries(severity)) {
         if (typeof level !== 'string' || !VALID_SEVERITIES.has(level)) {
           errors.push(`"severity.${rule}" has invalid value "${level}" — must be a string: low, medium, high, critical`);
+        }
+      }
+    }
+  }
+
+  if ('ruleExclusions' in config) {
+    if (config.ruleExclusions === null || typeof config.ruleExclusions !== 'object' || Array.isArray(config.ruleExclusions)) {
+      errors.push('"ruleExclusions" must be an object mapping rule names to arrays of glob strings');
+    } else {
+      const exclusions = config.ruleExclusions as Record<string, unknown>;
+      for (const [rule, patterns] of Object.entries(exclusions)) {
+        if (!Array.isArray(patterns)) {
+          errors.push(`"ruleExclusions.${rule}" must be an array of glob strings`);
+        } else if (patterns.some(v => typeof v !== 'string')) {
+          errors.push(`"ruleExclusions.${rule}" array must contain only strings`);
         }
       }
     }
