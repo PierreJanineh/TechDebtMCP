@@ -1,5 +1,6 @@
 {
   "permissions": {
+    "defaultMode": "dontAsk",
     "allow": [
       "Bash(git:*)",
       "Bash(GH_TOKEN=:*)",
