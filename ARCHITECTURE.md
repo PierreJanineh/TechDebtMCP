@@ -227,8 +227,7 @@ Each language has a dedicated analyzer extending `BaseAnalyzer`.
 - `performLanguageSpecificChecks(filePath, content)` — [Abstract] Override in subclasses
 - `checkTodoComments()` — Find TODO/FIXME/HACK comments
 - `checkFileTooLong()` — Flag files exceeding line limits
-- `checkPattern(filePath, content, regex, issue)` — Helper to match patterns (respects inline suppression)
-- `isLineSuppressed(lines, lineIndex, rule, blockMap?)` — Check inline suppression directives
+- `checkPattern(filePath, content, regex, issue)` — Helper to match patterns
 - `applyRuleExclusions(filePath, issues)` — Filter issues via `ruleExclusions` config globs (uses `minimatch`)
 - `calculateMetrics(content)` — Compute file statistics
 
@@ -644,7 +643,7 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
    - Use early returns to reduce indentation
    - Apply guard clauses pattern
 
-3. ~~**False positives in analyzers** (13 high-severity false positives)~~ ✅ **DONE** (v2.0.1+) — Two complementary mechanisms: (a) `ruleExclusions` config in `.techdebtrc.json` for file-level glob suppression; (b) inline suppression comments (`// techdebt-ignore-next-line [rule]` and `// techdebt-ignore-start/end [rule]`) for line- and block-level suppression directly in source code. Analyzer pattern definitions use block suppression to avoid self-detection. See `src/analyzers/baseAnalyzer.ts` `isLineSuppressed()` and `buildBlockSuppressionMap()`.
+3. ~~**False positives in analyzers** (13 high-severity false positives)~~ ✅ **DONE** (v2.0.1) — `ruleExclusions` config in `.techdebtrc.json` suppresses per-rule file globs via `minimatch`; analyzer pattern definitions no longer flagged by their own rules. See `src/analyzers/baseAnalyzer.ts` `applyRuleExclusions()`.
 
 #### Medium Priority (Gradual improvement)
 

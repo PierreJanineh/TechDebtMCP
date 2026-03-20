@@ -49,7 +49,7 @@ src/
 
 ### Request flow
 
-**Tools:** `MCP client` → `handlers.ts` (`CallToolRequestSchema` switch) → `AnalysisEngine` → `createAnalyzer()` (per file language) → `[Language]Analyzer.performLanguageSpecificChecks()` → issues array (inline suppression applied per-line in `checkPattern`/`checkTodoComments`) → `applyRuleExclusions()` (filter by config globs) → `formatters.ts` → response.
+**Tools:** `MCP client` → `handlers.ts` (`CallToolRequestSchema` switch) → `AnalysisEngine` → `createAnalyzer()` (per file language) → `[Language]Analyzer.performLanguageSpecificChecks()` → issues array → `applyRuleExclusions()` (filter by config globs) → `formatters.ts` → response.
 
 **Resources:** `MCP client` → `resourceHandlers.ts` (via `McpServer.registerResource()`) → `AnalysisEngine.analyzeProject()` → JSON response.
 
@@ -79,30 +79,6 @@ issues.push(...this.checkPattern(filePath, content, /pattern/g, {
   tags: ['tag1'],
 }));
 ```
-
-## Inline Suppression
-
-Use `// techdebt-ignore-next-line [rule]` or block comments to suppress false positives directly in source code. Both `checkPattern()` and `checkTodoComments()` respect these directives.
-
-```typescript
-// Suppress the next line (all rules):
-// techdebt-ignore-next-line
-debugger;
-
-// Suppress the next line (specific rule only):
-// techdebt-ignore-next-line debugger
-debugger;
-
-// Suppress a block of lines:
-// techdebt-ignore-start ts-ignore
-issues.push(...this.checkPattern(filePath, content, /@ts-ignore/g, {
-  title: '@ts-ignore comment found',
-  // ...
-}));
-// techdebt-ignore-end ts-ignore
-```
-
-Use this to prevent self-detection false positives in analyzer source files — wrap pattern definitions in rule-specific blocks (e.g., `// techdebt-ignore-start debugger`...`// techdebt-ignore-end debugger`).
 
 ## Enums Reference
 

@@ -31,7 +31,7 @@ export class RubyAnalyzer extends BaseAnalyzer {
     issues.push(...this.checkPattern(filePath, content, /binding\.pry/g, {
       category: 'code-quality',
       severity: 'high',
-      title: 'binding.pry debug call found',
+      title: 'binding.pry debugger call found',
       description: 'Debugger calls should never be committed to production code',
       suggestion: 'Remove the binding.pry statement immediately',
       effort: 'trivial',
