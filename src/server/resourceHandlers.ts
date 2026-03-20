@@ -25,7 +25,19 @@ export function attachResources(mcpServer: McpServer): void {
       mimeType: 'application/json',
     },
     async (uri, variables) => {
-      const projectPath = variables.projectPath as string;
+      const rawPath = variables.projectPath;
+      if (typeof rawPath !== 'string') {
+        return {
+          contents: [
+            {
+              uri: uri.href,
+              mimeType: 'application/json',
+              text: JSON.stringify({ error: 'projectPath must be a string' }, null, 2),
+            },
+          ],
+        };
+      }
+      const projectPath = rawPath;
 
       try {
         const report = await engine.analyzeProject({ path: projectPath });
@@ -77,7 +89,19 @@ export function attachResources(mcpServer: McpServer): void {
       mimeType: 'application/json',
     },
     async (uri, variables) => {
-      const projectPath = variables.projectPath as string;
+      const rawPath = variables.projectPath;
+      if (typeof rawPath !== 'string') {
+        return {
+          contents: [
+            {
+              uri: uri.href,
+              mimeType: 'application/json',
+              text: JSON.stringify({ error: 'projectPath must be a string' }, null, 2),
+            },
+          ],
+        };
+      }
+      const projectPath = rawPath;
 
       try {
         const report = await engine.analyzeProject({ path: projectPath });
