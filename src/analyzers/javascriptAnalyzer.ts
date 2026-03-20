@@ -27,8 +27,9 @@ export class JavaScriptAnalyzer extends BaseAnalyzer {
       tags: ['debug', 'cleanup'],
     }));
 
-    // Debugger statements - heuristic: lookbehind reduces false positives from quoted pattern names but does not fully exclude all string/comment contexts
-    issues.push(...this.checkPattern(filePath, content, /(?<!["'])debugger\b/g, {
+    // Debugger statements — match debugger as a statement (standalone, inline, with trailing comment)
+    // Variable-length lookbehind is valid in V8/Node.js 10+ (project requires Node >= 18)
+    issues.push(...this.checkPattern(filePath, content, /(?<!\/\/.*|\/\*.*|\*\s*)\bdebugger\s*;?\s*(?:\/\/.*)?$/gm, {
       category: 'code-quality',
       severity: 'high',
       title: 'Debugger statement found',

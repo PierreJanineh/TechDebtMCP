@@ -27,8 +27,8 @@ export class TypeScriptAnalyzer extends BaseAnalyzer {
       tags: ['typing', 'type-safety'],
     }));
 
-    // @ts-ignore comments
-    issues.push(...this.checkPattern(filePath, content, /@ts-ignore/g, {
+    // ts-ignore directive comments (only match actual comment directives, anchored to line start)
+    issues.push(...this.checkPattern(filePath, content, /^\s*\/\/\s*@ts-ignore\b/gm, {
       category: 'code-quality',
       severity: 'high',
       title: '@ts-ignore comment found',
@@ -78,8 +78,9 @@ export class TypeScriptAnalyzer extends BaseAnalyzer {
       tags: ['debug', 'cleanup'],
     }));
 
-    // Debugger statements - heuristic: lookbehind reduces false positives from quoted pattern names but does not fully exclude all string/comment contexts
-    issues.push(...this.checkPattern(filePath, content, /(?<!["'])debugger\b/g, {
+    // Debugger statements — match debugger as a statement (standalone, inline, with trailing comment)
+    // Variable-length lookbehind is valid in V8/Node.js 10+ (project requires Node >= 18)
+    issues.push(...this.checkPattern(filePath, content, /(?<!\/\/.*|\/\*.*|\*\s*)\bdebugger\s*;?\s*(?:\/\/.*)?$/gm, {
       category: 'code-quality',
       severity: 'high',
       title: 'Debugger statement found',
