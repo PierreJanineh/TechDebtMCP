@@ -8,4 +8,6 @@ coverage/
 .nyc_output/
 *.tsbuildinfo
 .idea/
-.claude/
+.claude/*
+!.claude/settings.json
+!.claude/agents/

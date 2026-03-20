@@ -1,6 +1,6 @@
-# Tech Debt MCP - Self-Scan Results (Feb 2026)
+# Tech Debt MCP - Self-Scan Results (March 2026)
 
-**Scan Date:** February 14, 2026  
+**Scan Date:** March 20, 2026
 **Configuration:** `.techdebtrc.json` enabled (test files excluded)
 
 ## 📊 Overall Metrics
@@ -9,33 +9,33 @@
 
 | Metric | Value | Status |
 |--------|-------|--------|
-| **Debt Ratio** | 2.9% | ✅ Excellent (Target: <5%) |
-| **Health Score** | 51.8/100 | ⚠️ Moderate |
-| **Debt Score** | 48.2/100 | ⚠️ Moderate |
-| **Total Issues** | 81 | Down from 101 (test files excluded) |
-| **Remediation Time** | 2d 12h (60 hours) | Down from 70 hours |
+| **Debt Ratio** | 4.6% | ✅ Excellent (Target: <5%) |
+| **Health Score** | 42.4/100 | ⚠️ Moderate |
+| **Debt Score** | 57.6/100 | ⚠️ Moderate |
+| **Total Issues** | 118 | Up from 81 (more files analyzed) |
+| **Remediation Time** | 4d 25m (~96 hours) | Up from 60 hours |
 
 ### Issues Breakdown
 
 | Severity | Count | Time to Fix | Change from Previous |
 |----------|-------|-------------|---------------------|
 | 🔴 Critical | 0 | 0m | No change |
-| 🟠 High | 14 | 4h 45m | -3 (test files excluded) |
-| 🟡 Medium | 38 | 41h 35m | -8 (test files excluded) |
-| 🟢 Low | 29 | 13h 40m | -9 (test files excluded) |
-| **Total** | **81** | **60h** | **-20 issues** |
+| 🟠 High | 12 | 4h 35m | -2 from Feb scan |
+| 🟡 Medium | 49 | 64h 35m | +11 (more files analyzed) |
+| 🟢 Low | 57 | 27h 15m | +28 (more files analyzed) |
+| **Total** | **118** | **~96h** | **+37 issues** |
 
 ### Categories
 
 | Category | Issues | Time |
 |----------|--------|------|
-| Code Quality | 66 | 28h |
-| Maintainability | 15 | 32h |
+| Code Quality | 90 | 40h 25m |
+| Maintainability | 28 | 56h |
 
 ### Files Analyzed
 
-- **Total Files:** 26 (down from 34)
-- **Analyzed Files:** 25 (test files now excluded)
+- **Total Files:** 43
+- **Analyzed Files:** 43 (test files excluded via config)
 - **Languages:** TypeScript, JavaScript
 - **Package Managers:** npm
 
@@ -116,9 +116,9 @@ We performed **two complete scans** to measure the impact of configuration:
 - More accurate representation of actual technical debt
 - Better signal-to-noise ratio for actionable items
 
-## 🔴 High Priority Issues (14 total)
+## 🔴 High Priority Issues (12 total)
 
-### 1. False Positives in Analyzers (13 issues)
+### 1. False Positives in Analyzers (11 issues)
 
 These are **legitimate pattern definitions**, not actual code issues:
 
@@ -155,7 +155,7 @@ These are **legitimate pattern definitions**, not actual code issues:
 - **Effort:** large (~2-4 hours)
 - **Action:** Extract nested logic into helper functions
 
-## 🟡 Medium Priority Issues (38 total)
+## 🟡 Medium Priority Issues (49 total)
 
 ### File Length Issues
 
@@ -182,7 +182,7 @@ These are **legitimate pattern definitions**, not actual code issues:
 - TODO comments (various files)
 - Console.log statements (various files)
 
-## 🟢 Low Priority Issues (29 total)
+## 🟢 Low Priority Issues (57 total)
 
 - Style improvements
 - Minor code quality suggestions
@@ -192,14 +192,13 @@ These are **legitimate pattern definitions**, not actual code issues:
 
 ### Immediate (This Sprint)
 
-1. **Update .techdebtrc.json** - Add exclusions for analyzer pattern definitions
+1. **Configure `ruleExclusions` in `.techdebtrc.json`** - PR #99 merged `ruleExclusions` support, which allows excluding specific rules from specific files. Configuring this will eliminate the 11 false-positive high issues (analyzer pattern definitions flagged for debugger/ts-ignore regex). Example:
    ```json
    {
-     "exclude": {
-       "patterns": [
-         "pattern definitions in analyzers",
-         "language configuration strings"
-       ]
+     "ruleExclusions": {
+       "src/analyzers/*Analyzer.ts": ["debugger-statement", "ts-ignore-usage"],
+       "src/config/languages.ts": ["debugger-statement"],
+       "src/core/analysisEngine.ts": ["debugger-statement"]
      }
    }
    ```
@@ -236,17 +235,17 @@ These are **legitimate pattern definitions**, not actual code issues:
 
 ## 📈 Success Metrics
 
-### Current Baseline (Feb 14, 2026)
-- SQALE Rating: **A** (2.9% debt ratio)
-- High Issues: **14** (mostly false positives)
-- Medium Issues: **38**
-- Low Issues: **29**
+### Current Baseline (March 20, 2026)
+- SQALE Rating: **A** (4.6% debt ratio)
+- High Issues: **12** (11 false positives, 1 real)
+- Medium Issues: **49**
+- Low Issues: **57**
 
-### Target (Next Release)
-- SQALE Rating: **A** (<2.5% debt ratio)
+### Target (Next Release — with ruleExclusions configured)
+- SQALE Rating: **A** (<4% debt ratio)
 - High Issues: **1** (only real issue: C# analyzer nesting)
-- Medium Issues: **<30** (after splitting index.ts)
-- Low Issues: **<25**
+- Medium Issues: **<45** (after addressing top issues)
+- Low Issues: **<50**
 
 ### Long-term Goal (3 months)
 - SQALE Rating: **A** (<2.0% debt ratio)
@@ -304,22 +303,21 @@ All documentation has been updated to reflect:
 
 ## 🎉 Summary
 
-**Excellent Progress!**
-- ✅ SQALE Rating A maintained (2.9% debt ratio)
+**SQALE Rating A maintained** despite codebase growth (26 to 43 files analyzed).
+- ✅ SQALE Rating A maintained (4.6% debt ratio — still under 5% target)
 - ✅ Test files properly excluded from analysis
-- ✅ Documentation fully updated across all files
-- ✅ Configuration file created for consistency
+- ✅ PR #99 merged `ruleExclusions` support — will eliminate 11 false-positive high issues on next scan
 - ✅ Clear refactoring priorities identified
 - ✅ Actionable roadmap for continuous improvement
 
 **Next Steps:**
-1. Commit all documentation changes
-2. Update .techdebtrc.json with additional exclusions
-3. Address C# analyzer deep nesting (high priority)
-4. Plan src/index.ts refactoring into modules
+1. Configure `ruleExclusions` in `.techdebtrc.json` to suppress false positives (expected to drop high issues from 12 to 1)
+2. Address C# analyzer deep nesting at line 267 (the only real high issue)
+3. Tackle medium-severity maintainability issues (28 issues, 56h remediation)
+4. Continue addressing code quality issues across the expanded codebase
 
 ---
 
-**Generated by:** Tech Debt MCP v1.1.0  
-**Self-scan demonstrates:** Project practices what it preaches! 🎯
+**Generated by:** Tech Debt MCP v2.0.1
+**Self-scan demonstrates:** Project practices what it preaches!
 

@@ -37,7 +37,7 @@ src/
 │   ├── sqaleEngine.ts          # SQALE rating/debt ratio calculation
 │   └── customRulesEngine.ts    # User-defined pattern rules (.techdebtrc.json)
 ├── analyzers/
-│   ├── baseAnalyzer.ts         # Abstract base — shared logic + checkPattern() helper
+│   ├── baseAnalyzer.ts         # Abstract base — shared logic, checkPattern(), applyRuleExclusions()
 │   ├── index.ts                # createAnalyzer() factory
 │   ├── [language]Analyzer.ts   # 14 language-specific analyzers
 │   └── dependencies/
@@ -49,7 +49,7 @@ src/
 
 ### Request flow
 
-**Tools:** `MCP client` → `handlers.ts` (`CallToolRequestSchema` switch) → `AnalysisEngine` → `createAnalyzer()` (per file language) → `[Language]Analyzer.performLanguageSpecificChecks()` → issues array → `formatters.ts` → response.
+**Tools:** `MCP client` → `handlers.ts` (`CallToolRequestSchema` switch) → `AnalysisEngine` → `createAnalyzer()` (per file language) → `[Language]Analyzer.performLanguageSpecificChecks()` → issues array → `applyRuleExclusions()` (filter by config globs) → `formatters.ts` → response.
 
 **Resources:** `MCP client` → `resourceHandlers.ts` (via `McpServer.registerResource()`) → `AnalysisEngine.analyzeProject()` → JSON response.
 

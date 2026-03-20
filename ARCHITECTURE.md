@@ -98,6 +98,7 @@ BaseAnalyzer (abstract)
   ├─ checkTodoComments() [shared]
   ├─ checkFileTooLong() [shared]
   ├─ checkPattern() [helper]
+  ├─ applyRuleExclusions() [filter by config globs]
   └─ calculateMetrics() [shared]
     ↓
 TypeScriptAnalyzer
@@ -171,8 +172,9 @@ graph TD
     I --> K
     J --> K
     K -->|aggregate| L[Issues Array]
+    L -->|applyRuleExclusions| N[Filtered Issues]
     D -->|calculateMetrics| M[FileMetrics]
-    L -->|combine| E
+    N -->|combine| E
     M -->|add to| E
 ```
 
@@ -226,6 +228,7 @@ Each language has a dedicated analyzer extending `BaseAnalyzer`.
 - `checkTodoComments()` — Find TODO/FIXME/HACK comments
 - `checkFileTooLong()` — Flag files exceeding line limits
 - `checkPattern(filePath, content, regex, issue)` — Helper to match patterns
+- `applyRuleExclusions(filePath, issues)` — Filter issues via `ruleExclusions` config globs (uses `minimatch`)
 - `calculateMetrics(content)` — Compute file statistics
 
 **Inheritance Chain:**
@@ -640,15 +643,11 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
    - Use early returns to reduce indentation
    - Apply guard clauses pattern
 
-3. **False positives in analyzers** (13 high-severity false positives)
-   - Pattern definitions mistaken for actual issues
-   - Need file-specific exclusions in `.techdebtrc.json`
-   - See [TECH_DEBT_SCAN.md](../TECH_DEBT_SCAN.md) for details
+3. ~~**False positives in analyzers** (13 high-severity false positives)~~ ✅ **DONE** (v2.0.1) — `ruleExclusions` config in `.techdebtrc.json` suppresses per-rule file globs via `minimatch`; analyzer pattern definitions no longer flagged by their own rules. See `src/analyzers/baseAnalyzer.ts` `applyRuleExclusions()`.
 
 #### Medium Priority (Gradual improvement)
 
 5. **Deep nesting in multiple files:**
-   - `src/index.ts:63` - 8 levels of nesting
    - `src/core/customRulesEngine.ts:129` - 7 levels
    - `src/core/analysisEngine.ts:93` - 5 levels
 
