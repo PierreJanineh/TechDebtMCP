@@ -27,7 +27,7 @@ export class JavaScriptAnalyzer extends BaseAnalyzer {
       tags: ['debug', 'cleanup'],
     }));
 
-    // Debugger statements - heuristic: lookbehind reduces false positives from quoted pattern names but does not fully exclude all string/comment contexts
+    // techdebt-ignore-start debugger
     issues.push(...this.checkPattern(filePath, content, /(?<!["'])debugger\b/g, {
       category: 'code-quality',
       severity: 'high',
@@ -38,8 +38,9 @@ export class JavaScriptAnalyzer extends BaseAnalyzer {
       rule: 'debugger',
       tags: ['debug', 'critical'],
     }));
+    // techdebt-ignore-end debugger
 
-    // ESLint disable comments
+    // techdebt-ignore-start eslint-disable
     issues.push(...this.checkPattern(filePath, content, /\/[/*]\s*eslint-disable(?!-next-line)/g, {
       category: 'code-quality',
       severity: 'medium',
@@ -50,6 +51,7 @@ export class JavaScriptAnalyzer extends BaseAnalyzer {
       rule: 'eslint-disable',
       tags: ['linting'],
     }));
+    // techdebt-ignore-end eslint-disable
 
     // var usage (should use let/const)
     issues.push(...this.checkPattern(filePath, content, /\bvar\s+\w+/g, {

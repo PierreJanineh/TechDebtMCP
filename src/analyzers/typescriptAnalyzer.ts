@@ -27,7 +27,7 @@ export class TypeScriptAnalyzer extends BaseAnalyzer {
       tags: ['typing', 'type-safety'],
     }));
 
-    // @ts-ignore comments
+    // techdebt-ignore-start ts-ignore
     issues.push(...this.checkPattern(filePath, content, /@ts-ignore/g, {
       category: 'code-quality',
       severity: 'high',
@@ -38,8 +38,9 @@ export class TypeScriptAnalyzer extends BaseAnalyzer {
       rule: 'ts-ignore',
       tags: ['typing', 'suppression'],
     }));
+    // techdebt-ignore-end ts-ignore
 
-    // Check for @ts-expect-error comments without explanation
+    // techdebt-ignore-start ts-expect-error
     issues.push(...this.checkPattern(filePath, content, /@ts-expect-error(?!\s+\S)/g, {
       category: 'code-quality',
       severity: 'medium',
@@ -50,6 +51,7 @@ export class TypeScriptAnalyzer extends BaseAnalyzer {
       rule: 'ts-expect-error',
       tags: ['typing', 'documentation'],
     }));
+    // techdebt-ignore-end ts-expect-error
 
     // Non-null assertion (!)
     issues.push(...this.checkNonNullAssertions(filePath, content));
@@ -78,7 +80,7 @@ export class TypeScriptAnalyzer extends BaseAnalyzer {
       tags: ['debug', 'cleanup'],
     }));
 
-    // Debugger statements - heuristic: lookbehind reduces false positives from quoted pattern names but does not fully exclude all string/comment contexts
+    // techdebt-ignore-start debugger
     issues.push(...this.checkPattern(filePath, content, /(?<!["'])debugger\b/g, {
       category: 'code-quality',
       severity: 'high',
@@ -89,8 +91,9 @@ export class TypeScriptAnalyzer extends BaseAnalyzer {
       rule: 'debugger',
       tags: ['debug', 'critical'],
     }));
+    // techdebt-ignore-end debugger
 
-    // ESLint disable comments
+    // techdebt-ignore-start eslint-disable
     issues.push(...this.checkPattern(filePath, content, /\/[/*]\s*eslint-disable(?!-next-line)/g, {
       category: 'code-quality',
       severity: 'medium',
@@ -101,6 +104,7 @@ export class TypeScriptAnalyzer extends BaseAnalyzer {
       rule: 'eslint-disable',
       tags: ['linting'],
     }));
+    // techdebt-ignore-end eslint-disable
 
     // Explicit 'any' in generics
     issues.push(...this.checkPattern(filePath, content, /<any>/g, {
