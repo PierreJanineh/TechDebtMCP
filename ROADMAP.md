@@ -137,11 +137,9 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 
 ## Current Status
 
-**Active Development:** Phase 2 - Dependency Analysis complete, pending PR merge and v2.0.0 release
+**Latest Release:** v2.0.0 (Dependency Analysis) - 2026-03-09
 
-**Latest Release:** v1.1.0 (SwiftUI Analysis) - 2026-02-07
-
-**Unreleased Changes:** Quality & Compliance + Phase 2 — 10 dependency parsers, 3 new MCP tools (`check_dependencies`, `validate_config`, `get_vulnerability_report`), index.ts refactor into `src/server/` modules
+**Active Development:** Phase 6 - MCP Resources (v2.0.1)
 
 **Next Phase:** Phase 3 - Snapshot & Trend Tracking (v2.1.0)
 
@@ -155,6 +153,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 | v1.1.0 | v1.1.0 | ✅ Complete | SwiftUI-specific analysis (14 checks) |
 | Quality & Compliance | Unreleased | ✅ Ready | Code of Conduct, .techdebtrc.json, TECH_DEBT_SCAN.md, documentation |
 | Phase 2 | v2.0.0 | ✅ Complete | Dependency analysis — 10 parsers, 3 MCP tools, index.ts refactor |
+| Phase 6 | v2.0.1 | 🚧 In Progress | MCP Resources (debt://summary, debt://issues) |
 | Phase 3 | v2.1.0 | 📋 Planned | Snapshot & trend tracking |
 | Phase 4 | v2.2.0 | 📋 Planned | Code complexity analysis |
 
@@ -162,7 +161,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 
 ### Phase 2: Dependency Analysis (v2.0.0)
 
-**Status:** ✅ **COMPLETE** (Pending PR merge and v2.0.0 tag)
+**Status:** ✅ **COMPLETE** (Released as v2.0.0)
 
 **Objective:** Parse and analyze project dependencies across multiple package managers.
 
@@ -528,5 +527,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
 
 ---
 
-**Last Updated:** 2026-02-07
+**Last Updated:** 2026-03-19
 

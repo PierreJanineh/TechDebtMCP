@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 npm test                    # Run all tests
-npm test -- --testPathPattern=src/analyzers  # Run a specific test suite
+npm test -- --testPathPatterns=src/analyzers  # Run a specific test suite
 npm run build               # Compile TypeScript
 npm run dev                 # Run with ts-node (no build needed)
 npm run watch               # Compile in watch mode
@@ -17,15 +17,16 @@ npm run lint                # Lint source files
 
 ## Architecture
 
-Tech Debt MCP is a Model Context Protocol (MCP) server exposing tools for static tech-debt analysis across 14 languages.
+Tech Debt MCP is a Model Context Protocol (MCP) server exposing tools and resources for static tech-debt analysis across 14 languages.
 
 ```
 src/
-├── index.ts                    # Entry point — creates server, attaches handlers, runs
+├── index.ts                    # Entry point — creates server, attaches handlers + resources, runs
 ├── server/
 │   ├── setup.ts                # McpServer instantiation and transport wiring
 │   ├── handlers.ts             # Core MCP tool request handlers (CallToolRequestSchema)
 │   ├── tools.ts                # TOOL_DEFINITIONS array (tool schemas/descriptions)
+│   ├── resourceHandlers.ts     # MCP resource templates (debt://summary, debt://issues)
 │   ├── formatters.ts           # Output formatting helpers
 │   ├── configValidator.ts      # .techdebtrc.json validation handler
 │   └── dependencyHandlers.ts   # Dependency analysis & vulnerability report handlers
@@ -48,7 +49,9 @@ src/
 
 ### Request flow
 
-`MCP client` → `handlers.ts` (`CallToolRequestSchema` switch) → `AnalysisEngine` → `createAnalyzer()` (per file language) → `[Language]Analyzer.performLanguageSpecificChecks()` → issues array → `formatters.ts` → response.
+**Tools:** `MCP client` → `handlers.ts` (`CallToolRequestSchema` switch) → `AnalysisEngine` → `createAnalyzer()` (per file language) → `[Language]Analyzer.performLanguageSpecificChecks()` → issues array → `formatters.ts` → response.
+
+**Resources:** `MCP client` → `resourceHandlers.ts` (via `McpServer.registerResource()`) → `AnalysisEngine.analyzeProject()` → JSON response.
 
 ### Key conventions
 
@@ -56,9 +59,34 @@ src/
 - **All types in `src/types/index.ts`** — never define types locally.
 - **Factory pattern** — use `createAnalyzer(language, config)` and `createDependencyParser(filePath)`.
 - **BaseAnalyzer.checkPattern()** — the standard way to match regex patterns and emit `TechDebtIssue` objects.
+- **Domain handler extraction** — when handlers.ts grows, extract domain-specific handlers to dedicated files (e.g., `configValidator.ts`, `dependencyHandlers.ts`, `resourceHandlers.ts`).
 - **No `any`** — use `unknown` if truly needed; no `@ts-ignore` (use `@ts-expect-error` with a comment).
 - **No `console.log`** in production code.
 - **JSDoc on all public functions.**
+
+## Using checkPattern
+
+```typescript
+// In performLanguageSpecificChecks():
+issues.push(...this.checkPattern(filePath, content, /pattern/g, {
+  category: 'code-quality',
+  severity: 'medium',
+  title: 'Issue title',
+  description: 'What the issue is',
+  suggestion: 'How to fix it',
+  effort: 'small',
+  rule: 'rule-name',
+  tags: ['tag1'],
+}));
+```
+
+## Enums Reference
+
+**Severity:** `critical` | `high` | `medium` | `low`
+
+**Effort:** `trivial` (<5m) | `small` (5-30m) | `medium` (30m-2h) | `large` (2-4h) | `xlarge` (4h+)
+
+**Categories:** `dependency` | `code-quality` | `architecture` | `documentation` | `testing` | `security` | `performance` | `maintainability`
 
 ## Adding a New Language Analyzer
 
@@ -74,12 +102,26 @@ src/
 2. Add a `case 'tool_name':` in `handlers.ts` `CallToolRequestSchema` handler.
 3. Implement the handler function — in `handlers.ts` for core tools, or in a dedicated file (e.g., `configValidator.ts`, `dependencyHandlers.ts`) for domain-specific tools. Keep `handlers.ts` under 500 lines.
 
+## Adding a New Dependency Parser
+
+1. Create `src/analyzers/dependencies/[ecosystem]Parser.ts` extending `BaseDependencyParser`.
+2. Register in `src/analyzers/dependencies/index.ts` factory (`createDependencyParser`) and `getAllPackageFileNames()`.
+3. Add tests in `src/analyzers/dependencies/__tests__/[ecosystem]Parser.test.ts`.
+
+### isDev Convention
+
+- **npm:** `devDependencies` key → `isDev: true`
+- **Poetry 1.2+ groups:** only `groupName === 'dev'` → `isDev: true`. `optional = false` means required (production), NOT dev.
+- **Pipfile:** `[dev-packages]` section → `isDev: true`
+- **Always test `isDev` for ALL groups** — asserting `isDev: false` for non-dev groups catches logic bugs.
+
 ## Git & PR Workflow
 
 - **Branch from `develop`**, never commit to `master` directly.
 - Branch naming: `feature/issue-{number}-short-description` or `fix/issue-{number}-...`.
 - PRs target `develop` (not `master`).
 - Releases: tag `vX.X.X` on `develop` → GitHub Actions publishes to npm → merge `develop` → `master`.
+- Use conventional commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`.
 
 ## Code Quality Limits
 
@@ -93,3 +135,4 @@ src/
 - Follow TDD: write tests first, then implement.
 - All imports in test files must include `.js` extension.
 - Target >80% coverage on new code.
+- Mock pattern: `jest.mock(...)` at top of file, typed references via `as jest.MockedFunction<typeof X>`.
