@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-03-20
+
+### Added
+- **MCP Resources (Phase 6)** — Two passive resource templates for tech debt data access:
+  - `debt://summary/{+projectPath}` — Health score, SQALE metrics, issue counts by severity/category
+  - `debt://issues/{+projectPath}` — Filterable issues list with severity, category, and limit query parameters
+- `src/server/resourceHandlers.ts` — New module using `McpServer.registerResource()` high-level API
+- 8 tests covering resource registration, reads, filters, limits, and error paths
+
+### Changed
+- **CLAUDE.md** — Consolidated as single source of truth for coding conventions; added MCP resource recipe, design spec pointer, documentation maintenance checklist
+- **ARCHITECTURE.md** — Updated MCP Server section to reflect `src/server/` module split, fixed tool count (16), added `resourceHandlers.ts`, updated dependency graph
+- **README.md** — Added MCP Resources section with usage documentation
+- **ROADMAP.md** — Phase 6 marked complete, Phase 3/4 enriched with issue numbers, branch names, and acceptance criteria
+- **.github/copilot-instructions.md** — Trimmed to Copilot-specific PR review workflow, references CLAUDE.md for conventions
+
 ## [2.0.0] - 2026-03-09
 
 ### Added
@@ -217,6 +233,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tests for SQALE engine
 - Tests for custom rules engine
 
+[2.0.1]: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v2.0.1
 [2.0.0]: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v2.0.0
 [1.1.0]: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v1.1.0
 [1.0.0]: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v1.0.0
