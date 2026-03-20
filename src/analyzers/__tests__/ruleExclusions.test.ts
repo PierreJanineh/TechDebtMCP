@@ -18,7 +18,7 @@ describe('false positive prevention', () => {
     expect(debuggerIssues).toHaveLength(0);
   });
 
-it('does not flag "debugger" inside regex pattern definitions', async () => {
+  it('does not flag "debugger" inside regex pattern definitions', async () => {
     const code = `const re = /(?<!["'])debugger\\b/g;\n`;
     const analyzer = new TypeScriptAnalyzer({});
     const result = await analyzer.analyze('src/analyzers/foo.ts', code);
