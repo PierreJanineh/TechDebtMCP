@@ -85,6 +85,30 @@ describe('false positive prevention', () => {
     expect(tsIgnoreIssues).toHaveLength(0);
   });
 
+  it('does not flag "debugger" on comment-only lines', async () => {
+    const code = `// debugger\nconst x = 1;\n`;
+    const analyzer = new TypeScriptAnalyzer({});
+    const result = await analyzer.analyze('src/foo.ts', code);
+    const debuggerIssues = result.issues.filter(i => i.rule === 'debugger');
+    expect(debuggerIssues).toHaveLength(0);
+  });
+
+  it('does not flag "debugger" in block comments', async () => {
+    const code = `/* debugger */\nconst x = 1;\n`;
+    const analyzer = new TypeScriptAnalyzer({});
+    const result = await analyzer.analyze('src/foo.ts', code);
+    const debuggerIssues = result.issues.filter(i => i.rule === 'debugger');
+    expect(debuggerIssues).toHaveLength(0);
+  });
+
+  it('does not flag "debugger" in multi-line block comments', async () => {
+    const code = `/*\n * debugger\n */\nconst x = 1;\n`;
+    const analyzer = new TypeScriptAnalyzer({});
+    const result = await analyzer.analyze('src/foo.ts', code);
+    const debuggerIssues = result.issues.filter(i => i.rule === 'debugger');
+    expect(debuggerIssues).toHaveLength(0);
+  });
+
   it('does not flag debugger in JS regex pattern definitions', async () => {
     const code = `const re = /(?<!["'])debugger\\b/g;\n`;
     const analyzer = new JavaScriptAnalyzer({});
