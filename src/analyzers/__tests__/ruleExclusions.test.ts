@@ -59,6 +59,32 @@ describe('false positive prevention', () => {
     expect(tsIgnoreIssues).toHaveLength(1);
   });
 
+  it('detects debugger with trailing comment', async () => {
+    const code = `function broken() {\n  debugger; // TODO: remove\n  return 1;\n}\n`;
+    const analyzer = new TypeScriptAnalyzer({});
+    const result = await analyzer.analyze('src/foo.ts', code);
+    const debuggerIssues = result.issues.filter(i => i.rule === 'debugger');
+    expect(debuggerIssues).toHaveLength(1);
+    expect(debuggerIssues[0].line).toBe(2);
+  });
+
+  it('detects inline debugger in if statement', async () => {
+    const code = `function broken(cond: boolean) {\n  if (cond) debugger;\n  return 1;\n}\n`;
+    const analyzer = new TypeScriptAnalyzer({});
+    const result = await analyzer.analyze('src/foo.ts', code);
+    const debuggerIssues = result.issues.filter(i => i.rule === 'debugger');
+    expect(debuggerIssues).toHaveLength(1);
+    expect(debuggerIssues[0].line).toBe(2);
+  });
+
+  it('does not flag @ts-ignore inside string literals', async () => {
+    const code = `const s = "// @ts-ignore";\n`;
+    const analyzer = new TypeScriptAnalyzer({});
+    const result = await analyzer.analyze('src/foo.ts', code);
+    const tsIgnoreIssues = result.issues.filter(i => i.rule === 'ts-ignore');
+    expect(tsIgnoreIssues).toHaveLength(0);
+  });
+
   it('does not flag debugger in JS regex pattern definitions', async () => {
     const code = `const re = /(?<!["'])debugger\\b/g;\n`;
     const analyzer = new JavaScriptAnalyzer({});
