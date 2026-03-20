@@ -27,7 +27,7 @@ function readPackageVersion(): string {
   }
 
   // fallback
-  console.warn('VERSION: could not resolve package.json version; falling back to "unknown"');
+  console.error('VERSION: could not resolve package.json version; falling back to "unknown"');
   return 'unknown';
 }
 
