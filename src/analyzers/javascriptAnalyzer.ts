@@ -28,7 +28,7 @@ export class JavaScriptAnalyzer extends BaseAnalyzer {
     }));
 
     // Debugger statements — match debugger as a statement (standalone, inline, with trailing comment)
-    // Negative lookbehind rejects lines where debugger appears inside // or /* or * comments
+    // Variable-length lookbehind is valid in V8/Node.js 10+ (project requires Node >= 18)
     issues.push(...this.checkPattern(filePath, content, /(?<!\/\/.*|\/\*.*|\*\s*)\bdebugger\s*;?\s*(?:\/\/.*)?$/gm, {
       category: 'code-quality',
       severity: 'high',

@@ -18,6 +18,14 @@ describe('false positive prevention', () => {
     expect(debuggerIssues).toHaveLength(0);
   });
 
+  it('does not flag "debugger" on comment-only lines or in block comments', async () => {
+    const code = `// debugger\n/* debugger */\n/** debugger */\n* debugger\nconst x = 1;\n`;
+    const analyzer = new TypeScriptAnalyzer({});
+    const result = await analyzer.analyze('src/analyzers/foo.ts', code);
+    const debuggerIssues = result.issues.filter(i => i.rule === 'debugger');
+    expect(debuggerIssues).toHaveLength(0);
+  });
+
   it('does not flag "debugger" inside regex pattern definitions', async () => {
     const code = `const re = /(?<!["'])debugger\\b/g;\n`;
     const analyzer = new TypeScriptAnalyzer({});
