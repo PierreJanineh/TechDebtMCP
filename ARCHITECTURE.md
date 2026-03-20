@@ -127,6 +127,7 @@ src/config/languages.ts
 .techdebtrc.json (user-provided)
   ├─ ignore patterns
   ├─ rule thresholds
+  ├─ rule exclusions (per-rule file glob suppression)
   ├─ custom patterns
   └─ language overrides
 ```

@@ -577,9 +577,17 @@ Create a `.techdebtrc.json` file in your project root:
   "severity": {
     "todo-comment": "low",
     "console-log": "medium"
+  },
+  "ruleExclusions": {
+    "debugger": ["**/src/analyzers/**"],
+    "ts-ignore": ["**/src/analyzers/**"]
   }
 }
 ```
+
+### Rule Exclusions
+
+Use `ruleExclusions` to suppress specific rules for files matching glob patterns. Patterns are matched against the file path using forward slashes (`/`) as separators on all platforms. Both absolute and relative paths are supported — use `**/` prefixed patterns (e.g., `**/src/analyzers/**`) for reliable matching regardless of path format. This is useful for eliminating false positives — for example, analyzer source files that contain regex patterns for detecting `debugger` or `@ts-ignore` should not be flagged by those same rules.
 
 ## Example Output
 
