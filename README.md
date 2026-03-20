@@ -18,6 +18,7 @@ A Model Context Protocol (MCP) server for analyzing technical debt across multip
 - **SwiftUI Analysis**: Specialized checks for SwiftUI patterns, state management, memory leaks, view nesting, and concurrency issues
 - **Custom Rules**: Define your own pattern-based checks with regex support
 - **Dependency Analysis**: Parse package manifests across 10 ecosystems (npm, pip, Maven/Gradle, Cargo, Go Modules, Composer, Bundler, NuGet, C/C++, Swift)
+- **Inline Suppression**: Suppress false positives with `// techdebt-ignore-next-line` or block comments
 - **Config Validation**: Validate `.techdebtrc.json` configuration files for schema correctness
 - **Actionable recommendations**: Provides prioritized suggestions for addressing technical debt
 - **Flexible filtering**: Filter results by severity, category, or language
@@ -588,6 +589,40 @@ Create a `.techdebtrc.json` file in your project root:
 ### Rule Exclusions
 
 Use `ruleExclusions` to suppress specific rules for files matching glob patterns. Patterns are matched against the file path using forward slashes (`/`) as separators on all platforms. Both absolute and relative paths are supported — use `**/` prefixed patterns (e.g., `**/src/analyzers/**`) for reliable matching regardless of path format. This is useful for eliminating false positives — for example, analyzer source files that contain regex patterns for detecting `debugger` or `@ts-ignore` should not be flagged by those same rules.
+
+### Inline Suppression Comments
+
+Suppress specific issues directly in source code using inline comments. This is useful when a particular line or block should not be flagged (e.g., pattern definitions in analyzer source files).
+
+Both `//` and `#` comment prefixes are supported, so suppression directives work across all analyzed languages (e.g., `#` for Python/Ruby, `//` for TypeScript/JavaScript/Java/Go/etc.).
+
+**Single-line suppression** — suppresses the immediately following line:
+
+```typescript
+// techdebt-ignore-next-line
+debugger; // will not be reported
+
+// techdebt-ignore-next-line debugger
+debugger; // only the 'debugger' rule is suppressed
+```
+
+```python
+# techdebt-ignore-next-line print-statement
+print("debug output")  # will not be reported
+```
+
+**Block suppression** — suppresses all lines between start and end:
+
+```typescript
+// techdebt-ignore-start ts-ignore
+issues.push(...this.checkPattern(filePath, content, /@ts-ignore/g, {
+  title: '@ts-ignore comment found',
+  description: '@ts-ignore suppresses TypeScript errors',
+}));
+// techdebt-ignore-end ts-ignore
+```
+
+Both forms accept an optional rule name. Without a rule name, all rules are suppressed. Blocks can be nested for multiple rules. Suppression comments must appear on their own line (not appended to code).
 
 ## Example Output
 

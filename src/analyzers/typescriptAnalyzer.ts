@@ -27,6 +27,7 @@ export class TypeScriptAnalyzer extends BaseAnalyzer {
       tags: ['typing', 'type-safety'],
     }));
 
+    // techdebt-ignore-start ts-ignore
     // ts-ignore directive comments (only match actual comment directives, anchored to line start)
     issues.push(...this.checkPattern(filePath, content, /^\s*\/\/\s*@ts-ignore\b/gm, {
       category: 'code-quality',
@@ -38,8 +39,9 @@ export class TypeScriptAnalyzer extends BaseAnalyzer {
       rule: 'ts-ignore',
       tags: ['typing', 'suppression'],
     }));
+    // techdebt-ignore-end ts-ignore
 
-    // Check for @ts-expect-error comments without explanation
+    // techdebt-ignore-start ts-expect-error
     issues.push(...this.checkPattern(filePath, content, /@ts-expect-error(?!\s+\S)/g, {
       category: 'code-quality',
       severity: 'medium',
@@ -50,6 +52,7 @@ export class TypeScriptAnalyzer extends BaseAnalyzer {
       rule: 'ts-expect-error',
       tags: ['typing', 'documentation'],
     }));
+    // techdebt-ignore-end ts-expect-error
 
     // Non-null assertion (!)
     issues.push(...this.checkNonNullAssertions(filePath, content));
@@ -78,6 +81,7 @@ export class TypeScriptAnalyzer extends BaseAnalyzer {
       tags: ['debug', 'cleanup'],
     }));
 
+    // techdebt-ignore-start debugger
     // Debugger statements — match debugger as a statement (standalone, inline, with trailing comment)
     // Variable-length lookbehind is valid in V8/Node.js 10+ (project requires Node >= 18)
     issues.push(...this.checkPattern(filePath, content, /(?<!\/\/.*|\/\*.*|\*\s*)\bdebugger\s*;?\s*(?:\/\/.*)?$/gm, {
@@ -90,8 +94,9 @@ export class TypeScriptAnalyzer extends BaseAnalyzer {
       rule: 'debugger',
       tags: ['debug', 'critical'],
     }));
+    // techdebt-ignore-end debugger
 
-    // ESLint disable comments
+    // techdebt-ignore-start eslint-disable
     issues.push(...this.checkPattern(filePath, content, /\/[/*]\s*eslint-disable(?!-next-line)/g, {
       category: 'code-quality',
       severity: 'medium',
@@ -102,6 +107,7 @@ export class TypeScriptAnalyzer extends BaseAnalyzer {
       rule: 'eslint-disable',
       tags: ['linting'],
     }));
+    // techdebt-ignore-end eslint-disable
 
     // Explicit angle-bracket any in generics — RegExp constructor avoids embedding the pattern directly in source
     const genericAnyPattern = new RegExp('<' + 'any>', 'g');

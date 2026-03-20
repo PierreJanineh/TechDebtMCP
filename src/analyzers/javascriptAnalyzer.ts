@@ -27,6 +27,7 @@ export class JavaScriptAnalyzer extends BaseAnalyzer {
       tags: ['debug', 'cleanup'],
     }));
 
+    // techdebt-ignore-start debugger
     // Debugger statements — match debugger as a statement (standalone, inline, with trailing comment)
     // Variable-length lookbehind is valid in V8/Node.js 10+ (project requires Node >= 18)
     issues.push(...this.checkPattern(filePath, content, /(?<!\/\/.*|\/\*.*|\*\s*)\bdebugger\s*;?\s*(?:\/\/.*)?$/gm, {
@@ -39,8 +40,9 @@ export class JavaScriptAnalyzer extends BaseAnalyzer {
       rule: 'debugger',
       tags: ['debug', 'critical'],
     }));
+    // techdebt-ignore-end debugger
 
-    // ESLint disable comments
+    // techdebt-ignore-start eslint-disable
     issues.push(...this.checkPattern(filePath, content, /\/[/*]\s*eslint-disable(?!-next-line)/g, {
       category: 'code-quality',
       severity: 'medium',
@@ -51,6 +53,7 @@ export class JavaScriptAnalyzer extends BaseAnalyzer {
       rule: 'eslint-disable',
       tags: ['linting'],
     }));
+    // techdebt-ignore-end eslint-disable
 
     // var usage (should use let/const)
     issues.push(...this.checkPattern(filePath, content, /\bvar\s+\w+/g, {
