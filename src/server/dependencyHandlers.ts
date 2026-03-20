@@ -13,7 +13,10 @@ import { ParsedDependency, PackageManager } from '../types/index.js';
  * Handle check_dependencies tool call
  */
 export async function handleCheckDependencies(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const projectPath = args.path as string;
+  if (typeof args.path !== 'string') {
+    throw new McpError(ErrorCode.InvalidParams, 'Missing or invalid required parameter: path (must be a string)');
+  }
+  const projectPath = args.path;
   const includeDev = args.includeDev !== false;
   await validateDirectoryPath(projectPath);
 
@@ -32,7 +35,10 @@ export async function handleCheckDependencies(args: Record<string, unknown>): Pr
  * Generate an offline vulnerability/dependency report
  */
 export async function handleGetVulnerabilityReport(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const projectPath = args.path as string;
+  if (typeof args.path !== 'string') {
+    throw new McpError(ErrorCode.InvalidParams, 'Missing or invalid required parameter: path (must be a string)');
+  }
+  const projectPath = args.path;
   const includeDev = args.includeDev === true; // default false for vulnerability reports
   await validateDirectoryPath(projectPath);
 

@@ -18,7 +18,10 @@ const VALID_SEVERITIES = new Set(['low', 'medium', 'high', 'critical']);
  * Validate a .techdebtrc.json configuration file
  */
 export async function handleValidateConfig(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const inputPath = args.path as string;
+  if (typeof args.path !== 'string') {
+    throw new McpError(ErrorCode.InvalidParams, 'Missing or invalid required parameter: path (must be a string)');
+  }
+  const inputPath = args.path;
   if (!(await fileExists(inputPath))) {
     throw new McpError(ErrorCode.InvalidParams, `Path not found: ${inputPath}`);
   }
@@ -123,7 +126,7 @@ export async function handleValidateConfig(args: Record<string, unknown>): Promi
     if (!Array.isArray(config.customPatterns)) {
       errors.push('"customPatterns" must be an array');
     } else {
-      (config.customPatterns as unknown[]).forEach((p, i) => {
+      config.customPatterns.forEach((p: unknown, i: number) => {
         if (typeof p !== 'object' || p === null) {
           errors.push(`customPatterns[${i}]: must be an object`);
           return;
