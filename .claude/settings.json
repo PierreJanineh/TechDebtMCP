@@ -17,6 +17,12 @@
       "mcp__plugin_github_github__request_copilot_review"
     ]
   },
+  "sandbox": {
+    "filesystem": {
+      "allowWrite": ["/tmp"],
+      "allowRead": ["/tmp"]
+    }
+  },
   "hooks": {
     "PreToolUse": [
       {
