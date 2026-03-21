@@ -137,6 +137,43 @@ logger.LogInfo("after");
         expect.objectContaining({ rule: 'empty-catch' })
       );
     });
+
+    it('does not flag single-line catch whose body is a block comment followed by real code', async () => {
+      const code = `
+try {
+  DoSomething();
+} catch (Exception ex) { /* suppress */ logger.LogError(ex); }
+      `;
+      const result = await analyzer.analyze('test.cs', code);
+      expect(result.issues.some(i => i.rule === 'empty-catch')).toBe(false);
+    });
+
+    it('flags single-line catch whose body contains only a block comment', async () => {
+      const code = `
+try {
+  DoSomething();
+} catch (Exception ex) { /* intentionally ignored */ }
+      `;
+      const result = await analyzer.analyze('test.cs', code);
+      expect(result.issues).toContainEqual(
+        expect.objectContaining({ rule: 'empty-catch' })
+      );
+    });
+
+    it('does not produce false negative for empty catch followed by finally on same closing line', async () => {
+      const code = `
+try {
+  DoSomething();
+} catch (Exception ex) {
+} finally {
+  Cleanup();
+}
+      `;
+      const result = await analyzer.analyze('test.cs', code);
+      expect(result.issues).toContainEqual(
+        expect.objectContaining({ rule: 'empty-catch' })
+      );
+    });
   });
 
   describe('dynamic type', () => {

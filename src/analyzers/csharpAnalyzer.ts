@@ -159,6 +159,28 @@ export class CSharpAnalyzer extends BaseAnalyzer {
   }
 
   /**
+   * Returns true if `inner` (content between the braces in a single-line catch body)
+   * contains real executable code after stripping leading comments.
+   *
+   * Handles a block comment followed by real code (e.g. "comment then logger.LogError")
+   * where checking only startsWith would cause a false positive.
+   */
+  private hasTrivialContent(inner: string): boolean {
+    let remaining = inner;
+    while (remaining.length > 0) {
+      if (remaining.startsWith('//')) return false;
+      if (remaining.startsWith('/*')) {
+        const endIdx = remaining.indexOf('*/');
+        if (endIdx === -1) return false;
+        remaining = remaining.slice(endIdx + 2).trim();
+        continue;
+      }
+      break;
+    }
+    return remaining.length > 0 && remaining !== '{' && remaining !== '}';
+  }
+
+  /**
    * Checks whether the catch block starting at line index `startIndex` has actual content.
    *
    * Single-line catch blocks (`catch (...) {}`) are handled explicitly: braces are
@@ -184,17 +206,29 @@ export class CSharpAnalyzer extends BaseAnalyzer {
         // Single-line catch block: inspect the content between the braces.
         if (braceCount === 0) {
           const inner = catchBodyStr.slice(1, catchBodyStr.lastIndexOf('}')).trim();
-          return inner.length > 0 &&
-            !inner.startsWith('//') &&
-            !inner.startsWith('/*') &&
-            inner !== '{' &&
-            inner !== '}';
+          return this.hasTrivialContent(inner);
         }
       } else {
-        braceCount += (checkLine.match(/{/g) || []).length;
-        braceCount -= (checkLine.match(/}/g) || []).length;
+        // Process closes (`}`) before opens (`{`) to detect when the catch block
+        // closes on this line even if another block opens on the same line
+        // (e.g. `} finally {`).
+        const opens = (checkLine.match(/{/g) || []).length;
+        const closes = (checkLine.match(/}/g) || []).length;
+        braceCount -= closes;
+
+        if (braceCount <= 0) {
+          // This line closes the catch block. Only the portion *before* the first
+          // closing brace that brings braceCount to 0 is potential catch body content.
+          const closingIdx = checkLine.indexOf('}');
+          if (closingIdx !== -1) {
+            const beforeClosing = checkLine.slice(0, closingIdx);
+            if (this.isNonTrivialContent(beforeClosing, j, startIndex)) return true;
+          }
+          break;
+        }
+
+        braceCount += opens;
         if (this.isNonTrivialContent(checkLine, j, startIndex)) return true;
-        if (braceCount === 0) break;
       }
 
       j++;
