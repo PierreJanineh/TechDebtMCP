@@ -18,6 +18,7 @@ export class SwiftAnalyzer extends BaseAnalyzer {
     // Force unwrap (!)
     issues.push(...this.checkForceUnwrap(filePath, content));
 
+    // techdebt-ignore-start non-null-assertion
     // Force cast (as!)
     issues.push(...this.checkPattern(filePath, content, /\bas!\s*\w+/g, {
       category: 'code-quality',
@@ -41,6 +42,7 @@ export class SwiftAnalyzer extends BaseAnalyzer {
       rule: 'force-try',
       tags: ['safety', 'crash-risk', 'error-handling'],
     }));
+    // techdebt-ignore-end non-null-assertion
 
     // Implicitly unwrapped optionals
     issues.push(...this.checkImplicitlyUnwrapped(filePath, content));
@@ -152,7 +154,9 @@ export class SwiftAnalyzer extends BaseAnalyzer {
       // Match force unwrap but exclude != and !== and comments
       if (line.trim().startsWith('//')) continue;
 
+      // techdebt-ignore-start non-null-assertion
       // Match patterns like variable! or expression! but not as! or try!
+      // techdebt-ignore-end non-null-assertion
       const matches = line.match(/\w+!(?:\.|[\s,);}\]]|$)/g);
       if (matches) {
         // Filter out common false positives

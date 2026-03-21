@@ -75,6 +75,7 @@ export class RustAnalyzer extends BaseAnalyzer {
       tags: ['warnings', 'quality'],
     }));
 
+    // techdebt-ignore-start non-null-assertion
     // panic! macro
     issues.push(...this.checkPattern(filePath, content, /panic!\s*\(/g, {
       category: 'code-quality',
@@ -134,6 +135,7 @@ export class RustAnalyzer extends BaseAnalyzer {
       rule: 'unimplemented-macro',
       tags: ['incomplete-code', 'reliability'],
     }));
+    // techdebt-ignore-end non-null-assertion
 
     return issues;
   }
