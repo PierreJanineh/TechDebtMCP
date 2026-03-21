@@ -8,28 +8,7 @@ import { fileExists } from '../utils/fileUtils.js';
 import { readFile as fsReadFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { CustomPattern } from '../types/index.js';
-
-/** Type guard: checks that a value is a plain object record (prototype is Object.prototype or null, not a class instance, Date, Map, etc.). */
-function isRecord(value: unknown): value is Record<string, unknown> {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
-    return false;
-  }
-  const proto = Object.getPrototypeOf(value as object) as unknown;
-  return proto === Object.prototype || proto === null;
-}
-
-/**
- * Assert that args is a plain non-null, non-array object, throwing McpError(InvalidParams) if not.
- */
-function requireRecord(args: unknown): Record<string, unknown> {
-  if (!isRecord(args)) {
-    throw new McpError(
-      ErrorCode.InvalidParams,
-      'Tool arguments must be a plain object',
-    );
-  }
-  return args;
-}
+import { isRecord, requireRecord } from './argValidation.js';
 
 /** Type guard: checks that a value satisfies the minimum required shape of a CustomPattern. */
 function isCustomPatternShape(value: unknown): value is CustomPattern {

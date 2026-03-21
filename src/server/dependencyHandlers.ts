@@ -8,28 +8,7 @@ import { getRelativePath, readFile, fileExists } from '../utils/fileUtils.js';
 import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ParsedDependency, PackageManager } from '../types/index.js';
-
-/** Type guard: checks that a value is a plain, non-null, non-array object. */
-function isRecord(value: unknown): value is Record<string, unknown> {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    return false;
-  }
-  const proto = Object.getPrototypeOf(value as object) as unknown;
-  return proto === Object.prototype || proto === null;
-}
-
-/**
- * Assert that args is a plain non-null, non-array object, throwing McpError(InvalidParams) if not.
- */
-function requireRecord(args: unknown): Record<string, unknown> {
-  if (!isRecord(args)) {
-    throw new McpError(
-      ErrorCode.InvalidParams,
-      'Tool arguments must be a plain object',
-    );
-  }
-  return args;
-}
+import { requireRecord } from './argValidation.js';
 
 /**
  * Handle check_dependencies tool call

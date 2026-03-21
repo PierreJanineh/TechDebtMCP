@@ -5,6 +5,7 @@ import {
   Severity,
 } from '../types/index.js';
 import { LANGUAGE_CONFIGS } from '../config/languages.js';
+import { isRecord, requireRecord } from './argValidation.js';
 
 /** Typed input for analyze_project tool */
 export interface AnalyzeProjectInput {
@@ -95,19 +96,6 @@ const VALID_CATEGORIES: DebtCategory[] = [
 ];
 /** Derived from LANGUAGE_CONFIGS keys to stay in sync with supported languages. */
 const VALID_LANGUAGES: SupportedLanguage[] = Object.keys(LANGUAGE_CONFIGS) as SupportedLanguage[];
-
-/**
- * Type guard: checks that a value is a plain, non-null, non-array object
- * with a prototype of Object.prototype or null (i.e. not a class instance,
- * Date, Map, etc.). Matches the stricter definition used in configValidator.ts.
- */
-function isRecord(value: unknown): value is Record<string, unknown> {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    return false;
-  }
-  const proto = Object.getPrototypeOf(value as object) as unknown;
-  return proto === Object.prototype || proto === null;
-}
 
 /**
  * Assert that a value is a non-empty string, throwing McpError if not.
@@ -238,20 +226,6 @@ function optionalString(
     throw new McpError(ErrorCode.InvalidParams, `${key} must be a string`);
   }
   return value;
-}
-
-/**
- * Assert that args is a plain non-null, non-array object, throwing McpError(InvalidParams) if not.
- * Returns the narrowed Record so callers can safely index it.
- */
-function requireRecord(args: unknown): Record<string, unknown> {
-  if (!isRecord(args)) {
-    throw new McpError(
-      ErrorCode.InvalidParams,
-      'Tool arguments must be a plain object',
-    );
-  }
-  return args;
 }
 
 /**

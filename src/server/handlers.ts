@@ -421,16 +421,16 @@ async function handleExecuteCustomRules(
   const { language } = input;
 
   if (!path && !code) {
-    return { content: [{ type: 'text', text: '❌ Either path or code must be provided' }] };
+    throw new McpError(ErrorCode.InvalidParams, 'Either path or code must be provided');
   }
   if (!code && path) {
     if (!await fileExists(path)) {
-      return { content: [{ type: 'text', text: `❌ File not found: ${path}` }] };
+      throw new McpError(ErrorCode.InvalidParams, `File not found: ${path}`);
     }
     code = await readFile(path);
   }
   if (!code) {
-    return { content: [{ type: 'text', text: '❌ Could not read code from path or input' }] };
+    throw new McpError(ErrorCode.InvalidParams, 'Could not read code from path or input');
   }
 
   const filePath = path ?? 'inline-code';
