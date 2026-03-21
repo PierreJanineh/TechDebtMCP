@@ -109,31 +109,45 @@ function requireString(args: Record<string, unknown>, key: string): string {
 }
 
 /**
- * Narrow a raw value to Severity, throwing McpError if invalid.
+ * Narrow a raw value to Severity, throwing McpError if invalid or missing.
  */
 function requireSeverity(args: Record<string, unknown>, key: string): Severity {
-  const value = args[key];
-  if (!VALID_SEVERITIES.includes(value as Severity)) {
+  const raw = args[key];
+  if (typeof raw !== 'string' || raw.length === 0) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      `Missing or invalid parameter: ${key}`,
+    );
+  }
+  const value = raw as Severity;
+  if (!VALID_SEVERITIES.includes(value)) {
     throw new McpError(
       ErrorCode.InvalidParams,
       `Invalid ${key}: must be one of ${VALID_SEVERITIES.join(', ')}`,
     );
   }
-  return value as Severity;
+  return value;
 }
 
 /**
- * Narrow a raw value to DebtCategory, throwing McpError if invalid.
+ * Narrow a raw value to DebtCategory, throwing McpError if invalid or missing.
  */
 function requireCategory(args: Record<string, unknown>, key: string): DebtCategory {
-  const value = args[key];
-  if (!VALID_CATEGORIES.includes(value as DebtCategory)) {
+  const raw = args[key];
+  if (typeof raw !== 'string' || raw.length === 0) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      `Missing or invalid parameter: ${key}`,
+    );
+  }
+  const value = raw as DebtCategory;
+  if (!VALID_CATEGORIES.includes(value)) {
     throw new McpError(
       ErrorCode.InvalidParams,
       `Invalid ${key}: must be one of ${VALID_CATEGORIES.join(', ')}`,
     );
   }
-  return value as DebtCategory;
+  return value;
 }
 
 /**

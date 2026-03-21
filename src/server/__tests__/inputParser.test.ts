@@ -357,4 +357,45 @@ describe('inputParser', () => {
       ).toThrow(McpError);
     });
   });
+
+  // ---- requireSeverity / requireCategory error message distinction ----
+  describe('requireSeverity missing vs invalid message', () => {
+    it('reports "Missing or invalid parameter" when severity is absent', () => {
+      expect(() => parseGetIssuesBySeverityInput({ path: '/p' })).toThrow(
+        /Missing or invalid parameter/,
+      );
+    });
+
+    it('reports "Missing or invalid parameter" when severity is null', () => {
+      expect(() =>
+        parseGetIssuesBySeverityInput({ path: '/p', severity: null }),
+      ).toThrow(/Missing or invalid parameter/);
+    });
+
+    it('reports "Invalid severity" when severity is a non-enum string', () => {
+      expect(() =>
+        parseGetIssuesBySeverityInput({ path: '/p', severity: 'urgent' }),
+      ).toThrow(/Invalid severity/);
+    });
+  });
+
+  describe('requireCategory missing vs invalid message', () => {
+    it('reports "Missing or invalid parameter" when category is absent', () => {
+      expect(() => parseGetIssuesByCategoryInput({ path: '/p' })).toThrow(
+        /Missing or invalid parameter/,
+      );
+    });
+
+    it('reports "Missing or invalid parameter" when category is null', () => {
+      expect(() =>
+        parseGetIssuesByCategoryInput({ path: '/p', category: null }),
+      ).toThrow(/Missing or invalid parameter/);
+    });
+
+    it('reports "Invalid category" when category is a non-enum string', () => {
+      expect(() =>
+        parseGetIssuesByCategoryInput({ path: '/p', category: 'garbage' }),
+      ).toThrow(/Invalid category/);
+    });
+  });
 });
