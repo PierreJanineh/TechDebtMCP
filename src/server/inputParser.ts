@@ -240,8 +240,14 @@ function optionalPositiveInteger(
 ): number | undefined {
   const value = args[key];
   if (value === undefined) return undefined;
-  if (typeof value !== 'number' || !Number.isFinite(value)) {
+  if (typeof value !== 'number') {
     throw new McpError(ErrorCode.InvalidParams, `${key} must be a number`);
+  }
+  if (!Number.isFinite(value)) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      `${key} must be a finite number (NaN and Infinity are not allowed)`,
+    );
   }
   if (!Number.isInteger(value) || value < 1) {
     throw new McpError(
