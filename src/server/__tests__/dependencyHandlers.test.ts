@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import type { ParsedDependency } from '../../types/index.js';
 
 jest.mock('../../utils/fileUtils.js', () => ({
   fileExists: jest.fn(),
@@ -32,11 +33,11 @@ const mockStat = stat as jest.MockedFunction<typeof stat>;
 
 /** Helper to build a mock parser instance. */
 function makeMockParser(
-  deps: Array<{ name: string; version: string; isDev: boolean; source: string }>,
+  deps: ParsedDependency[],
   ecosystem = 'npm'
 ) {
   return {
-    parse: jest.fn<any>().mockResolvedValue(deps),
+    parse: jest.fn<(filePath: string, content: string) => Promise<ParsedDependency[]>>().mockResolvedValue(deps),
     getEcosystem: jest.fn().mockReturnValue(ecosystem),
     canParse: jest.fn().mockReturnValue(true),
     getPackageFileNames: jest.fn().mockReturnValue(['package.json']),
@@ -139,7 +140,7 @@ describe('handleCheckDependencies', () => {
     mockStat.mockResolvedValueOnce({ isDirectory: () => false, isFile: () => true } as any);
 
     const parser = {
-      parse: jest.fn<any>().mockRejectedValue(new Error('Malformed JSON')),
+      parse: jest.fn<(filePath: string, content: string) => Promise<ParsedDependency[]>>().mockRejectedValue(new Error('Malformed JSON')),
       getEcosystem: jest.fn().mockReturnValue('npm'),
       canParse: jest.fn().mockReturnValue(true),
       getPackageFileNames: jest.fn().mockReturnValue(['package.json']),
@@ -285,7 +286,7 @@ describe('handleGetVulnerabilityReport', () => {
     mockStat.mockResolvedValueOnce({ isDirectory: () => false, isFile: () => true } as any);
 
     const parser = {
-      parse: jest.fn<any>().mockRejectedValue(new Error('Unexpected token')),
+      parse: jest.fn<(filePath: string, content: string) => Promise<ParsedDependency[]>>().mockRejectedValue(new Error('Unexpected token')),
       getEcosystem: jest.fn().mockReturnValue('npm'),
       canParse: jest.fn().mockReturnValue(true),
       getPackageFileNames: jest.fn().mockReturnValue(['package.json']),
