@@ -335,11 +335,11 @@ Validate a custom pattern before adding it as a rule.
 
 In addition to tools, Tech Debt MCP exposes passive MCP resources for reading tech debt data without triggering explicit tool calls:
 
-### `debt://summary/{projectPath}`
+### `debt://summary/{+projectPath}`
 
 Returns a JSON summary of technical debt including health score, debt score, issue counts by severity/category, and SQALE metrics.
 
-### `debt://issues/{projectPath}`
+### `debt://issues/{+projectPath}`
 
 Returns a filterable list of all technical debt issues.
 
