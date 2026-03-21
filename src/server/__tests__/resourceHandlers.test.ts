@@ -122,7 +122,7 @@ function setupResources() {
 
 type ResourceCallback = (
   uri: URL,
-  variables: Record<string, string>,
+  variables: Record<string, unknown>,
   extra: Record<string, unknown>
 ) => Promise<{ contents: Array<{ uri: string; mimeType: string; text: string }> }>;
 
@@ -286,5 +286,61 @@ describe('error handling', () => {
 
     const parsed = JSON.parse(result.contents[0].text);
     expect(parsed.error).toBe('Unknown error');
+  });
+
+  it('should return error JSON when projectPath is missing in summary resource', async () => {
+    const callback = getCallback('Tech Debt Summary');
+    const result = await callback(
+      new URL('debt://summary/'),
+      {},
+      {}
+    );
+
+    expect(result.contents).toHaveLength(1);
+    const parsed = JSON.parse(result.contents[0].text);
+    expect(parsed.error).toBe('projectPath must be a string');
+    expect(mockAnalyzeProject).not.toHaveBeenCalled();
+  });
+
+  it('should return error JSON when projectPath is not a string in summary resource', async () => {
+    const callback = getCallback('Tech Debt Summary');
+    const result = await callback(
+      new URL('debt://summary/'),
+      { projectPath: ['not', 'a', 'string'] },
+      {}
+    );
+
+    expect(result.contents).toHaveLength(1);
+    const parsed = JSON.parse(result.contents[0].text);
+    expect(parsed.error).toBe('projectPath must be a string');
+    expect(mockAnalyzeProject).not.toHaveBeenCalled();
+  });
+
+  it('should return error JSON when projectPath is missing in issues resource', async () => {
+    const callback = getCallback('Tech Debt Issues');
+    const result = await callback(
+      new URL('debt://issues/'),
+      {},
+      {}
+    );
+
+    expect(result.contents).toHaveLength(1);
+    const parsed = JSON.parse(result.contents[0].text);
+    expect(parsed.error).toBe('projectPath must be a string');
+    expect(mockAnalyzeProject).not.toHaveBeenCalled();
+  });
+
+  it('should return error JSON when projectPath is not a string in issues resource', async () => {
+    const callback = getCallback('Tech Debt Issues');
+    const result = await callback(
+      new URL('debt://issues/'),
+      { projectPath: 42 },
+      {}
+    );
+
+    expect(result.contents).toHaveLength(1);
+    const parsed = JSON.parse(result.contents[0].text);
+    expect(parsed.error).toBe('projectPath must be a string');
+    expect(mockAnalyzeProject).not.toHaveBeenCalled();
   });
 });
