@@ -9,8 +9,7 @@
 import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Variables } from '@modelcontextprotocol/sdk/shared/uriTemplate.js';
 import { AnalysisEngine } from '../core/analysisEngine.js';
-
-type ResourceResponse = { contents: Array<{ uri: string; mimeType: string; text: string }> };
+import { ResourceResponse } from '../types/index.js';
 
 /**
  * Build a resource error response for a given URI and error message.
