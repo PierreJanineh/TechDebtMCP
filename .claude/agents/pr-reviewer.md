@@ -79,11 +79,13 @@ git config user.email "GH-LLM-Bot@pierrejanineh.com"
 ln -sf /Users/pierrejanineh/Documents/GitHub.nosync/TechDebtMCP/node_modules ./node_modules 2>/dev/null || true
 ```
 
-**Token generation** — generate a fresh token before each batch of GitHub API calls (tokens expire after ~10 minutes):
+**Token generation** — generate a fresh token before each batch of GitHub API calls (tokens expire after ~10 minutes). Save to a temp file so it survives across Bash calls:
 
 ```bash
-export GH_TOKEN_PR=$(gh token generate --app-id 3142928 --installation-id 117825060 --key /Users/pierrejanineh/Documents/GitHub.nosync/TechDebtMCP/.github-app.pem 2>&1 | jq -r '.token')
+gh token generate --app-id 3142928 --installation-id 117825060 --key /Users/pierrejanineh/Documents/GitHub.nosync/TechDebtMCP/.github-app.pem 2>&1 | jq -r '.token' > /tmp/techdebt_gh_token
 ```
+
+Use it in API calls as: `GH_TOKEN=$(cat /tmp/techdebt_gh_token) gh api ...`
 
 ## Workflow
 
@@ -192,13 +194,13 @@ If the MCP tool is unavailable, skip this step — it can be done manually.
 Regenerate the token before replying (in case it expired during implementation):
 
 ```bash
-export GH_TOKEN_PR=$(gh token generate --app-id 3142928 --installation-id 117825060 --key /Users/pierrejanineh/Documents/GitHub.nosync/TechDebtMCP/.github-app.pem 2>&1 | jq -r '.token')
+gh token generate --app-id 3142928 --installation-id 117825060 --key /Users/pierrejanineh/Documents/GitHub.nosync/TechDebtMCP/.github-app.pem 2>&1 | jq -r '.token' > /tmp/techdebt_gh_token
 ```
 
 Reply to every thread, whether you made changes or not:
 
 ```bash
-GH_TOKEN=$GH_TOKEN_PR gh api repos/PierreJanineh/TechDebtMCP/pulls/<number>/comments \
+GH_TOKEN=$(cat /tmp/techdebt_gh_token) gh api repos/PierreJanineh/TechDebtMCP/pulls/<number>/comments \
   -f body='<your reply>' \
   -F in_reply_to=<commentDatabaseId>
 ```
@@ -215,7 +217,7 @@ Keep replies concise and technical. No filler. No performative agreement ("Great
 **Only resolve AFTER replying to every thread.** Never resolve without either fixing the code or explaining why no fix is needed.
 
 ```bash
-GH_TOKEN=$GH_TOKEN_PR gh api graphql -f query='mutation {
+GH_TOKEN=$(cat /tmp/techdebt_gh_token) gh api graphql -f query='mutation {
   resolveReviewThread(input: {threadId: "<threadId>"}) {
     thread { isResolved }
   }

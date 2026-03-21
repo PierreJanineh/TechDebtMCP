@@ -71,11 +71,13 @@ git config user.email "GH-LLM-Bot@pierrejanineh.com"
 ln -sf /Users/pierrejanineh/Documents/GitHub.nosync/TechDebtMCP/node_modules ./node_modules 2>/dev/null || true
 ```
 
-**Token generation** — generate a fresh token before each batch of GitHub API calls (tokens expire after ~10 minutes):
+**Token generation** — generate a fresh token before each batch of GitHub API calls (tokens expire after ~10 minutes). Save to a temp file so it survives across Bash calls:
 
 ```bash
-export GH_TOKEN_PR=$(gh token generate --app-id 3142928 --installation-id 117825060 --key /Users/pierrejanineh/Documents/GitHub.nosync/TechDebtMCP/.github-app.pem 2>&1 | jq -r '.token')
+gh token generate --app-id 3142928 --installation-id 117825060 --key /Users/pierrejanineh/Documents/GitHub.nosync/TechDebtMCP/.github-app.pem 2>&1 | jq -r '.token' > /tmp/techdebt_gh_token
 ```
+
+Use it in API calls as: `GH_TOKEN=$(cat /tmp/techdebt_gh_token) gh api ...`
 
 ## Workflow
 
@@ -123,7 +125,7 @@ EOF
 Regenerate the token before creating the PR (in case it expired during implementation):
 
 ```bash
-export GH_TOKEN_PR=$(gh token generate --app-id 3142928 --installation-id 117825060 --key /Users/pierrejanineh/Documents/GitHub.nosync/TechDebtMCP/.github-app.pem 2>&1 | jq -r '.token')
+gh token generate --app-id 3142928 --installation-id 117825060 --key /Users/pierrejanineh/Documents/GitHub.nosync/TechDebtMCP/.github-app.pem 2>&1 | jq -r '.token' > /tmp/techdebt_gh_token
 ```
 
 Push with the inherited token, create PR with the app token:
@@ -131,7 +133,7 @@ Push with the inherited token, create PR with the app token:
 ```bash
 git push -u origin <branch-name>
 
-GH_TOKEN=$GH_TOKEN_PR gh pr create \
+GH_TOKEN=$(cat /tmp/techdebt_gh_token) gh pr create \
   --base develop \
   --title "<conventional-commit-style title>" \
   --body "$(cat <<'EOF'
@@ -152,7 +154,7 @@ EOF
 ### 6. Resolve Any Review Threads (if applicable)
 
 ```bash
-GH_TOKEN=$GH_TOKEN_PR gh api graphql -f query='mutation { resolveReviewThread(input: {threadId: "<id>"}) { thread { isResolved } } }'
+GH_TOKEN=$(cat /tmp/techdebt_gh_token) gh api graphql -f query='mutation { resolveReviewThread(input: {threadId: "<id>"}) { thread { isResolved } } }'
 ```
 
 ## Quality Standards
