@@ -78,7 +78,7 @@ Copilot **must** check documentation consistency on every PR. **Do not approve**
 - A new analyzer or dependency parser is added but not reflected in the architecture docs
 - A phase issue is closed but `ROADMAP.md` still shows it as pending
 - A public API signature changes but JSDoc or README examples are stale
-- `CHANGELOG.md` is missing an entry when `package.json` version is bumped or a `vX.X.X` Git tag is introduced
+- `CHANGELOG.md` is missing an entry when `package.json` version is bumped (the only detectable release signal in a PR diff; Git tags are not part of the changeset and cannot be checked here)
 
 ### Review Steps
 
