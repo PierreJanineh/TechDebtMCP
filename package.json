@@ -14,7 +14,8 @@
     "watch": "tsc --watch",
     "test": "jest",
     "lint": "eslint src/**/*.ts",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "webhook": "PROJECT_ROOT=$(pwd) node /Users/pierrejanineh/Documents/GitHub.nosync/pr-automation/scripts/webhook-listener.mjs"
   },
   "keywords": [
     "mcp",
