@@ -160,6 +160,17 @@ try {
       );
     });
 
+    it('does not flag multi-line catch block with content on the opening brace line', async () => {
+      const code = `
+try {
+  DoSomething();
+} catch (Exception ex) { logger.LogError(ex);
+}
+      `;
+      const result = await analyzer.analyze('test.cs', code);
+      expect(result.issues.some(i => i.rule === 'empty-catch')).toBe(false);
+    });
+
     it('does not produce false negative for empty catch followed by finally on same closing line', async () => {
       const code = `
 try {

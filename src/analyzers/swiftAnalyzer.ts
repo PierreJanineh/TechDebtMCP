@@ -154,10 +154,10 @@ export class SwiftAnalyzer extends BaseAnalyzer {
       // Match force unwrap but exclude != and !== and comments
       if (line.trim().startsWith('//')) continue;
 
-      // techdebt-ignore-start non-null-assertion
       // Match patterns like variable! or expression! but not as! or try!
-      // techdebt-ignore-end non-null-assertion
+      // techdebt-ignore-start non-null-assertion
       const matches = line.match(/\w+!(?:\.|[\s,);}\]]|$)/g);
+      // techdebt-ignore-end non-null-assertion
       if (matches) {
         // Filter out common false positives
         const realMatches = matches.filter(m =>

@@ -165,7 +165,7 @@ export class CSharpAnalyzer extends BaseAnalyzer {
    * Handles a block comment followed by real code (e.g. "comment then logger.LogError")
    * where checking only startsWith would cause a false positive.
    */
-  private hasTrivialContent(inner: string): boolean {
+  private hasNonTrivialContent(inner: string): boolean {
     let remaining = inner;
     while (remaining.length > 0) {
       if (remaining.startsWith('//')) return false;
@@ -206,8 +206,13 @@ export class CSharpAnalyzer extends BaseAnalyzer {
         // Single-line catch block: inspect the content between the braces.
         if (braceCount === 0) {
           const inner = catchBodyStr.slice(1, catchBodyStr.lastIndexOf('}')).trim();
-          return this.hasTrivialContent(inner);
+          return this.hasNonTrivialContent(inner);
         }
+
+        // Multi-line catch block: also check for content after the opening `{`
+        // on the same line (e.g. `catch (...) { logger.LogError(ex);`).
+        const afterOpen = catchBodyStr.slice(1).trim();
+        if (this.hasNonTrivialContent(afterOpen)) return true;
       } else {
         // Process closes (`}`) before opens (`{`) to detect when the catch block
         // closes on this line even if another block opens on the same line
