@@ -1,5 +1,5 @@
 import { TechDebtIssue, TechDebtConfig } from '../types/index.js';
-import { BaseAnalyzer } from './baseAnalyzer.js';
+import { BaseAnalyzer, buildBlockSuppressionMap } from './baseAnalyzer.js';
 
 /**
  * TypeScript-specific analyzer
@@ -128,8 +128,12 @@ export class TypeScriptAnalyzer extends BaseAnalyzer {
   private checkNonNullAssertions(filePath: string, content: string): TechDebtIssue[] {
     const issues: TechDebtIssue[] = [];
     const lines = content.split('\n');
+    const blockMap = buildBlockSuppressionMap(lines);
 
     for (let i = 0; i < lines.length; i++) {
+      if (this.isLineSuppressed(lines, i, 'non-null-assertion', blockMap)) {
+        continue;
+      }
       const line = lines[i];
       // Match non-null assertions but exclude !== and !=
       const matches = line.match(/\w+!(?:\.|\[|;|,|\)|\s|$)/g);

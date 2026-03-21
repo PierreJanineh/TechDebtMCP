@@ -23,7 +23,7 @@ const SUPPRESSION_BLOCK_END = /^\s*(?:\/\/|#)\s*techdebt-ignore-end(?:\s+(\S+))?
  * Supports rule-specific blocks: only lines for the matching rule are suppressed.
  * Returns a Map from line index to the set of suppressed rules (empty string = all).
  */
-function buildBlockSuppressionMap(lines: string[]): Map<number, Set<string>> {
+export function buildBlockSuppressionMap(lines: string[]): Map<number, Set<string>> {
   const map = new Map<number, Set<string>>();
   const openBlocks: string[] = []; // stack of rule names ("" = blanket)
 

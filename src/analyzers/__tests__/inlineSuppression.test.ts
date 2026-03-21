@@ -269,4 +269,58 @@ describe('inline suppression (techdebt-ignore-next-line)', () => {
       expect(debuggerIssues[1].line).toBe(5);
     });
   });
+
+  describe('non-null-assertion block suppression (checkNonNullAssertions bespoke path)', () => {
+    it('suppresses non-null assertions within a rule-specific block', async () => {
+      const code = [
+        'const a = foo!.bar;',
+        '// techdebt-ignore-start non-null-assertion',
+        'const b = foo!.bar;',
+        'const c = baz!.qux;',
+        '// techdebt-ignore-end non-null-assertion',
+        'const d = foo!.bar;',
+      ].join('\n');
+
+      const analyzer = new TypeScriptAnalyzer({});
+      const result = await analyzer.analyze('src/foo.ts', code);
+      const nonNullIssues = result.issues.filter(i => i.rule === 'non-null-assertion');
+      // Lines 1 and 6 are outside the block — both should be reported
+      expect(nonNullIssues).toHaveLength(2);
+      expect(nonNullIssues[0].line).toBe(1);
+      expect(nonNullIssues[1].line).toBe(6);
+    });
+
+    it('suppresses all non-null assertions within a blanket block', async () => {
+      const code = [
+        '// techdebt-ignore-start',
+        'const x = foo!.bar;',
+        'const y = baz!.qux;',
+        '// techdebt-ignore-end',
+        'const z = foo!.bar;',
+      ].join('\n');
+
+      const analyzer = new TypeScriptAnalyzer({});
+      const result = await analyzer.analyze('src/foo.ts', code);
+      const nonNullIssues = result.issues.filter(i => i.rule === 'non-null-assertion');
+      // Only line 5 is outside the block
+      expect(nonNullIssues).toHaveLength(1);
+      expect(nonNullIssues[0].line).toBe(5);
+    });
+
+    it('does not suppress non-null assertions outside the block', async () => {
+      const code = [
+        'const a = foo!.bar;',
+        '// techdebt-ignore-start non-null-assertion',
+        '// techdebt-ignore-end non-null-assertion',
+        'const b = baz!.qux;',
+      ].join('\n');
+
+      const analyzer = new TypeScriptAnalyzer({});
+      const result = await analyzer.analyze('src/foo.ts', code);
+      const nonNullIssues = result.issues.filter(i => i.rule === 'non-null-assertion');
+      expect(nonNullIssues).toHaveLength(2);
+      expect(nonNullIssues[0].line).toBe(1);
+      expect(nonNullIssues[1].line).toBe(4);
+    });
+  });
 });
