@@ -142,13 +142,17 @@ export class CustomRulesEngine {
     regex.lastIndex = 0;
 
     while ((match = regex.exec(line)) !== null) {
-      issues.push(this.buildIssue(filePath, line, lineNum, match.index, `${lineNum}-${matchIndex}`, pattern));
-      matchIndex++;
-      // Guard against infinite loops: zero-length matches don't advance lastIndex in all runtimes.
-      // Manually advance to ensure progress when the match consumed no characters.
+      // Guard against infinite loops and noisy reports: zero-length matches don't advance
+      // lastIndex in all runtimes and would emit one issue per character position.
+      // Skip issue emission and advance manually to ensure forward progress.
       if (match[0].length === 0) {
         regex.lastIndex++;
+        continue;
       }
+      issues.push(
+        this.buildIssue(filePath, line, lineNum, match.index, `${lineNum}-${matchIndex}`, pattern)
+      );
+      matchIndex++;
     }
 
     return issues;

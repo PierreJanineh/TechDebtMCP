@@ -303,7 +303,7 @@ console.log("test3");`;
   });
 
   describe('Zero-length match guard', () => {
-    it('terminates and returns bounded results for a pattern that can match empty strings (e.g. .*)', () => {
+    it('terminates and emits one issue per non-empty match for patterns like .*', () => {
       const pattern: CustomPattern = {
         id: 'empty-match-rule',
         pattern: '.*',
@@ -314,13 +314,13 @@ console.log("test3");`;
 
       engine.addRule(pattern);
       const code = 'hello world';
-      // Should complete without hanging and return a finite number of issues
+      // .* matches the full line once (non-empty), then an empty string at end-of-line.
+      // The zero-length match guard skips the empty match, so exactly 1 issue per line.
       const issues = engine.executeRules('test.ts', code);
-      expect(issues.length).toBeGreaterThan(0);
-      expect(issues.length).toBeLessThan(100);
+      expect(issues.length).toBe(1);
     });
 
-    it('terminates for a non-capturing empty-string pattern (?:) with global flag', () => {
+    it('emits no issues for a pure zero-length pattern (?:) with global flag', () => {
       const pattern: CustomPattern = {
         id: 'empty-group-rule',
         pattern: '(?:)',
@@ -332,10 +332,9 @@ console.log("test3");`;
 
       engine.addRule(pattern);
       const code = 'abc';
-      // Should complete without hanging
+      // Every match is zero-length, so all are skipped — no issues emitted, no infinite loop.
       const issues = engine.executeRules('test.ts', code);
-      expect(issues.length).toBeGreaterThanOrEqual(0);
-      expect(issues.length).toBeLessThan(1000);
+      expect(issues.length).toBe(0);
     });
   });
 
