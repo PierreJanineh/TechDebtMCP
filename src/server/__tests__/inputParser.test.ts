@@ -175,8 +175,8 @@ describe('inputParser', () => {
     });
   });
 
-  // ---- numeric edge cases (optionalNumber) ----
-  describe('numeric edge cases', () => {
+  // ---- numeric edge cases (optionalNumber and optionalPositiveInteger) ----
+  describe('numeric edge cases (optionalNumber and optionalPositiveInteger)', () => {
     it('throws McpError for NaN developmentTime', () => {
       expect(() =>
         parseGetSqaleMetricsInput({ path: '/p', developmentTime: NaN }),
@@ -195,14 +195,34 @@ describe('inputParser', () => {
       ).toThrow(McpError);
     });
 
-    it('accepts 0 as a valid finite number for limit', () => {
-      const result = parseGetRecommendationsInput({ path: '/p', limit: 0 });
-      expect(result.limit).toBe(0);
+    it('throws McpError for limit of 0 (must be >= 1)', () => {
+      expect(() =>
+        parseGetRecommendationsInput({ path: '/p', limit: 0 }),
+      ).toThrow(McpError);
     });
 
-    it('accepts negative numbers as valid finite numbers (callers enforce domain constraints)', () => {
-      const result = parseGetRecommendationsInput({ path: '/p', limit: -1 });
-      expect(result.limit).toBe(-1);
+    it('throws McpError for negative limit', () => {
+      expect(() =>
+        parseGetRecommendationsInput({ path: '/p', limit: -1 }),
+      ).toThrow(McpError);
+    });
+
+    it('throws McpError for non-integer limit', () => {
+      expect(() =>
+        parseGetRecommendationsInput({ path: '/p', limit: 2.5 }),
+      ).toThrow(McpError);
+    });
+
+    it('throws McpError for non-integer maxFiles', () => {
+      expect(() =>
+        parseAnalyzeProjectInput({ path: '/p', maxFiles: 1.5 }),
+      ).toThrow(McpError);
+    });
+
+    it('throws McpError for maxFiles of 0', () => {
+      expect(() =>
+        parseAnalyzeProjectInput({ path: '/p', maxFiles: 0 }),
+      ).toThrow(McpError);
     });
   });
 
