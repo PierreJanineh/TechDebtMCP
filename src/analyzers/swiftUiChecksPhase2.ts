@@ -211,12 +211,23 @@ export function checkRetainCyclesInClosures(filePath: string, lines: string[]): 
 
       // Skip when the enclosing type is a struct-based SwiftUI view: [weak self] is not
       // valid in value types and the capture is not a retain cycle.
-      const lookback = lines.slice(Math.max(0, i - 30), i).join('\n');
-      const lastStructIdx = lookback.lastIndexOf('struct ');
-      const lastClassIdx = lookback.lastIndexOf('class ');
+      // Walk backwards to the nearest enclosing struct/class declaration to handle
+      // generic views (e.g. struct MyView<Content>: View) and large views where
+      // a fixed 30-line lookback would miss the declaration.
+      let enclosingTypeLine: string | null = null;
+      let enclosingIsStruct = false;
+      for (let j = i - 1; j >= 0; j--) {
+        const candidate = lines[j];
+        if (/\b(struct|class)\b/.test(candidate)) {
+          enclosingTypeLine = candidate;
+          enclosingIsStruct = /\bstruct\b/.test(candidate);
+          break;
+        }
+      }
       const isInsideStructView =
-        lastStructIdx > lastClassIdx &&
-        /\bstruct\s+\w+\s*:[^{]*\bView\b/.test(lookback.slice(lastStructIdx));
+        enclosingIsStruct &&
+        enclosingTypeLine !== null &&
+        /\bstruct\s+\w+(?:\s*<[^>{]*>)?\s*:[^{]*\bView\b/.test(enclosingTypeLine);
 
       if (isInsideStructView) continue;
 

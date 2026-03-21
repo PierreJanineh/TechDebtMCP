@@ -14,7 +14,7 @@ export const TOOL_DEFINITIONS = [
         languages: { type: 'array', items: { type: 'string' }, description: 'Optional: specific languages to analyze' },
         categories: { type: 'array', items: { type: 'string' }, description: 'Optional: filter by debt categories' },
         severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'], description: 'Optional: minimum severity level' },
-        maxFiles: { type: 'number', description: 'Optional: maximum number of files to analyze' },
+        maxFiles: { type: 'integer', minimum: 1, description: 'Optional: maximum number of files to analyze (minimum: 1)' },
       },
       required: ['path'],
     },
@@ -68,7 +68,7 @@ export const TOOL_DEFINITIONS = [
       type: 'object',
       properties: {
         path: { type: 'string', description: 'Absolute path to the project root directory' },
-        limit: { type: 'number', description: 'Optional: maximum number of recommendations to return (default: 5, minimum: 1)' },
+        limit: { type: 'integer', minimum: 1, description: 'Optional: maximum number of recommendations to return (default: 5, minimum: 1)' },
       },
       required: ['path'],
     },
