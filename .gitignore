@@ -10,5 +10,4 @@ coverage/
 *.tsbuildinfo
 .idea/
 .claude/*
-!.claude/settings.json
 !.claude/agents/

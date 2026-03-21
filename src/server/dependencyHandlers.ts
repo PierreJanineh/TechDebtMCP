@@ -8,16 +8,21 @@ import { getRelativePath, readFile, fileExists } from '../utils/fileUtils.js';
 import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ParsedDependency, PackageManager } from '../types/index.js';
+import { requireRecord } from './argValidation.js';
 
 /**
  * Handle check_dependencies tool call
  */
-export async function handleCheckDependencies(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
-  if (typeof args.path !== 'string') {
+export async function handleCheckDependencies(args: unknown): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const a = requireRecord(args);
+  if (typeof a.path !== 'string') {
     throw new McpError(ErrorCode.InvalidParams, 'Missing or invalid required parameter: path (must be a string)');
   }
-  const projectPath = args.path;
-  const includeDev = args.includeDev !== false;
+  const projectPath = a.path;
+  if (a.includeDev !== undefined && typeof a.includeDev !== 'boolean') {
+    throw new McpError(ErrorCode.InvalidParams, 'Invalid parameter: includeDev must be a boolean if provided');
+  }
+  const includeDev = a.includeDev !== false;
   await validateDirectoryPath(projectPath);
 
   const packageFileNames = getAllPackageFileNames();
@@ -34,12 +39,16 @@ export async function handleCheckDependencies(args: Record<string, unknown>): Pr
 /**
  * Generate an offline vulnerability/dependency report
  */
-export async function handleGetVulnerabilityReport(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
-  if (typeof args.path !== 'string') {
+export async function handleGetVulnerabilityReport(args: unknown): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const a = requireRecord(args);
+  if (typeof a.path !== 'string') {
     throw new McpError(ErrorCode.InvalidParams, 'Missing or invalid required parameter: path (must be a string)');
   }
-  const projectPath = args.path;
-  const includeDev = args.includeDev === true; // default false for vulnerability reports
+  const projectPath = a.path;
+  if (a.includeDev !== undefined && typeof a.includeDev !== 'boolean') {
+    throw new McpError(ErrorCode.InvalidParams, 'Invalid parameter: includeDev must be a boolean if provided');
+  }
+  const includeDev = a.includeDev === true; // default false for vulnerability reports
   await validateDirectoryPath(projectPath);
 
   const packageFileNames = getAllPackageFileNames();
