@@ -1,51 +1,8 @@
 {
-  "permissions": {
-    "defaultMode": "dontAsk",
-    "allow": [
-      "Bash(git:*)",
-      "Bash(gh:*)",
-      "Bash(GH_TOKEN=:*)",
-      "Bash(export:*)",
-      "Bash(ln:*)",
-      "Bash(npm:*)",
-      "Bash(npx:*)",
-      "Bash(jq:*)",
-      "Bash(touch:*)",
-      "Bash(rm:*)",
-      "Edit",
-      "Write",
-      "mcp__plugin_github_github__request_copilot_review"
-    ]
-  },
   "sandbox": {
     "filesystem": {
       "allowWrite": ["/tmp"],
       "allowRead": ["/tmp"]
     }
-  },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "COMMAND=$(echo $TOOL_INPUT | jq -r '.command // empty'); if echo \"$COMMAND\" | grep -qE 'git push.* develop$'; then if [ -f /tmp/.techdebt-review-done ]; then rm -f /tmp/.techdebt-review-done; exit 0; else echo 'BLOCKED: Run /superpowers:requesting-code-review before pushing directly to develop. After the review passes, create /tmp/.techdebt-review-done and retry.'; exit 2; fi; fi"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "FILE=$(echo $TOOL_INPUT | jq -r '.file_path // .path // empty'); if echo \"$FILE\" | grep -qE '.ts$' && ! echo \"$FILE\" | grep -qE '.test.ts$'; then TEST_DIR=$(dirname \"$FILE\")/__tests__/$(basename \"$FILE\" .ts).test.ts; if [ -f \"$TEST_DIR\" ]; then cd /Users/pierrejanineh/Documents/GitHub.nosync/TechDebtMCP && npx jest --bail \"$TEST_DIR\" 2>&1 | tail -5; fi; fi",
-            "timeout": 30
-          }
-        ]
-      }
-    ]
   }
 }
