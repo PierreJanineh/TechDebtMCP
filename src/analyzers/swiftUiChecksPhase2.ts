@@ -21,7 +21,7 @@ export function checkMissingIdModifier(filePath: string, lines: string[]): TechD
     if (line.includes('ForEach(') && (line.includes('items') || line.includes('data'))) {
       const nextLines = lines.slice(i, Math.min(lines.length, i + 3)).join('\n');
 
-      if (!nextLines.includes('.id(') && !line.includes('id: ')) {
+      if (!nextLines.includes('.id(') && !/\bid\s*:/.test(nextLines)) {
         issues.push({
           id: `missing-id-${filePath}-${i + 1}`,
           category: 'code-quality',
@@ -124,8 +124,16 @@ export function checkNavigationLinkIssues(filePath: string, lines: string[]): Te
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (line.includes('NavigationLink(') && line.includes('destination:')) {
-      if (!line.includes('isActive') && !line.includes('tag:')) {
+    if (line.includes('NavigationLink(')) {
+      const lookaheadEnd = Math.min(lines.length, i + 5);
+      const navContext = lines.slice(i, lookaheadEnd).join('\n');
+
+      if (
+        navContext.includes('destination:') &&
+        !navContext.includes('isActive:') &&
+        !navContext.includes('tag:') &&
+        !navContext.includes('selection:')
+      ) {
         issues.push({
           id: `navigationlink-deprecated-${filePath}-${i + 1}`,
           category: 'code-quality',

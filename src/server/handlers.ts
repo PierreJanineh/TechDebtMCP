@@ -105,13 +105,31 @@ async function handleAnalyzeProject(
   if (!path || !path.trim()) {
     throw new McpError(ErrorCode.InvalidParams, "Parameter 'path' is required and must be a non-empty string.");
   }
+  const allowedLanguages: SupportedLanguage[] = [
+    'javascript', 'typescript', 'python', 'java', 'swift', 'kotlin',
+    'objectivec', 'cpp', 'c', 'csharp', 'go', 'rust', 'ruby', 'php',
+  ];
   const languages = Array.isArray(args.languages)
-    ? (args.languages as SupportedLanguage[])
+    ? (args.languages as string[]).filter(l => allowedLanguages.includes(l as SupportedLanguage)) as SupportedLanguage[]
     : undefined;
+
+  const allowedCategories: DebtCategory[] = [
+    'dependency', 'code-quality', 'architecture', 'documentation',
+    'testing', 'security', 'performance', 'maintainability',
+  ];
   const categories = Array.isArray(args.categories)
-    ? (args.categories as DebtCategory[])
+    ? (args.categories as string[]).filter(c => allowedCategories.includes(c as DebtCategory)) as DebtCategory[]
     : undefined;
-  const severity = getString(args, 'severity') as Severity | undefined;
+
+  const allowedSeverities: Severity[] = ['low', 'medium', 'high', 'critical'];
+  const severityRaw = getString(args, 'severity');
+  if (severityRaw !== undefined && !allowedSeverities.includes(severityRaw as Severity)) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      `Invalid 'severity' parameter. Expected one of: ${allowedSeverities.join(', ')}.`
+    );
+  }
+  const severity = severityRaw as Severity | undefined;
   const maxFiles = getNumber(args, 'maxFiles');
 
   const report = await engine.analyzeProject({
@@ -374,14 +392,50 @@ async function handleAddCustomRule(
   customRulesEngine: CustomRulesEngine,
   args: Record<string, unknown>
 ): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const { id, pattern, message, severity, category, suggestion, languages, flags } = args;
+  const { suggestion, languages, flags } = args;
+
+  const id = getString(args, 'id');
+  if (!id || !id.trim()) {
+    throw new McpError(ErrorCode.InvalidParams, "Parameter 'id' is required and must be a non-empty string.");
+  }
+  const pattern = getString(args, 'pattern');
+  if (!pattern || !pattern.trim()) {
+    throw new McpError(ErrorCode.InvalidParams, "Parameter 'pattern' is required and must be a non-empty string.");
+  }
+  const message = getString(args, 'message');
+  if (!message || !message.trim()) {
+    throw new McpError(ErrorCode.InvalidParams, "Parameter 'message' is required and must be a non-empty string.");
+  }
+
+  const allowedSeverities: Severity[] = ['low', 'medium', 'high', 'critical'];
+  const severityRaw = getString(args, 'severity');
+  if (!severityRaw || !allowedSeverities.includes(severityRaw as Severity)) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      `Invalid or missing 'severity' parameter. Expected one of: ${allowedSeverities.join(', ')}.`
+    );
+  }
+  const severity = severityRaw as Severity;
+
+  const allowedCategories: DebtCategory[] = [
+    'dependency', 'code-quality', 'architecture', 'documentation',
+    'testing', 'security', 'performance', 'maintainability',
+  ];
+  const categoryRaw = getString(args, 'category');
+  if (!categoryRaw || !allowedCategories.includes(categoryRaw as DebtCategory)) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      `Invalid or missing 'category' parameter. Expected one of: ${allowedCategories.join(', ')}.`
+    );
+  }
+  const category = categoryRaw as DebtCategory;
 
   const customPattern: CustomPattern = {
-    id: typeof id === 'string' ? id : '',
-    pattern: typeof pattern === 'string' ? pattern : '',
-    message: typeof message === 'string' ? message : '',
-    severity: severity as Severity,
-    category: category as DebtCategory,
+    id,
+    pattern,
+    message,
+    severity,
+    category,
     suggestion: typeof suggestion === 'string' ? suggestion : undefined,
     languages: Array.isArray(languages)
       ? (languages as SupportedLanguage[])
@@ -509,12 +563,48 @@ async function handleExecuteCustomRules(
 function handleValidateCustomPattern(
   args: Record<string, unknown>
 ): { content: Array<{ type: string; text: string }> } {
+  const id = getString(args, 'id');
+  if (!id || !id.trim()) {
+    throw new McpError(ErrorCode.InvalidParams, "Parameter 'id' is required and must be a non-empty string.");
+  }
+  const pattern = getString(args, 'pattern');
+  if (!pattern || !pattern.trim()) {
+    throw new McpError(ErrorCode.InvalidParams, "Parameter 'pattern' is required and must be a non-empty string.");
+  }
+  const message = getString(args, 'message');
+  if (!message || !message.trim()) {
+    throw new McpError(ErrorCode.InvalidParams, "Parameter 'message' is required and must be a non-empty string.");
+  }
+
+  const allowedSeverities: Severity[] = ['low', 'medium', 'high', 'critical'];
+  const severityRaw = getString(args, 'severity');
+  if (!severityRaw || !allowedSeverities.includes(severityRaw as Severity)) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      `Invalid or missing 'severity' parameter. Expected one of: ${allowedSeverities.join(', ')}.`
+    );
+  }
+  const severity = severityRaw as Severity;
+
+  const allowedCategories: DebtCategory[] = [
+    'dependency', 'code-quality', 'architecture', 'documentation',
+    'testing', 'security', 'performance', 'maintainability',
+  ];
+  const categoryRaw = getString(args, 'category');
+  if (!categoryRaw || !allowedCategories.includes(categoryRaw as DebtCategory)) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      `Invalid or missing 'category' parameter. Expected one of: ${allowedCategories.join(', ')}.`
+    );
+  }
+  const category = categoryRaw as DebtCategory;
+
   const customPattern: CustomPattern = {
-    id: typeof args.id === 'string' ? args.id : '',
-    pattern: typeof args.pattern === 'string' ? args.pattern : '',
-    message: typeof args.message === 'string' ? args.message : '',
-    severity: args.severity as Severity,
-    category: args.category as DebtCategory,
+    id,
+    pattern,
+    message,
+    severity,
+    category,
   };
 
   const validation = CustomRulesEngine.validatePattern(customPattern);
