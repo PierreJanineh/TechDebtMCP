@@ -15,7 +15,7 @@
     "test": "jest",
     "lint": "eslint src/**/*.ts",
     "prepare": "npm run build",
-    "webhook": "PROJECT_ROOT=$(pwd) node /Users/pierrejanineh/Documents/GitHub.nosync/pr-automation/scripts/webhook-listener.mjs"
+    "webhook": "PROJECT_ROOT=$(pwd) node \"$PR_AUTOMATION_ROOT/scripts/webhook-listener.mjs\""
   },
   "keywords": [
     "mcp",
