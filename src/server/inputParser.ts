@@ -5,7 +5,7 @@ import {
   Severity,
 } from '../types/index.js';
 import { LANGUAGE_CONFIGS } from '../config/languages.js';
-import { isRecord, requireRecord } from './argValidation.js';
+import { requireRecord } from './argValidation.js';
 
 /** Typed input for analyze_project tool */
 export interface AnalyzeProjectInput {
