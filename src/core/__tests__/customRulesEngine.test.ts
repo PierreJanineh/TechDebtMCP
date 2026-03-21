@@ -302,6 +302,42 @@ console.log("test3");`;
     });
   });
 
+  describe('Zero-length match guard', () => {
+    it('terminates and emits one issue per non-empty match for patterns like .*', () => {
+      const pattern: CustomPattern = {
+        id: 'empty-match-rule',
+        pattern: '.*',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Match anything',
+      };
+
+      engine.addRule(pattern);
+      const code = 'hello world';
+      // .* matches the full line once (non-empty), then an empty string at end-of-line.
+      // The zero-length match guard skips the empty match, so exactly 1 issue per line.
+      const issues = engine.executeRules('test.ts', code);
+      expect(issues.length).toBe(1);
+    });
+
+    it('emits no issues for a pure zero-length pattern (?:) with global flag', () => {
+      const pattern: CustomPattern = {
+        id: 'empty-group-rule',
+        pattern: '(?:)',
+        flags: 'g',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Empty non-capturing group',
+      };
+
+      engine.addRule(pattern);
+      const code = 'abc';
+      // Every match is zero-length, so all are skipped — no issues emitted, no infinite loop.
+      const issues = engine.executeRules('test.ts', code);
+      expect(issues.length).toBe(0);
+    });
+  });
+
   describe('Error Handling', () => {
     it('handles invalid regex gracefully', () => {
       const pattern: CustomPattern = {
