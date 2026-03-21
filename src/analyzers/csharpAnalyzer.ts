@@ -160,6 +160,11 @@ export class CSharpAnalyzer extends BaseAnalyzer {
 
   /**
    * Checks whether the catch block starting at line index `startIndex` has actual content.
+   *
+   * Single-line catch blocks (`catch (...) {}`) are handled explicitly: braces are
+   * counted only from the opening `{` of the catch block onward on the first line,
+   * preventing the `}` that closes the preceding try block from masking an empty
+   * single-line catch and avoiding scanning code from subsequent lines as catch body.
    */
   private catchBlockHasContent(lines: string[], startIndex: number): boolean {
     let j = startIndex;
@@ -167,11 +172,31 @@ export class CSharpAnalyzer extends BaseAnalyzer {
 
     while (j < lines.length) {
       const checkLine = lines[j];
-      braceCount += (checkLine.match(/{/g) || []).length;
-      braceCount -= (checkLine.match(/}/g) || []).length;
 
-      if (this.isNonTrivialContent(checkLine, j, startIndex)) return true;
-      if (braceCount === 0 && j > startIndex) break;
+      if (j === startIndex) {
+        // Only count braces from the opening `{` of the catch block onward.
+        const catchOpenIdx = checkLine.indexOf('{');
+        if (catchOpenIdx === -1) { j++; continue; }
+        const catchBodyStr = checkLine.slice(catchOpenIdx);
+        braceCount += (catchBodyStr.match(/{/g) || []).length;
+        braceCount -= (catchBodyStr.match(/}/g) || []).length;
+
+        // Single-line catch block: inspect the content between the braces.
+        if (braceCount === 0) {
+          const inner = catchBodyStr.slice(1, catchBodyStr.lastIndexOf('}')).trim();
+          return inner.length > 0 &&
+            !inner.startsWith('//') &&
+            !inner.startsWith('/*') &&
+            inner !== '{' &&
+            inner !== '}';
+        }
+      } else {
+        braceCount += (checkLine.match(/{/g) || []).length;
+        braceCount -= (checkLine.match(/}/g) || []).length;
+        if (this.isNonTrivialContent(checkLine, j, startIndex)) return true;
+        if (braceCount === 0) break;
+      }
+
       j++;
     }
 

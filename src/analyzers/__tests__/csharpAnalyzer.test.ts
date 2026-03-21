@@ -89,13 +89,48 @@ try {
       expect(result.issues.some(i => i.rule === 'empty-catch')).toBe(false);
     });
 
-    it('does not flag catch block containing only a comment', async () => {
+    it('flags catch block containing only a comment', async () => {
       const code = `
 try {
   DoSomething();
 } catch (Exception ex) {
   // intentionally ignored
 }
+      `;
+      const result = await analyzer.analyze('test.cs', code);
+      expect(result.issues).toContainEqual(
+        expect.objectContaining({ rule: 'empty-catch' })
+      );
+    });
+
+    it('detects single-line empty catch block', async () => {
+      const code = `
+try {
+  DoSomething();
+} catch (Exception ex) {}
+      `;
+      const result = await analyzer.analyze('test.cs', code);
+      expect(result.issues).toContainEqual(
+        expect.objectContaining({ rule: 'empty-catch' })
+      );
+    });
+
+    it('does not flag single-line catch block with content', async () => {
+      const code = `
+try {
+  DoSomething();
+} catch (Exception ex) { logger.LogError(ex); }
+      `;
+      const result = await analyzer.analyze('test.cs', code);
+      expect(result.issues.some(i => i.rule === 'empty-catch')).toBe(false);
+    });
+
+    it('does not produce false negative due to code after single-line empty catch', async () => {
+      const code = `
+try {
+  DoSomething();
+} catch (Exception ex) {}
+logger.LogInfo("after");
       `;
       const result = await analyzer.analyze('test.cs', code);
       expect(result.issues).toContainEqual(
