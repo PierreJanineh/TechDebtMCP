@@ -33,7 +33,7 @@ const mockStat = stat as jest.MockedFunction<typeof stat>;
 
 /** Helper to build a mock parser instance. */
 function makeMockParser(
-  deps: Array<{ name: string; version: string; isDev: boolean; source: string }>,
+  deps: ParsedDependency[],
   ecosystem = 'npm'
 ) {
   return {

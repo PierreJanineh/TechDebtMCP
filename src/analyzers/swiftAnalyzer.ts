@@ -19,6 +19,7 @@ export class SwiftAnalyzer extends BaseAnalyzer {
     issues.push(...this.checkForceUnwrap(filePath, content));
 
     // techdebt-ignore-start non-null-assertion
+    // Suppress TS non-null assertion false positives: Swift syntax (as!, try!) contains '!' but is not a TS non-null assertion
     // Force cast (as!)
     issues.push(...this.checkPattern(filePath, content, /\bas!\s*\w+/g, {
       category: 'code-quality',

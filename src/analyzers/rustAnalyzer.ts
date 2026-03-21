@@ -76,6 +76,7 @@ export class RustAnalyzer extends BaseAnalyzer {
     }));
 
     // techdebt-ignore-start non-null-assertion
+    // Suppress TS non-null assertion false positives: Rust macros (panic!, println!, dbg!, etc.) contain '!' but are not TS non-null assertions
     // panic! macro
     issues.push(...this.checkPattern(filePath, content, /panic!\s*\(/g, {
       category: 'code-quality',
