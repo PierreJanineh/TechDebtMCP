@@ -80,11 +80,11 @@ export function attachHandlers(mcpServer: McpServer): void {
         case 'validate_custom_pattern':
           return handleValidateCustomPattern(args);
         case 'check_dependencies':
-          return await handleCheckDependencies(args as Record<string, unknown>);
+          return await handleCheckDependencies(args);
         case 'validate_config':
-          return await handleValidateConfig(args as Record<string, unknown>);
+          return await handleValidateConfig(args);
         case 'get_vulnerability_report':
-          return await handleGetVulnerabilityReport(args as Record<string, unknown>);
+          return await handleGetVulnerabilityReport(args);
         default:
           throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
       }

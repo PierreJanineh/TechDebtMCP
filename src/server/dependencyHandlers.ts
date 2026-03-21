@@ -9,15 +9,38 @@ import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ParsedDependency, PackageManager } from '../types/index.js';
 
+/** Type guard: checks that a value is a plain, non-null, non-array object. */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return false;
+  }
+  const proto = Object.getPrototypeOf(value as object) as unknown;
+  return proto === Object.prototype || proto === null;
+}
+
+/**
+ * Assert that args is a plain non-null, non-array object, throwing McpError(InvalidParams) if not.
+ */
+function requireRecord(args: unknown): Record<string, unknown> {
+  if (!isRecord(args)) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      'Tool arguments must be a plain object',
+    );
+  }
+  return args;
+}
+
 /**
  * Handle check_dependencies tool call
  */
-export async function handleCheckDependencies(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
-  if (typeof args.path !== 'string') {
+export async function handleCheckDependencies(args: unknown): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const a = requireRecord(args);
+  if (typeof a.path !== 'string') {
     throw new McpError(ErrorCode.InvalidParams, 'Missing or invalid required parameter: path (must be a string)');
   }
-  const projectPath = args.path;
-  const includeDev = args.includeDev !== false;
+  const projectPath = a.path;
+  const includeDev = a.includeDev !== false;
   await validateDirectoryPath(projectPath);
 
   const packageFileNames = getAllPackageFileNames();
@@ -34,12 +57,13 @@ export async function handleCheckDependencies(args: Record<string, unknown>): Pr
 /**
  * Generate an offline vulnerability/dependency report
  */
-export async function handleGetVulnerabilityReport(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
-  if (typeof args.path !== 'string') {
+export async function handleGetVulnerabilityReport(args: unknown): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const a = requireRecord(args);
+  if (typeof a.path !== 'string') {
     throw new McpError(ErrorCode.InvalidParams, 'Missing or invalid required parameter: path (must be a string)');
   }
-  const projectPath = args.path;
-  const includeDev = args.includeDev === true; // default false for vulnerability reports
+  const projectPath = a.path;
+  const includeDev = a.includeDev === true; // default false for vulnerability reports
   await validateDirectoryPath(projectPath);
 
   const packageFileNames = getAllPackageFileNames();
