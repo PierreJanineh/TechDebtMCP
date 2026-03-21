@@ -19,6 +19,9 @@ export async function handleCheckDependencies(args: unknown): Promise<{ content:
     throw new McpError(ErrorCode.InvalidParams, 'Missing or invalid required parameter: path (must be a string)');
   }
   const projectPath = a.path;
+  if (a.includeDev !== undefined && typeof a.includeDev !== 'boolean') {
+    throw new McpError(ErrorCode.InvalidParams, 'Invalid parameter: includeDev must be a boolean if provided');
+  }
   const includeDev = a.includeDev !== false;
   await validateDirectoryPath(projectPath);
 
@@ -42,6 +45,9 @@ export async function handleGetVulnerabilityReport(args: unknown): Promise<{ con
     throw new McpError(ErrorCode.InvalidParams, 'Missing or invalid required parameter: path (must be a string)');
   }
   const projectPath = a.path;
+  if (a.includeDev !== undefined && typeof a.includeDev !== 'boolean') {
+    throw new McpError(ErrorCode.InvalidParams, 'Invalid parameter: includeDev must be a boolean if provided');
+  }
   const includeDev = a.includeDev === true; // default false for vulnerability reports
   await validateDirectoryPath(projectPath);
 

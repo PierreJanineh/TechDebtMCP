@@ -433,7 +433,7 @@ async function handleExecuteCustomRules(
     throw new McpError(ErrorCode.InvalidParams, 'Could not read code from path or input');
   }
 
-  const filePath = path ?? 'inline-code';
+  const filePath = path || 'inline-code';
   const issues = customRulesEngine.executeRules(filePath, code, language);
   if (issues.length === 0) {
     return {
