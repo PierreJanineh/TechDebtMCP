@@ -159,22 +159,17 @@ These are **legitimate pattern definitions**, not actual code issues:
 
 ### File Length Issues
 
-1. **src/index.ts** - 883 lines (max: 500)
-   - Needs splitting into:
-     - `src/server/handlers.ts` (tool handlers)
-     - `src/server/setup.ts` (server configuration)
-     - `src/index.ts` (entry point only)
+1. ~~**src/index.ts** - 883 lines (max: 500)~~ ✅ **RESOLVED** — Split completed; `src/index.ts` is now ~18 lines. Handlers extracted to `src/server/handlers.ts`, setup to `src/server/setup.ts`.
 
 ### Deep Nesting Issues
 
-2. **src/index.ts:63** - 8 levels of nesting
+2. ~~**src/index.ts:63** - 8 levels of nesting~~ ✅ **RESOLVED** — File split completed; nesting no longer exists.
 3. ~~**src/core/customRulesEngine.ts:129** - 7 levels~~ ✅ **DONE** (PR #118)
 4. ~~**src/core/analysisEngine.ts:93** - 5 levels~~ ✅ **DONE** (PR #118)
 
 ### Non-null Assertions
 
-5. **src/index.ts:804, 809** - Using `!` operator
-   - Replace with optional chaining (`?.`) or proper null checks
+5. ~~**src/index.ts:804, 809** - Using `!` operator~~ ✅ **RESOLVED** — File split completed; those lines no longer exist.
 
 ### Other Issues
 
@@ -216,11 +211,7 @@ These are **legitimate pattern definitions**, not actual code issues:
    - Use early returns to reduce indentation
    - Target: Reduce to ≤4 nesting levels
 
-4. **Split src/index.ts** - Break into smaller modules
-   - Create `src/server/` directory
-   - Move handlers to `handlers.ts`
-   - Move setup to `setup.ts`
-   - Keep entry point minimal
+4. ~~**Split src/index.ts**~~ ✅ **DONE** — `src/server/` directory created; handlers in `handlers.ts`, setup in `setup.ts`, `index.ts` is now a minimal ~18-line entry point.
 
 ### Medium-term (Ongoing)
 
