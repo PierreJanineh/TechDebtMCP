@@ -138,14 +138,14 @@ function requireCategory(args: Record<string, unknown>, key: string): DebtCatego
 
 /**
  * Optionally narrow an array of strings to SupportedLanguage[].
- * Returns undefined if the field is absent; throws McpError for invalid entries.
+ * Returns undefined if the field is absent; throws McpError for null or invalid entries.
  */
 function optionalLanguages(
   args: Record<string, unknown>,
   key: string,
 ): SupportedLanguage[] | undefined {
   const value = args[key];
-  if (value === undefined || value === null) return undefined;
+  if (value === undefined) return undefined;
   if (!Array.isArray(value)) {
     throw new McpError(ErrorCode.InvalidParams, `${key} must be an array`);
   }
@@ -162,13 +162,14 @@ function optionalLanguages(
 
 /**
  * Optionally narrow an array of strings to DebtCategory[].
+ * Returns undefined if the field is absent; throws McpError for null or invalid entries.
  */
 function optionalCategories(
   args: Record<string, unknown>,
   key: string,
 ): DebtCategory[] | undefined {
   const value = args[key];
-  if (value === undefined || value === null) return undefined;
+  if (value === undefined) return undefined;
   if (!Array.isArray(value)) {
     throw new McpError(ErrorCode.InvalidParams, `${key} must be an array`);
   }
@@ -183,13 +184,13 @@ function optionalCategories(
   return value as DebtCategory[];
 }
 
-/** Optional Severity field — returns undefined if absent. */
+/** Optional Severity field — returns undefined if absent; throws McpError for null. */
 function optionalSeverity(
   args: Record<string, unknown>,
   key: string,
 ): Severity | undefined {
   const value = args[key];
-  if (value === undefined || value === null) return undefined;
+  if (value === undefined) return undefined;
   if (!VALID_SEVERITIES.includes(value as Severity)) {
     throw new McpError(
       ErrorCode.InvalidParams,
@@ -199,13 +200,13 @@ function optionalSeverity(
   return value as Severity;
 }
 
-/** Optional number field — returns undefined if absent. Rejects NaN and Infinity. */
+/** Optional number field — returns undefined if absent. Rejects null, NaN, and Infinity. */
 function optionalNumber(
   args: Record<string, unknown>,
   key: string,
 ): number | undefined {
   const value = args[key];
-  if (value === undefined || value === null) return undefined;
+  if (value === undefined) return undefined;
   if (typeof value !== 'number') {
     throw new McpError(ErrorCode.InvalidParams, `${key} must be a number`);
   }
@@ -215,13 +216,13 @@ function optionalNumber(
   return value;
 }
 
-/** Optional string field — returns undefined if absent. */
+/** Optional string field — returns undefined if absent; throws McpError for null. */
 function optionalString(
   args: Record<string, unknown>,
   key: string,
 ): string | undefined {
   const value = args[key];
-  if (value === undefined || value === null) return undefined;
+  if (value === undefined) return undefined;
   if (typeof value !== 'string') {
     throw new McpError(ErrorCode.InvalidParams, `${key} must be a string`);
   }

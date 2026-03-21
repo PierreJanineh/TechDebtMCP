@@ -152,6 +152,29 @@ describe('inputParser', () => {
     });
   });
 
+  // ---- null rejection for optional fields ----
+  describe('null rejection for optional fields', () => {
+    it('throws McpError when optionalString field is null', () => {
+      expect(() => parseExecuteCustomRulesInput({ path: null })).toThrow(McpError);
+    });
+
+    it('throws McpError when optionalNumber field is null', () => {
+      expect(() => parseGetRecommendationsInput({ path: '/p', limit: null })).toThrow(McpError);
+    });
+
+    it('throws McpError when optionalLanguages field is null', () => {
+      expect(() => parseAnalyzeProjectInput({ path: '/p', languages: null })).toThrow(McpError);
+    });
+
+    it('throws McpError when optionalCategories field is null', () => {
+      expect(() => parseAnalyzeProjectInput({ path: '/p', categories: null })).toThrow(McpError);
+    });
+
+    it('throws McpError when optionalSeverity field is null', () => {
+      expect(() => parseAnalyzeProjectInput({ path: '/p', severity: null })).toThrow(McpError);
+    });
+  });
+
   // ---- numeric edge cases (optionalNumber) ----
   describe('numeric edge cases', () => {
     it('throws McpError for NaN developmentTime', () => {
