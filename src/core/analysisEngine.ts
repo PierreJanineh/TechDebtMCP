@@ -80,37 +80,13 @@ export class AnalysisEngine {
 
     for (const file of filesToAnalyze) {
       const lang = detectLanguageFromExtension(file);
-      if (!lang || !targetLanguages.has(lang)) {
-        continue;
-      }
+      if (!lang || !targetLanguages.has(lang)) continue;
 
-      try {
-        const result = await analyzeFile(file, mergedConfig);
+      const fileIssues = await this.analyzeFileSafe(file, projectPath, mergedConfig, options);
+      if (fileIssues === null) continue;
 
-        // Convert absolute paths to relative
-        const relativePath = getRelativePath(projectPath, file);
-        const issues = result.issues.map(issue => ({
-          ...issue,
-          file: relativePath,
-        }));
-
-        // Filter by severity if specified
-        const { severity, categories } = options;
-        const filteredIssues = severity
-          ? issues.filter(i => this.severityMeetsThreshold(i.severity, severity))
-          : issues;
-
-        // Filter by categories if specified
-        const categoryFiltered = categories
-          ? filteredIssues.filter(i => categories.includes(i.category))
-          : filteredIssues;
-
-        allIssues.push(...categoryFiltered);
-        analyzedCount++;
-      } catch {
-        // Skip files that cannot be analyzed (e.g., encoding or permission errors).
-        // Individual file failures should not abort the whole project scan.
-      }
+      allIssues.push(...fileIssues);
+      analyzedCount++;
     }
 
     // Find package files
@@ -145,6 +121,40 @@ export class AnalysisEngine {
       issues: allIssues,
       recommendations,
     };
+  }
+
+  /**
+   * Analyze a single file, returning filtered issues or null on failure
+   */
+  private async analyzeFileSafe(
+    file: string,
+    projectPath: string,
+    config: TechDebtConfig,
+    options: AnalysisOptions
+  ): Promise<TechDebtIssue[] | null> {
+    try {
+      const result = await analyzeFile(file, config);
+      const relativePath = getRelativePath(projectPath, file);
+      const issues = result.issues.map(issue => ({ ...issue, file: relativePath }));
+      return this.filterIssues(issues, options);
+    } catch {
+      // Skip files that cannot be analyzed (e.g., encoding or permission errors).
+      // Individual file failures should not abort the whole project scan.
+      return null;
+    }
+  }
+
+  /**
+   * Apply severity and category filters to a list of issues
+   */
+  private filterIssues(issues: TechDebtIssue[], options: AnalysisOptions): TechDebtIssue[] {
+    const { severity, categories } = options;
+    const bySeverity = severity
+      ? issues.filter(i => this.severityMeetsThreshold(i.severity, severity))
+      : issues;
+    return categories
+      ? bySeverity.filter(i => categories.includes(i.category))
+      : bySeverity;
   }
 
   /**
