@@ -68,8 +68,9 @@ export function checkExcessiveStateVariables(filePath: string, lines: string[]):
 
 /**
  * Detects @ObservedObject initialized inline, which loses the object on redraws.
+ * The correct fix is to use @StateObject for objects owned by the view.
  */
-export function checkStateObjectMisuse(filePath: string, lines: string[]): TechDebtIssue[] {
+export function checkObservedObjectMisuse(filePath: string, lines: string[]): TechDebtIssue[] {
   const issues: TechDebtIssue[] = [];
 
   for (let i = 0; i < lines.length; i++) {
@@ -234,7 +235,15 @@ export function checkMissingTaskCancellation(filePath: string, lines: string[]):
       const hasMainActor = lines
         .slice(Math.max(0, i - 3), i)
         .some(l => l.includes('@MainActor') || l.includes('MainActor'));
-      const hasTaskID = line.includes('let task =') || line.includes('@State var task');
+      // Search a ±10 line window for evidence that the Task handle is stored/tracked.
+      const searchStart = Math.max(0, i - 10);
+      const searchEnd = Math.min(lines.length, i + 10);
+      const hasTaskID = lines.slice(searchStart, searchEnd).some(l => (
+        /\b@State\b[^\n]*\btask\b/.test(l) ||
+        /\b(var|let)\s+task\s*:\s*Task\b/.test(l) ||
+        /\btask\b\s*=\s*Task\s*\{/.test(l) ||
+        l.includes('let task =')
+      ));
 
       if (!hasMainActor && !hasTaskID) {
         issues.push({

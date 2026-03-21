@@ -230,6 +230,28 @@ function optionalNumber(
   return value;
 }
 
+/**
+ * Optional positive-integer field — returns undefined if absent.
+ * Rejects null, NaN, Infinity, non-integers, and values less than 1.
+ */
+function optionalPositiveInteger(
+  args: Record<string, unknown>,
+  key: string,
+): number | undefined {
+  const value = args[key];
+  if (value === undefined) return undefined;
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new McpError(ErrorCode.InvalidParams, `${key} must be a number`);
+  }
+  if (!Number.isInteger(value) || value < 1) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      `${key} must be a finite positive integer (minimum value: 1)`,
+    );
+  }
+  return value;
+}
+
 /** Optional string field — returns undefined if absent; throws McpError for null. */
 function optionalString(
   args: Record<string, unknown>,
@@ -255,7 +277,7 @@ export function parseAnalyzeProjectInput(
     languages: optionalLanguages(a, 'languages'),
     categories: optionalCategories(a, 'categories'),
     severity: optionalSeverity(a, 'severity'),
-    maxFiles: optionalNumber(a, 'maxFiles'),
+    maxFiles: optionalPositiveInteger(a, 'maxFiles'),
   };
 }
 
@@ -301,7 +323,7 @@ export function parseGetRecommendationsInput(
   const a = requireRecord(args);
   return {
     path: requireString(a, 'path'),
-    limit: optionalNumber(a, 'limit'),
+    limit: optionalPositiveInteger(a, 'limit'),
   };
 }
 

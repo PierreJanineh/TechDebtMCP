@@ -2,7 +2,7 @@ import { TechDebtIssue, TechDebtConfig } from '../types/index.js';
 import { BaseAnalyzer } from './baseAnalyzer.js';
 import {
   checkExcessiveStateVariables,
-  checkStateObjectMisuse,
+  checkObservedObjectMisuse,
   checkMissingEnvironmentValidation,
   checkCombineCircularReferences,
   checkMissingTimerCleanup,
@@ -142,7 +142,7 @@ export class SwiftAnalyzer extends BaseAnalyzer {
     // Split content once to avoid repeated allocations in each checker
     const lines = content.split('\n');
     issues.push(...checkExcessiveStateVariables(filePath, lines));
-    issues.push(...checkStateObjectMisuse(filePath, lines));
+    issues.push(...checkObservedObjectMisuse(filePath, lines));
     issues.push(...checkMissingEnvironmentValidation(filePath, lines));
     issues.push(...checkCombineCircularReferences(filePath, lines));
     issues.push(...checkMissingTimerCleanup(filePath, lines));

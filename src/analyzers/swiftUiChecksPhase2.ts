@@ -190,7 +190,13 @@ export function checkGeometryReaderMisuse(filePath: string, lines: string[]): Te
 }
 
 /**
- * Detects retain cycles in SwiftUI modifiers (.onChange, .onReceive, .task) via unguarded self.
+ * Detects potential retain cycles in SwiftUI modifiers (.onChange, .onReceive, .task)
+ * where a reference-type object is captured via self without a capture list.
+ *
+ * Note: SwiftUI views are value types (struct), so [weak self] is not applicable
+ * when self refers to the view itself. This check is most relevant when the closure
+ * captures a class-based reference type such as an ObservableObject view model.
+ * Findings inside struct-based views are skipped to reduce false positives.
  */
 export function checkRetainCyclesInClosures(filePath: string, lines: string[]): TechDebtIssue[] {
   const issues: TechDebtIssue[] = [];
@@ -203,6 +209,17 @@ export function checkRetainCyclesInClosures(filePath: string, lines: string[]): 
     ) {
       const context = lines.slice(i, Math.min(lines.length, i + 5)).join('\n');
 
+      // Skip when the enclosing type is a struct-based SwiftUI view: [weak self] is not
+      // valid in value types and the capture is not a retain cycle.
+      const lookback = lines.slice(Math.max(0, i - 30), i).join('\n');
+      const lastStructIdx = lookback.lastIndexOf('struct ');
+      const lastClassIdx = lookback.lastIndexOf('class ');
+      const isInsideStructView =
+        lastStructIdx > lastClassIdx &&
+        /\bstruct\s+\w+\s*:[^{]*\bView\b/.test(lookback.slice(lastStructIdx));
+
+      if (isInsideStructView) continue;
+
       if (!context.includes('[weak self]') && !context.includes('[unowned self]')) {
         issues.push({
           id: `retain-cycle-closure-${filePath}-${i + 1}`,
@@ -211,8 +228,12 @@ export function checkRetainCyclesInClosures(filePath: string, lines: string[]): 
           file: filePath,
           line: i + 1,
           title: 'Potential retain cycle in SwiftUI closure',
-          description: 'Using self in SwiftUI modifiers without [weak self] can cause memory leaks',
-          suggestion: 'Add [weak self] to the closure or use optional chaining with self?',
+          description:
+            'Capturing a class-based reference type in a SwiftUI modifier closure without ' +
+            '[weak self] can cause memory leaks.',
+          suggestion:
+            'If self refers to a class type (e.g. a view model), add [weak self] to the closure. ' +
+            'SwiftUI views are structs and do not require a capture list.',
           effort: 'small',
           language: 'swift',
           rule: 'swiftui-retain-cycle-closure',
