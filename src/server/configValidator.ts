@@ -9,6 +9,27 @@ import { readFile as fsReadFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { CustomPattern } from '../types/index.js';
 
+/** Type guard: checks that a value is a plain object record (prototype is Object.prototype or null, not a class instance, Date, Map, etc.). */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    return false;
+  }
+  const proto = Object.getPrototypeOf(value as object) as unknown;
+  return proto === Object.prototype || proto === null;
+}
+
+/** Type guard: checks that a value satisfies the minimum required shape of a CustomPattern. */
+function isCustomPatternShape(value: unknown): value is CustomPattern {
+  if (!isRecord(value)) return false;
+  return (
+    typeof value['id'] === 'string' &&
+    typeof value['pattern'] === 'string' &&
+    typeof value['severity'] === 'string' &&
+    typeof value['category'] === 'string' &&
+    typeof value['message'] === 'string'
+  );
+}
+
 /** Known valid keys for .techdebtrc.json */
 const VALID_CONFIG_KEYS = new Set(['ignore', 'include', 'rules', 'severity', 'ruleExclusions', 'customPatterns', 'languageOverrides']);
 const VALID_RULE_KEYS = new Set(['maxFileLines', 'maxFunctionLines', 'maxComplexity', 'maxNestingDepth', 'maxParameters', 'minCommentRatio']);
@@ -18,7 +39,10 @@ const VALID_SEVERITIES = new Set(['low', 'medium', 'high', 'critical']);
  * Validate a .techdebtrc.json configuration file
  */
 export async function handleValidateConfig(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const inputPath = args.path as string;
+  if (typeof args.path !== 'string') {
+    throw new McpError(ErrorCode.InvalidParams, 'Missing or invalid required parameter: path (must be a string)');
+  }
+  const inputPath = args.path;
   if (!(await fileExists(inputPath))) {
     throw new McpError(ErrorCode.InvalidParams, `Path not found: ${inputPath}`);
   }
@@ -39,10 +63,10 @@ export async function handleValidateConfig(args: Record<string, unknown>): Promi
   try {
     const raw = await fsReadFile(configPath, 'utf-8');
     const parsed: unknown = JSON.parse(raw);
-    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    if (!isRecord(parsed)) {
       return { content: [{ type: 'text', text: `❌ Invalid config in ${configPath}:\n  Top-level value must be a JSON object, got ${parsed === null ? 'null' : Array.isArray(parsed) ? 'array' : typeof parsed}.` }] };
     }
-    config = parsed as Record<string, unknown>;
+    config = parsed;
   } catch (err) {
     return { content: [{ type: 'text', text: `❌ Invalid JSON in ${configPath}:\n  ${err instanceof Error ? err.message : String(err)}` }] };
   }
@@ -70,10 +94,10 @@ export async function handleValidateConfig(args: Record<string, unknown>): Promi
   }
 
   if ('rules' in config) {
-    if (config.rules === null || typeof config.rules !== 'object' || Array.isArray(config.rules)) {
+    if (!isRecord(config.rules)) {
       errors.push('"rules" must be an object');
     } else {
-      const rules = config.rules as Record<string, unknown>;
+      const rules = config.rules;
       for (const key of Object.keys(rules)) {
         if (!VALID_RULE_KEYS.has(key)) warnings.push(`Unknown rule key: "${key}"`);
       }
@@ -86,10 +110,10 @@ export async function handleValidateConfig(args: Record<string, unknown>): Promi
   }
 
   if ('severity' in config) {
-    if (config.severity === null || typeof config.severity !== 'object' || Array.isArray(config.severity)) {
+    if (!isRecord(config.severity)) {
       errors.push('"severity" must be an object');
     } else {
-      const severity = config.severity as Record<string, unknown>;
+      const severity = config.severity;
       for (const [rule, level] of Object.entries(severity)) {
         if (typeof level !== 'string' || !VALID_SEVERITIES.has(level)) {
           errors.push(`"severity.${rule}" has invalid value "${level}" — must be a string: low, medium, high, critical`);
@@ -99,10 +123,10 @@ export async function handleValidateConfig(args: Record<string, unknown>): Promi
   }
 
   if ('ruleExclusions' in config) {
-    if (config.ruleExclusions === null || typeof config.ruleExclusions !== 'object' || Array.isArray(config.ruleExclusions)) {
+    if (!isRecord(config.ruleExclusions)) {
       errors.push('"ruleExclusions" must be an object mapping rule names to arrays of glob strings');
     } else {
-      const exclusions = config.ruleExclusions as Record<string, unknown>;
+      const exclusions = config.ruleExclusions;
       for (const [rule, patterns] of Object.entries(exclusions)) {
         if (!Array.isArray(patterns)) {
           errors.push(`"ruleExclusions.${rule}" must be an array of glob strings`);
@@ -114,7 +138,7 @@ export async function handleValidateConfig(args: Record<string, unknown>): Promi
   }
 
   if ('languageOverrides' in config) {
-    if (config.languageOverrides === null || typeof config.languageOverrides !== 'object' || Array.isArray(config.languageOverrides)) {
+    if (!isRecord(config.languageOverrides)) {
       errors.push('"languageOverrides" must be an object keyed by language name');
     }
   }
@@ -123,15 +147,18 @@ export async function handleValidateConfig(args: Record<string, unknown>): Promi
     if (!Array.isArray(config.customPatterns)) {
       errors.push('"customPatterns" must be an array');
     } else {
-      (config.customPatterns as unknown[]).forEach((p, i) => {
-        if (typeof p !== 'object' || p === null) {
+      config.customPatterns.forEach((p: unknown, i: number) => {
+        if (!isRecord(p)) {
           errors.push(`customPatterns[${i}]: must be an object`);
           return;
         }
-        const pattern = p as Record<string, unknown>;
-        const result = CustomRulesEngine.validatePattern(pattern as unknown as CustomPattern);
+        if (!isCustomPatternShape(p)) {
+          errors.push(`customPatterns[${i}]: missing required fields (id, pattern, severity, category, message)`);
+          return;
+        }
+        const result = CustomRulesEngine.validatePattern(p);
         if (!result.valid) {
-          result.errors.forEach(e => errors.push(`customPatterns[${i}] (${pattern.id ?? 'unknown'}): ${e}`));
+          result.errors.forEach(e => errors.push(`customPatterns[${i}] (${p.id}): ${e}`));
         }
       });
     }

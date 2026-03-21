@@ -49,6 +49,14 @@ describe('handleCheckDependencies', () => {
     mockGetRelativePath.mockImplementation((_base, full) => full);
   });
 
+  it('should throw InvalidParams when path is missing', async () => {
+    await expect(handleCheckDependencies({})).rejects.toThrow('Missing or invalid required parameter: path');
+  });
+
+  it('should throw InvalidParams when path is not a string', async () => {
+    await expect(handleCheckDependencies({ path: 123 })).rejects.toThrow('Missing or invalid required parameter: path');
+  });
+
   it('should throw when project path does not exist', async () => {
     mockFileExists.mockResolvedValue(false);
     await expect(handleCheckDependencies({ path: '/missing' })).rejects.toThrow('Project path not found');
@@ -141,6 +149,14 @@ describe('handleGetVulnerabilityReport', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetRelativePath.mockImplementation((_base, full) => full);
+  });
+
+  it('should throw InvalidParams when path is missing', async () => {
+    await expect(handleGetVulnerabilityReport({})).rejects.toThrow('Missing or invalid required parameter: path');
+  });
+
+  it('should throw InvalidParams when path is not a string', async () => {
+    await expect(handleGetVulnerabilityReport({ path: 123 })).rejects.toThrow('Missing or invalid required parameter: path');
   });
 
   it('should throw when project path does not exist', async () => {
