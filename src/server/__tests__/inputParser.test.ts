@@ -175,8 +175,8 @@ describe('inputParser', () => {
     });
   });
 
-  // ---- numeric edge cases (optionalNumber) ----
-  describe('numeric edge cases', () => {
+  // ---- numeric edge cases (optionalNumber and optionalPositiveInteger) ----
+  describe('numeric edge cases (optionalNumber and optionalPositiveInteger)', () => {
     it('throws McpError for NaN developmentTime', () => {
       expect(() =>
         parseGetSqaleMetricsInput({ path: '/p', developmentTime: NaN }),
