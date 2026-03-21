@@ -241,7 +241,7 @@ function optionalPositiveInteger(
   const value = args[key];
   if (value === undefined) return undefined;
   if (typeof value !== 'number') {
-    throw new McpError(ErrorCode.InvalidParams, `${key} must be a number`);
+    throw new McpError(ErrorCode.InvalidParams, `${key} must be an integer (>= 1)`);
   }
   if (!Number.isFinite(value)) {
     throw new McpError(
