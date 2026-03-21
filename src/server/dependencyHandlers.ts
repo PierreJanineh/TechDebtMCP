@@ -130,6 +130,40 @@ async function validateDirectoryPath(projectPath: string): Promise<void> {
 const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'target', '.venv', '__pycache__']);
 
 /**
+ * Check if a file entry is a package manifest that should be collected.
+ */
+function isPackageManifest(entry: string, targetFiles: string[]): boolean {
+  return targetFiles.includes(entry) || entry.endsWith('.csproj');
+}
+
+/**
+ * Process a single directory entry during package file discovery.
+ */
+async function processEntry(
+  entry: string,
+  dir: string,
+  targetFiles: string[],
+  results: string[],
+  scanErrors: string[],
+  maxDepth: number,
+  currentDepth: number,
+): Promise<void> {
+  if (SKIP_DIRS.has(entry)) return;
+
+  const fullPath = join(dir, entry);
+  const entryStats = await stat(fullPath);
+
+  if (entryStats.isDirectory()) {
+    await findPackageFiles(fullPath, targetFiles, results, scanErrors, maxDepth, currentDepth + 1);
+    return;
+  }
+
+  if (entryStats.isFile() && isPackageManifest(entry, targetFiles)) {
+    results.push(fullPath);
+  }
+}
+
+/**
  * Recursively discover package manifest files in a directory tree.
  * Skips common non-source directories (node_modules, .git, dist, etc.) and
  * limits traversal depth to avoid runaway recursion in deep trees.
@@ -152,22 +186,8 @@ async function findPackageFiles(
 
   try {
     const entries = await readdir(dir);
-
     for (const entry of entries) {
-      if (SKIP_DIRS.has(entry)) {
-        continue;
-      }
-
-      const fullPath = join(dir, entry);
-      const stats = await stat(fullPath);
-
-      if (stats.isDirectory()) {
-        await findPackageFiles(fullPath, targetFiles, results, scanErrors, maxDepth, currentDepth + 1);
-      } else if (stats.isFile()) {
-        if (targetFiles.includes(entry) || entry.endsWith('.csproj')) {
-          results.push(fullPath);
-        }
-      }
+      await processEntry(entry, dir, targetFiles, results, scanErrors, maxDepth, currentDepth);
     }
   } catch (error) {
     scanErrors.push(`${dir}: ${error instanceof Error ? error.message : String(error)}`);
