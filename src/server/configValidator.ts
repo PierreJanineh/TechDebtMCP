@@ -28,6 +28,112 @@ const VALID_RULE_KEYS = new Set(['maxFileLines', 'maxFunctionLines', 'maxComplex
 const VALID_SEVERITIES = new Set(['low', 'medium', 'high', 'critical']);
 
 /**
+ * Validate that a config field is an array of strings.
+ */
+function validateStringArrayField(
+  key: string,
+  config: Record<string, unknown>,
+  errors: string[],
+): void {
+  if (!(key in config)) return;
+  const value = config[key];
+  if (!Array.isArray(value)) {
+    errors.push(`"${key}" must be an array of glob strings`);
+    return;
+  }
+  if (value.some((v: unknown) => typeof v !== 'string')) {
+    errors.push(`"${key}" array must contain only strings`);
+  }
+}
+
+/**
+ * Validate the "rules" field of the config.
+ */
+function validateRulesField(
+  config: Record<string, unknown>,
+  errors: string[],
+  warnings: string[],
+): void {
+  if (!('rules' in config)) return;
+  if (!isRecord(config.rules)) {
+    errors.push('"rules" must be an object');
+    return;
+  }
+  const rules = config.rules;
+  for (const key of Object.keys(rules)) {
+    if (!VALID_RULE_KEYS.has(key)) warnings.push(`Unknown rule key: "${key}"`);
+  }
+  for (const key of VALID_RULE_KEYS) {
+    if (key in rules && typeof rules[key] !== 'number') {
+      errors.push(`"rules.${key}" must be a number`);
+    }
+  }
+}
+
+/**
+ * Validate the "severity" field of the config.
+ */
+function validateSeverityField(config: Record<string, unknown>, errors: string[]): void {
+  if (!('severity' in config)) return;
+  if (!isRecord(config.severity)) {
+    errors.push('"severity" must be an object');
+    return;
+  }
+  for (const [rule, level] of Object.entries(config.severity)) {
+    if (typeof level !== 'string' || !VALID_SEVERITIES.has(level)) {
+      errors.push(`"severity.${rule}" has invalid value "${level}" — must be a string: low, medium, high, critical`);
+    }
+  }
+}
+
+/**
+ * Validate the "ruleExclusions" field of the config.
+ */
+function validateRuleExclusionsField(config: Record<string, unknown>, errors: string[]): void {
+  if (!('ruleExclusions' in config)) return;
+  if (!isRecord(config.ruleExclusions)) {
+    errors.push('"ruleExclusions" must be an object mapping rule names to arrays of glob strings');
+    return;
+  }
+  for (const [rule, patterns] of Object.entries(config.ruleExclusions)) {
+    if (!Array.isArray(patterns)) {
+      errors.push(`"ruleExclusions.${rule}" must be an array of glob strings`);
+    } else if (patterns.some((v: unknown) => typeof v !== 'string')) {
+      errors.push(`"ruleExclusions.${rule}" array must contain only strings`);
+    }
+  }
+}
+
+/**
+ * Validate a single custom pattern entry and push any errors.
+ */
+function validateCustomPattern(p: unknown, i: number, errors: string[]): void {
+  if (!isRecord(p)) {
+    errors.push(`customPatterns[${i}]: must be an object`);
+    return;
+  }
+  if (!isCustomPatternShape(p)) {
+    errors.push(`customPatterns[${i}]: missing required fields (id, pattern, severity, category, message)`);
+    return;
+  }
+  const result = CustomRulesEngine.validatePattern(p);
+  if (!result.valid) {
+    result.errors.forEach(e => errors.push(`customPatterns[${i}] (${p.id}): ${e}`));
+  }
+}
+
+/**
+ * Validate the "customPatterns" field of the config.
+ */
+function validateCustomPatternsField(value: unknown, errors: string[]): void {
+  if (!Array.isArray(value)) {
+    errors.push('"customPatterns" must be an array');
+    return;
+  }
+  value.forEach((p: unknown, i: number) => validateCustomPattern(p, i, errors));
+}
+
+/**
  * Validate a .techdebtrc.json configuration file
  */
 export async function handleValidateConfig(args: unknown): Promise<{ content: Array<{ type: string; text: string }> }> {
@@ -70,91 +176,18 @@ export async function handleValidateConfig(args: unknown): Promise<{ content: Ar
     }
   }
 
-  if ('ignore' in config) {
-    if (!Array.isArray(config.ignore)) {
-      errors.push('"ignore" must be an array of glob strings');
-    } else if (config.ignore.some(v => typeof v !== 'string')) {
-      errors.push('"ignore" array must contain only strings');
-    }
-  }
+  validateStringArrayField('ignore', config, errors);
+  validateStringArrayField('include', config, errors);
+  validateRulesField(config, errors, warnings);
+  validateSeverityField(config, errors);
+  validateRuleExclusionsField(config, errors);
 
-  if ('include' in config) {
-    if (!Array.isArray(config.include)) {
-      errors.push('"include" must be an array of glob strings');
-    } else if (config.include.some(v => typeof v !== 'string')) {
-      errors.push('"include" array must contain only strings');
-    }
-  }
-
-  if ('rules' in config) {
-    if (!isRecord(config.rules)) {
-      errors.push('"rules" must be an object');
-    } else {
-      const rules = config.rules;
-      for (const key of Object.keys(rules)) {
-        if (!VALID_RULE_KEYS.has(key)) warnings.push(`Unknown rule key: "${key}"`);
-      }
-      for (const key of VALID_RULE_KEYS) {
-        if (key in rules && typeof rules[key] !== 'number') {
-          errors.push(`"rules.${key}" must be a number`);
-        }
-      }
-    }
-  }
-
-  if ('severity' in config) {
-    if (!isRecord(config.severity)) {
-      errors.push('"severity" must be an object');
-    } else {
-      const severity = config.severity;
-      for (const [rule, level] of Object.entries(severity)) {
-        if (typeof level !== 'string' || !VALID_SEVERITIES.has(level)) {
-          errors.push(`"severity.${rule}" has invalid value "${level}" — must be a string: low, medium, high, critical`);
-        }
-      }
-    }
-  }
-
-  if ('ruleExclusions' in config) {
-    if (!isRecord(config.ruleExclusions)) {
-      errors.push('"ruleExclusions" must be an object mapping rule names to arrays of glob strings');
-    } else {
-      const exclusions = config.ruleExclusions;
-      for (const [rule, patterns] of Object.entries(exclusions)) {
-        if (!Array.isArray(patterns)) {
-          errors.push(`"ruleExclusions.${rule}" must be an array of glob strings`);
-        } else if (patterns.some(v => typeof v !== 'string')) {
-          errors.push(`"ruleExclusions.${rule}" array must contain only strings`);
-        }
-      }
-    }
-  }
-
-  if ('languageOverrides' in config) {
-    if (!isRecord(config.languageOverrides)) {
-      errors.push('"languageOverrides" must be an object keyed by language name');
-    }
+  if ('languageOverrides' in config && !isRecord(config.languageOverrides)) {
+    errors.push('"languageOverrides" must be an object keyed by language name');
   }
 
   if ('customPatterns' in config) {
-    if (!Array.isArray(config.customPatterns)) {
-      errors.push('"customPatterns" must be an array');
-    } else {
-      config.customPatterns.forEach((p: unknown, i: number) => {
-        if (!isRecord(p)) {
-          errors.push(`customPatterns[${i}]: must be an object`);
-          return;
-        }
-        if (!isCustomPatternShape(p)) {
-          errors.push(`customPatterns[${i}]: missing required fields (id, pattern, severity, category, message)`);
-          return;
-        }
-        const result = CustomRulesEngine.validatePattern(p);
-        if (!result.valid) {
-          result.errors.forEach(e => errors.push(`customPatterns[${i}] (${p.id}): ${e}`));
-        }
-      });
-    }
+    validateCustomPatternsField(config.customPatterns, errors);
   }
 
   if (errors.length === 0 && warnings.length === 0) {

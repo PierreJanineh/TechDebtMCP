@@ -10,16 +10,25 @@ import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mc
 import { Variables } from '@modelcontextprotocol/sdk/shared/uriTemplate.js';
 import { AnalysisEngine } from '../core/analysisEngine.js';
 
+type ResourceResponse = { contents: Array<{ uri: string; mimeType: string; text: string }> };
+
 /**
  * Build a resource error response for a given URI and error message.
  */
-function jsonErrorResponse(uri: URL, message: string) {
+function jsonErrorResponse(uri: URL, message: string): ResourceResponse {
+  return jsonSuccessResponse(uri, { error: message });
+}
+
+/**
+ * Build a resource success response for a given URI and data object.
+ */
+function jsonSuccessResponse(uri: URL, data: unknown): ResourceResponse {
   return {
     contents: [
       {
         uri: uri.href,
         mimeType: 'application/json',
-        text: JSON.stringify({ error: message }, null, 2),
+        text: JSON.stringify(data, null, 2),
       },
     ],
   };
@@ -32,6 +41,78 @@ function jsonErrorResponse(uri: URL, message: string) {
 function getStringVariable(variables: Variables, key: string): string | null {
   const value = variables[key];
   return typeof value === 'string' ? value : null;
+}
+
+/**
+ * Handle the debt://summary resource for a given project path.
+ */
+async function handleSummaryResource(
+  uri: URL,
+  engine: AnalysisEngine,
+  projectPath: string,
+): Promise<ResourceResponse> {
+  const report = await engine.analyzeProject({ path: projectPath });
+  const summary = {
+    timestamp: report.timestamp,
+    healthScore: report.summary.healthScore,
+    debtScore: report.summary.debtScore,
+    totalIssues: report.summary.totalIssues,
+    bySeverity: report.summary.bySeverity,
+    byCategory: report.summary.byCategory,
+    sqale: {
+      rating: report.sqale.rating,
+      totalRemediationTime: report.sqale.totalRemediationTime,
+      formattedTime: report.sqale.formattedTime,
+    },
+  };
+  return jsonSuccessResponse(uri, summary);
+}
+
+/**
+ * Handle the debt://issues resource for a given project path.
+ */
+async function handleIssuesResource(
+  uri: URL,
+  engine: AnalysisEngine,
+  projectPath: string,
+): Promise<ResourceResponse> {
+  const report = await engine.analyzeProject({ path: projectPath });
+
+  const params = uri.searchParams;
+  const severityFilter = params.get('severity');
+  const categoryFilter = params.get('category');
+  const rawLimit = parseInt(params.get('limit') ?? '100', 10);
+  const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : 100;
+
+  let filteredIssues = report.issues;
+  if (severityFilter) {
+    filteredIssues = filteredIssues.filter((i) => i.severity === severityFilter);
+  }
+  if (categoryFilter) {
+    filteredIssues = filteredIssues.filter((i) => i.category === categoryFilter);
+  }
+
+  const result = {
+    timestamp: report.timestamp,
+    totalCount: filteredIssues.length,
+    issues: filteredIssues.slice(0, limit),
+  };
+  return jsonSuccessResponse(uri, result);
+}
+
+/**
+ * Wrap a resource handler with try/catch, returning a JSON error response on failure.
+ */
+async function withResourceErrorHandling(
+  uri: URL,
+  handler: () => Promise<ResourceResponse>,
+): Promise<ResourceResponse> {
+  try {
+    return await handler();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return jsonErrorResponse(uri, message);
+  }
 }
 
 /**
@@ -54,37 +135,7 @@ export function attachResources(mcpServer: McpServer): void {
       if (projectPath === null) {
         return jsonErrorResponse(uri, 'projectPath must be a string');
       }
-
-      try {
-        const report = await engine.analyzeProject({ path: projectPath });
-
-        const summary = {
-          timestamp: report.timestamp,
-          healthScore: report.summary.healthScore,
-          debtScore: report.summary.debtScore,
-          totalIssues: report.summary.totalIssues,
-          bySeverity: report.summary.bySeverity,
-          byCategory: report.summary.byCategory,
-          sqale: {
-            rating: report.sqale.rating,
-            totalRemediationTime: report.sqale.totalRemediationTime,
-            formattedTime: report.sqale.formattedTime,
-          },
-        };
-
-        return {
-          contents: [
-            {
-              uri: uri.href,
-              mimeType: 'application/json',
-              text: JSON.stringify(summary, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Unknown error';
-        return jsonErrorResponse(uri, message);
-      }
+      return withResourceErrorHandling(uri, () => handleSummaryResource(uri, engine, projectPath));
     }
   );
 
@@ -101,45 +152,7 @@ export function attachResources(mcpServer: McpServer): void {
       if (projectPath === null) {
         return jsonErrorResponse(uri, 'projectPath must be a string');
       }
-
-      try {
-        const report = await engine.analyzeProject({ path: projectPath });
-
-        // Parse query parameters for filtering
-        const params = uri.searchParams;
-        const severityFilter = params.get('severity');
-        const categoryFilter = params.get('category');
-        const rawLimit = parseInt(params.get('limit') ?? '100', 10);
-        const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : 100;
-
-        let filteredIssues = report.issues;
-
-        if (severityFilter) {
-          filteredIssues = filteredIssues.filter((i) => i.severity === severityFilter);
-        }
-        if (categoryFilter) {
-          filteredIssues = filteredIssues.filter((i) => i.category === categoryFilter);
-        }
-
-        const result = {
-          timestamp: report.timestamp,
-          totalCount: filteredIssues.length,
-          issues: filteredIssues.slice(0, limit),
-        };
-
-        return {
-          contents: [
-            {
-              uri: uri.href,
-              mimeType: 'application/json',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Unknown error';
-        return jsonErrorResponse(uri, message);
-      }
+      return withResourceErrorHandling(uri, () => handleIssuesResource(uri, engine, projectPath));
     }
   );
 }
