@@ -39,7 +39,7 @@ src/
 
 1. Run `npm test` — all tests must pass
 2. Run `npm run build` — no TypeScript errors
-3. Update relevant docs (README.md, ROADMAP.md, CHANGELOG.md, CLAUDE.md)
+3. Update relevant docs (README.md, ROADMAP.md, CHANGELOG.md, CLAUDE.md, ARCHITECTURE.md, `.github/copilot-instructions.md`) — see [Doc Files to Check](#doc-files-to-check) for the full list
 
 ### After PR is Created
 
@@ -55,6 +55,37 @@ src/
 ✅ Addressed: [what was fixed]
 ❌ Skipped: [why suggestion doesn't apply]
 ```
+
+## Documentation Consistency Review
+
+Copilot **must** check documentation consistency on every PR. **Do not approve** any PR where documentation is inconsistent with the code changes.
+
+### Doc Files to Check
+
+| File | What to verify |
+|------|----------------|
+| `README.md` | Features list, tool/resource docs, usage examples |
+| `ARCHITECTURE.md` | Project structure, component descriptions, data flow diagrams |
+| `ROADMAP.md` | Phase status, current status section |
+| `CHANGELOG.md` | Version entries when `package.json` version is bumped or a `vX.X.X` tag is present |
+| `CLAUDE.md` | Architecture tree, request flow, recipes, conventions |
+| `.github/copilot-instructions.md` | Architecture diagram if high-level structure changed |
+
+### Inconsistency Triggers (Block Approval)
+
+- A new MCP tool is added but not listed in `README.md` or `CLAUDE.md`
+- A file is added, removed, or renamed but the architecture tree in `CLAUDE.md` or `ARCHITECTURE.md` is not updated
+- A new analyzer or dependency parser is added but not reflected in the architecture docs
+- A phase issue is closed but `ROADMAP.md` still shows it as pending
+- A public API signature changes but JSDoc or README examples are stale
+- `CHANGELOG.md` is missing an entry when `package.json` version is bumped (the only detectable release signal in a PR diff; Git tags are not part of the changeset and cannot be checked here)
+
+### Review Steps
+
+1. Scan which source files were modified in the PR diff
+2. Cross-check the relevant doc files above for stale references, missing entries, or outdated descriptions
+3. Leave a review comment listing **each inconsistency found** (file, line or section, description of the problem)
+4. **Withhold approval** until all doc inconsistencies are resolved
 
 ## Git Workflow
 
