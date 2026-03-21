@@ -39,7 +39,7 @@ src/
 
 1. Run `npm test` — all tests must pass
 2. Run `npm run build` — no TypeScript errors
-3. Update relevant docs (README.md, ROADMAP.md, CHANGELOG.md, CLAUDE.md)
+3. Update relevant docs (README.md, ROADMAP.md, CHANGELOG.md, CLAUDE.md, ARCHITECTURE.md, `.github/copilot-instructions.md`) — see [Doc Files to Check](#doc-files-to-check) for the full list
 
 ### After PR is Created
 
@@ -67,7 +67,7 @@ Copilot **must** check documentation consistency on every PR. **Do not approve**
 | `README.md` | Features list, tool/resource docs, usage examples |
 | `ARCHITECTURE.md` | Project structure, component descriptions, data flow diagrams |
 | `ROADMAP.md` | Phase status, current status section |
-| `CHANGELOG.md` | Version entries for release-tagged changes |
+| `CHANGELOG.md` | Version entries when `package.json` version is bumped or a `vX.X.X` tag is present |
 | `CLAUDE.md` | Architecture tree, request flow, recipes, conventions |
 | `.github/copilot-instructions.md` | Architecture diagram if high-level structure changed |
 
@@ -78,7 +78,7 @@ Copilot **must** check documentation consistency on every PR. **Do not approve**
 - A new analyzer or dependency parser is added but not reflected in the architecture docs
 - A phase issue is closed but `ROADMAP.md` still shows it as pending
 - A public API signature changes but JSDoc or README examples are stale
-- `CHANGELOG.md` is missing an entry for a release-tagged change
+- `CHANGELOG.md` is missing an entry when `package.json` version is bumped or a `vX.X.X` Git tag is introduced
 
 ### Review Steps
 
