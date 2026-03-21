@@ -24,6 +24,14 @@ describe('handleValidateConfig', () => {
     jest.clearAllMocks();
   });
 
+  it('should throw InvalidParams when path is missing', async () => {
+    await expect(handleValidateConfig({})).rejects.toThrow('Missing or invalid required parameter: path');
+  });
+
+  it('should throw InvalidParams when path is not a string', async () => {
+    await expect(handleValidateConfig({ path: 123 })).rejects.toThrow('Missing or invalid required parameter: path');
+  });
+
   it('should throw when path does not exist', async () => {
     mockFileExists.mockResolvedValue(false);
     await expect(handleValidateConfig({ path: '/no/such/path' })).rejects.toThrow('Path not found');
