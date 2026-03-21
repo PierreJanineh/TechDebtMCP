@@ -122,7 +122,7 @@ function setupResources() {
 
 type ResourceCallback = (
   uri: URL,
-  variables: Record<string, string>,
+  variables: Record<string, unknown>,
   extra: Record<string, unknown>
 ) => Promise<{ contents: Array<{ uri: string; mimeType: string; text: string }> }>;
 
@@ -306,7 +306,7 @@ describe('error handling', () => {
     const callback = getCallback('Tech Debt Summary');
     const result = await callback(
       new URL('debt://summary/'),
-      { projectPath: ['not', 'a', 'string'] as unknown as string },
+      { projectPath: ['not', 'a', 'string'] },
       {}
     );
 
@@ -334,7 +334,7 @@ describe('error handling', () => {
     const callback = getCallback('Tech Debt Issues');
     const result = await callback(
       new URL('debt://issues/'),
-      { projectPath: 42 as unknown as string },
+      { projectPath: 42 },
       {}
     );
 
