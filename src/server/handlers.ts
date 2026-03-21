@@ -21,6 +21,20 @@ import {
   CustomPattern,
 } from '../types/index.js';
 
+// --- Type guard helpers ---
+
+/** Returns the string value of a key in an args record, or undefined. */
+function getString(args: Record<string, unknown>, key: string): string | undefined {
+  const value = args[key];
+  return typeof value === 'string' ? value : undefined;
+}
+
+/** Returns the number value of a key in an args record, or undefined. */
+function getNumber(args: Record<string, unknown>, key: string): number | undefined {
+  const value = args[key];
+  return typeof value === 'number' ? value : undefined;
+}
+
 /**
  * Attach all tool handlers to a given McpServer instance.
  */
@@ -41,68 +55,89 @@ export function attachHandlers(mcpServer: McpServer): void {
     try {
       switch (name) {
         case 'analyze_project':
-          return await handleAnalyzeProject(engine, args as Record<string, unknown>);
+          return await handleAnalyzeProject(engine, args);
         case 'analyze_file':
-          return await handleAnalyzeFile(args as Record<string, unknown>);
+          return await handleAnalyzeFile(args);
         case 'get_debt_summary':
-          return await handleGetDebtSummary(engine, args as Record<string, unknown>);
+          return await handleGetDebtSummary(engine, args);
         case 'get_sqale_metrics':
-          return await handleGetSqaleMetrics(engine, args as Record<string, unknown>);
+          return await handleGetSqaleMetrics(engine, args);
         case 'list_supported_languages':
           return handleListSupportedLanguages();
         case 'get_recommendations':
-          return await handleGetRecommendations(engine, args as Record<string, unknown>);
+          return await handleGetRecommendations(engine, args);
         case 'get_issues_by_severity':
-          return await handleGetIssuesBySeverity(engine, args as Record<string, unknown>);
+          return await handleGetIssuesBySeverity(engine, args);
         case 'get_issues_by_category':
-          return await handleGetIssuesByCategory(engine, args as Record<string, unknown>);
+          return await handleGetIssuesByCategory(engine, args);
         case 'add_custom_rule':
-          return await handleAddCustomRule(customRulesEngine, args as Record<string, unknown>);
+          return await handleAddCustomRule(customRulesEngine, args);
         case 'remove_custom_rule':
-          return await handleRemoveCustomRule(customRulesEngine, args as Record<string, unknown>);
+          return handleRemoveCustomRule(customRulesEngine, args);
         case 'list_custom_rules':
           return handleListCustomRules(customRulesEngine);
         case 'execute_custom_rules':
-          return await handleExecuteCustomRules(customRulesEngine, args as Record<string, unknown>);
+          return await handleExecuteCustomRules(customRulesEngine, args);
         case 'validate_custom_pattern':
-          return handleValidateCustomPattern(args as Record<string, unknown>);
+          return handleValidateCustomPattern(args);
         case 'check_dependencies':
-          return await handleCheckDependencies(args as Record<string, unknown>);
+          return await handleCheckDependencies(args);
         case 'validate_config':
-          return await handleValidateConfig(args as Record<string, unknown>);
+          return await handleValidateConfig(args);
         case 'get_vulnerability_report':
-          return await handleGetVulnerabilityReport(args as Record<string, unknown>);
+          return await handleGetVulnerabilityReport(args);
         default:
           throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
       }
     } catch (error) {
       if (error instanceof McpError) throw error;
-      throw new McpError(ErrorCode.InternalError, `Error executing ${name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const msg = error instanceof Error ? error.message : 'Unknown error';
+      throw new McpError(ErrorCode.InternalError, `Error executing ${name}: ${msg}`);
     }
   });
 }
 
-async function handleAnalyzeProject(engine: AnalysisEngine, args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = args.path as string;
-  const languages = args.languages as SupportedLanguage[] | undefined;
-  const categories = args.categories as DebtCategory[] | undefined;
-  const severity = args.severity as Severity | undefined;
-  const maxFiles = args.maxFiles as number | undefined;
+async function handleAnalyzeProject(
+  engine: AnalysisEngine,
+  args: Record<string, unknown>
+): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const path = getString(args, 'path') ?? '';
+  const languages = Array.isArray(args.languages)
+    ? (args.languages as SupportedLanguage[])
+    : undefined;
+  const categories = Array.isArray(args.categories)
+    ? (args.categories as DebtCategory[])
+    : undefined;
+  const severity = getString(args, 'severity') as Severity | undefined;
+  const maxFiles = getNumber(args, 'maxFiles');
 
-  const report = await engine.analyzeProject({ path, languages, categories, severity, maxFiles });
+  const report = await engine.analyzeProject({
+    path,
+    languages,
+    categories,
+    severity,
+    maxFiles,
+  });
 
   return { content: [{ type: 'text', text: formatReport(report) }] };
 }
 
-async function handleAnalyzeFile(args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = args.path as string;
-  if (!(await fileExists(path))) throw new McpError(ErrorCode.InvalidParams, `File not found: ${path}`);
+async function handleAnalyzeFile(
+  args: Record<string, unknown>
+): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const path = getString(args, 'path') ?? '';
+  if (!(await fileExists(path))) {
+    throw new McpError(ErrorCode.InvalidParams, `File not found: ${path}`);
+  }
   const result = await analyzeFile(path);
   return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
 }
 
-async function handleGetDebtSummary(engine: AnalysisEngine, args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = args.path as string;
+async function handleGetDebtSummary(
+  engine: AnalysisEngine,
+  args: Record<string, unknown>
+): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const path = getString(args, 'path') ?? '';
   const report = await engine.analyzeProject({ path, maxFiles: 100 });
 
   const summary = `# Tech Debt Summary
@@ -126,9 +161,12 @@ async function handleGetDebtSummary(engine: AnalysisEngine, args: Record<string,
   return { content: [{ type: 'text', text: summary }] };
 }
 
-async function handleGetSqaleMetrics(engine: AnalysisEngine, args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = args.path as string;
-  const developmentTimeHours = args.developmentTime as number | undefined;
+async function handleGetSqaleMetrics(
+  engine: AnalysisEngine,
+  args: Record<string, unknown>
+): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const path = getString(args, 'path') ?? '';
+  const developmentTimeHours = getNumber(args, 'developmentTime');
 
   const report = await engine.analyzeProject({ path, maxFiles: 100 });
   const sqale = report.sqale;
@@ -203,123 +241,253 @@ function handleListSupportedLanguages(): { content: Array<{ type: string; text: 
 
   const formatted = `# Supported Languages
 
-${languageList.map(l => `## ${l.name}\n- **ID:** \`${l.id}\`\n- **Extensions:** ${l.extensions.join(', ')}\n- **Specific Checks:** ${l.checks.join(', ')}\n`).join('\n')}`;
+${languageList.map(l =>
+    `## ${l.name}\n- **ID:** \`${l.id}\`\n- **Extensions:** ${l.extensions.join(', ')}\n` +
+    `- **Specific Checks:** ${l.checks.join(', ')}\n`
+  ).join('\n')}`;
 
   return { content: [{ type: 'text', text: formatted }] };
 }
 
-async function handleGetRecommendations(engine: AnalysisEngine, args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = args.path as string;
-  const limit = (args.limit as number) || 5;
+async function handleGetRecommendations(
+  engine: AnalysisEngine,
+  args: Record<string, unknown>
+): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const path = getString(args, 'path') ?? '';
+  const limit = getNumber(args, 'limit') ?? 5;
 
   const report = await engine.analyzeProject({ path });
   const recommendations = report.recommendations.slice(0, limit);
 
-  const formatted = `# Recommendations for Tech Debt Reduction\n\n${recommendations.map((r, i) => `## ${i + 1}. ${r.title}\n\n${r.description}\n\n**Priority:** ${r.priority} | **Effort:** ${r.effort} | **Impact:** ${r.impact}\n\n**Action Items:**\n${r.actionItems.map(a => `- ${a}`).join('\n')}\n`).join('\n---\n\n')}`;
+  const recLines = recommendations.map((r, i) =>
+    `## ${i + 1}. ${r.title}\n\n${r.description}\n\n` +
+    `**Priority:** ${r.priority} | **Effort:** ${r.effort} | **Impact:** ${r.impact}\n\n` +
+    `**Action Items:**\n${r.actionItems.map(a => `- ${a}`).join('\n')}\n`
+  ).join('\n---\n\n');
+
+  const formatted = `# Recommendations for Tech Debt Reduction\n\n${recLines}`;
 
   return { content: [{ type: 'text', text: formatted }] };
 }
 
-async function handleGetIssuesBySeverity(engine: AnalysisEngine, args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = args.path as string;
-  const severity = args.severity as Severity;
+async function handleGetIssuesBySeverity(
+  engine: AnalysisEngine,
+  args: Record<string, unknown>
+): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const path = getString(args, 'path') ?? '';
+  const severity = getString(args, 'severity') as Severity;
 
   const report = await engine.analyzeProject({ path, severity });
   const issues = report.issues.filter(i => i.severity === severity);
 
-  const formatted = `# ${severity.toUpperCase()} Severity Issues\n\nFound **${issues.length}** ${severity} severity issues.\n\n${issues.slice(0, 50).map(i => `## ${i.title}\n- **File:** ${i.file}${i.line ? `:${i.line}` : ''}\n- **Category:** ${i.category}\n- **Rule:** ${i.rule}\n- **Description:** ${i.description}\n${i.suggestion ? `- **Suggestion:** ${i.suggestion}` : ''}\n`).join('\n---\n\n')}${issues.length > 50 ? `\n... and ${issues.length - 50} more issues.` : ''}\n`;
+  const issueLines = issues.slice(0, 50).map(i =>
+    `## ${i.title}\n` +
+    `- **File:** ${i.file}${i.line ? `:${i.line}` : ''}\n` +
+    `- **Category:** ${i.category}\n` +
+    `- **Rule:** ${i.rule}\n` +
+    `- **Description:** ${i.description}\n` +
+    (i.suggestion ? `- **Suggestion:** ${i.suggestion}` : '')
+  ).join('\n---\n\n');
+
+  const overflow = issues.length > 50 ? `\n... and ${issues.length - 50} more issues.` : '';
+
+  const formatted =
+    `# ${severity.toUpperCase()} Severity Issues\n\n` +
+    `Found **${issues.length}** ${severity} severity issues.\n\n` +
+    `${issueLines}${overflow}\n`;
 
   return { content: [{ type: 'text', text: formatted }] };
 }
 
-async function handleGetIssuesByCategory(engine: AnalysisEngine, args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = args.path as string;
-  const category = args.category as DebtCategory;
+async function handleGetIssuesByCategory(
+  engine: AnalysisEngine,
+  args: Record<string, unknown>
+): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const path = getString(args, 'path') ?? '';
+  const category = getString(args, 'category') as DebtCategory;
 
   const report = await engine.analyzeProject({ path, categories: [category] });
   const issues = report.issues;
 
-  const formatted = `# ${category.toUpperCase()} Issues\n\nFound **${issues.length}** issues in the ${category} category.\n\n${issues.slice(0, 50).map(i => `## ${i.title}\n- **File:** ${i.file}${i.line ? `:${i.line}` : ''}\n- **Severity:** ${i.severity}\n- **Rule:** ${i.rule}\n- **Description:** ${i.description}\n${i.suggestion ? `- **Suggestion:** ${i.suggestion}` : ''}\n`).join('\n---\n\n')}${issues.length > 50 ? `\n... and ${issues.length - 50} more issues.` : ''}\n`;
+  const issueLines = issues.slice(0, 50).map(i =>
+    `## ${i.title}\n` +
+    `- **File:** ${i.file}${i.line ? `:${i.line}` : ''}\n` +
+    `- **Severity:** ${i.severity}\n` +
+    `- **Rule:** ${i.rule}\n` +
+    `- **Description:** ${i.description}\n` +
+    (i.suggestion ? `- **Suggestion:** ${i.suggestion}` : '')
+  ).join('\n---\n\n');
+
+  const overflow = issues.length > 50 ? `\n... and ${issues.length - 50} more issues.` : '';
+
+  const formatted =
+    `# ${category.toUpperCase()} Issues\n\n` +
+    `Found **${issues.length}** issues in the ${category} category.\n\n` +
+    `${issueLines}${overflow}\n`;
 
   return { content: [{ type: 'text', text: formatted }] };
 }
 
 // Custom Rules Handlers
 
-async function handleAddCustomRule(customRulesEngine: CustomRulesEngine, args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
+async function handleAddCustomRule(
+  customRulesEngine: CustomRulesEngine,
+  args: Record<string, unknown>
+): Promise<{ content: Array<{ type: string; text: string }> }> {
   const { id, pattern, message, severity, category, suggestion, languages, flags } = args;
 
   const customPattern: CustomPattern = {
-    id: id as string,
-    pattern: pattern as string,
-    message: message as string,
+    id: typeof id === 'string' ? id : '',
+    pattern: typeof pattern === 'string' ? pattern : '',
+    message: typeof message === 'string' ? message : '',
     severity: severity as Severity,
     category: category as DebtCategory,
-    suggestion: suggestion as string | undefined,
-    languages: (languages as string[] | undefined)?.map(l => l as SupportedLanguage),
-    flags: flags as string | undefined,
+    suggestion: typeof suggestion === 'string' ? suggestion : undefined,
+    languages: Array.isArray(languages)
+      ? (languages as SupportedLanguage[])
+      : undefined,
+    flags: typeof flags === 'string' ? flags : undefined,
   };
 
   const validation = CustomRulesEngine.validatePattern(customPattern);
   if (!validation.valid) {
-    return { content: [{ type: 'text', text: `❌ Pattern validation failed:\n${validation.errors.map(e => `- ${e}`).join('\n')}` }] };
+    const errorList = validation.errors.map(e => `- ${e}`).join('\n');
+    return {
+      content: [{
+        type: 'text',
+        text: `❌ Pattern validation failed:\n${errorList}`,
+      }],
+    };
   }
 
   customRulesEngine.addRule(customPattern);
-  return { content: [{ type: 'text', text: `✅ Custom rule '${id}' added successfully.\n\nRule: ${pattern}\nSeverity: ${severity}\nCategory: ${category}` }] };
+  return {
+    content: [{
+      type: 'text',
+      text:
+        `✅ Custom rule '${id}' added successfully.\n\n` +
+        `Rule: ${pattern}\nSeverity: ${severity}\nCategory: ${category}`,
+    }],
+  };
 }
 
-function handleRemoveCustomRule(customRulesEngine: CustomRulesEngine, args: Record<string, unknown>): { content: Array<{ type: string; text: string }> } {
-  const id = args.id as string;
+function handleRemoveCustomRule(
+  customRulesEngine: CustomRulesEngine,
+  args: Record<string, unknown>
+): { content: Array<{ type: string; text: string }> } {
+  const id = getString(args, 'id') ?? '';
   const removed = customRulesEngine.removeRule(id);
-  if (removed) return { content: [{ type: 'text', text: `✅ Custom rule '${id}' removed successfully.` }] };
+  if (removed) {
+    return { content: [{ type: 'text', text: `✅ Custom rule '${id}' removed successfully.` }] };
+  }
   return { content: [{ type: 'text', text: `❌ Custom rule '${id}' not found.` }] };
 }
 
-function handleListCustomRules(customRulesEngine: CustomRulesEngine): { content: Array<{ type: string; text: string }> } {
+function handleListCustomRules(
+  customRulesEngine: CustomRulesEngine
+): { content: Array<{ type: string; text: string }> } {
   const rules = customRulesEngine.getAllRules();
   const stats = customRulesEngine.getRuleStats();
-  if (rules.length === 0) return { content: [{ type: 'text', text: 'No custom rules defined.' }] };
+  if (rules.length === 0) {
+    return { content: [{ type: 'text', text: 'No custom rules defined.' }] };
+  }
 
-  const rulesText = rules.map(r => `- **${r.id}**: ${r.message}\n  - Pattern: \`${r.pattern}\`\n  - Severity: ${r.severity}\n  - Category: ${r.category}\n  ${r.languages ? `- Languages: ${r.languages.join(', ')}` : '- Languages: All'}`).join('\n');
+  const rulesText = rules.map(r =>
+    `- **${r.id}**: ${r.message}\n` +
+    `  - Pattern: \`${r.pattern}\`\n` +
+    `  - Severity: ${r.severity}\n` +
+    `  - Category: ${r.category}\n` +
+    `  ${r.languages ? `- Languages: ${r.languages.join(', ')}` : '- Languages: All'}`
+  ).join('\n');
 
-  const statsText = `\n## Statistics\n\n- **Total Rules:** ${stats.totalRules}\n- **By Severity:** Low: ${stats.bySeverity.low}, Medium: ${stats.bySeverity.medium}, High: ${stats.bySeverity.high}, Critical: ${stats.bySeverity.critical}\n- **By Category:** \n  ${Object.entries(stats.byCategory).filter(([_, count]) => count > 0).map(([cat, count]) => `  - ${cat}: ${count}`).join('\n')}\n`;
+  const catStats = Object.entries(stats.byCategory)
+    .filter(([, count]) => count > 0)
+    .map(([cat, count]) => `  - ${cat}: ${count}`)
+    .join('\n');
+
+  const statsText =
+    `\n## Statistics\n\n` +
+    `- **Total Rules:** ${stats.totalRules}\n` +
+    `- **By Severity:** Low: ${stats.bySeverity.low}, Medium: ${stats.bySeverity.medium}, ` +
+    `High: ${stats.bySeverity.high}, Critical: ${stats.bySeverity.critical}\n` +
+    `- **By Category:** \n${catStats}\n`;
 
   return { content: [{ type: 'text', text: `# Custom Rules\n\n${rulesText}\n${statsText}` }] };
 }
 
-async function handleExecuteCustomRules(customRulesEngine: CustomRulesEngine, args: Record<string, unknown>): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = args.path as string | undefined;
-  let code = args.code as string | undefined;
-  const language = args.language as string | undefined;
-  if (!path && !code) return { content: [{ type: 'text', text: '❌ Either path or code must be provided' }] };
+async function handleExecuteCustomRules(
+  customRulesEngine: CustomRulesEngine,
+  args: Record<string, unknown>
+): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const path = getString(args, 'path');
+  let code = getString(args, 'code');
+  const language = getString(args, 'language');
+
+  if (!path && !code) {
+    return { content: [{ type: 'text', text: '❌ Either path or code must be provided' }] };
+  }
   if (!code && path) {
-    if (!await fileExists(path)) return { content: [{ type: 'text', text: `❌ File not found: ${path}` }] };
+    if (!await fileExists(path)) {
+      return { content: [{ type: 'text', text: `❌ File not found: ${path}` }] };
+    }
     code = await readFile(path);
   }
-  if (!code) return { content: [{ type: 'text', text: '❌ Could not read code from path or input' }] };
+  if (!code) {
+    return { content: [{ type: 'text', text: '❌ Could not read code from path or input' }] };
+  }
 
-  const filePath = path || 'inline-code';
+  const filePath = path ?? 'inline-code';
   const issues = customRulesEngine.executeRules(filePath, code, language);
-  if (issues.length === 0) return { content: [{ type: 'text', text: `✅ No custom rule violations found in ${filePath}.` }] };
+  if (issues.length === 0) {
+    return {
+      content: [{
+        type: 'text',
+        text: `✅ No custom rule violations found in ${filePath}.`,
+      }],
+    };
+  }
 
-  const formatted = `# Custom Rule Violations in ${filePath}\n\nFound ${issues.length} issue(s):\n\n${issues.map(issue => `## ${issue.title} [${issue.severity.toUpperCase()}]\n\n**File:** ${issue.file}:${issue.line}\n**Rule:** \`${issue.rule}\`\n**Category:** ${issue.category}\n**Suggestion:** ${issue.suggestion || 'N/A'}\n\n\
-${'```'}\n${issue.description}\n${'```'}`).join('\n\n---\n\n')}`;
+  const issueLines = issues.map(issue =>
+    `## ${issue.title} [${issue.severity.toUpperCase()}]\n\n` +
+    `**File:** ${issue.file}:${issue.line}\n` +
+    `**Rule:** \`${issue.rule}\`\n` +
+    `**Category:** ${issue.category}\n` +
+    `**Suggestion:** ${issue.suggestion ?? 'N/A'}\n\n` +
+    `${'```'}\n${issue.description}\n${'```'}`
+  ).join('\n\n---\n\n');
+
+  const formatted =
+    `# Custom Rule Violations in ${filePath}\n\n` +
+    `Found ${issues.length} issue(s):\n\n${issueLines}`;
 
   return { content: [{ type: 'text', text: formatted }] };
 }
 
-function handleValidateCustomPattern(args: Record<string, unknown>): { content: Array<{ type: string; text: string }> } {
+function handleValidateCustomPattern(
+  args: Record<string, unknown>
+): { content: Array<{ type: string; text: string }> } {
   const customPattern: CustomPattern = {
-    id: args.id as string,
-    pattern: args.pattern as string,
-    message: args.message as string,
+    id: typeof args.id === 'string' ? args.id : '',
+    pattern: typeof args.pattern === 'string' ? args.pattern : '',
+    message: typeof args.message === 'string' ? args.message : '',
     severity: args.severity as Severity,
     category: args.category as DebtCategory,
   };
 
   const validation = CustomRulesEngine.validatePattern(customPattern);
-  if (validation.valid) return { content: [{ type: 'text', text: `✅ Pattern is valid and can be used as a custom rule.` }] };
-  return { content: [{ type: 'text', text: `❌ Pattern validation failed:\n${validation.errors.map(e => `- ${e}`).join('\n')}` }] };
+  if (validation.valid) {
+    return {
+      content: [{
+        type: 'text',
+        text: '✅ Pattern is valid and can be used as a custom rule.',
+      }],
+    };
+  }
+  const errorList = validation.errors.map(e => `- ${e}`).join('\n');
+  return {
+    content: [{
+      type: 'text',
+      text: `❌ Pattern validation failed:\n${errorList}`,
+    }],
+  };
 }
-
