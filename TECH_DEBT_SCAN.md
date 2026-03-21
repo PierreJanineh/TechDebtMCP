@@ -168,8 +168,8 @@ These are **legitimate pattern definitions**, not actual code issues:
 ### Deep Nesting Issues
 
 2. **src/index.ts:63** - 8 levels of nesting
-3. **src/core/customRulesEngine.ts:129** - 7 levels
-4. **src/core/analysisEngine.ts:93** - 5 levels
+3. ~~**src/core/customRulesEngine.ts:129** - 7 levels~~ ✅ **DONE** (PR #118)
+4. ~~**src/core/analysisEngine.ts:93** - 5 levels~~ ✅ **DONE** (PR #118)
 
 ### Non-null Assertions
 
@@ -229,9 +229,9 @@ These are **legitimate pattern definitions**, not actual code issues:
    - Use optional chaining `value?.property`
    - Add proper guard clauses
 
-6. **Reduce nesting** - Apply early returns pattern
-   - Target files: `index.ts`, `customRulesEngine.ts`, `analysisEngine.ts`
-   - Extract complex logic to helper functions
+6. ~~**Reduce nesting** - Apply early returns pattern~~  ✅ **DONE** (PR #118)
+   - ~~Target files: `index.ts`, `customRulesEngine.ts`, `analysisEngine.ts`~~
+   - `customRulesEngine.ts` and `analysisEngine.ts` refactored to ≤4 levels
 
 ## 📈 Success Metrics
 

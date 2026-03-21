@@ -648,9 +648,9 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
 
 #### Medium Priority (Gradual improvement)
 
-5. **Deep nesting in multiple files:**
-   - `src/core/customRulesEngine.ts:129` - 7 levels
-   - `src/core/analysisEngine.ts:93` - 5 levels
+5. ~~**Deep nesting in multiple files:**~~
+   - ~~`src/core/customRulesEngine.ts:129` - 7 levels~~ ✅ **DONE** (PR #118) — refactored to ≤4 levels via helper methods
+   - ~~`src/core/analysisEngine.ts:93` - 5 levels~~ ✅ **DONE** (PR #118) — refactored to ≤4 levels via early returns
 
 6. **Test file organization** - Previously had 9-level deep nesting
    - Now excluded from production analysis via `.techdebtrc.json`
