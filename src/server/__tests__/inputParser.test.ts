@@ -14,6 +14,25 @@ import {
 } from '../inputParser.js';
 
 describe('inputParser', () => {
+  // ---- top-level shape validation ----
+  describe('non-object args rejection', () => {
+    it('throws McpError(InvalidParams) when args is null', () => {
+      expect(() => parseAnalyzeProjectInput(null)).toThrow(McpError);
+    });
+
+    it('throws McpError(InvalidParams) when args is an array', () => {
+      expect(() => parseAnalyzeProjectInput(['/project'])).toThrow(McpError);
+    });
+
+    it('throws McpError(InvalidParams) when args is a string', () => {
+      expect(() => parseAnalyzeFileInput('/file.ts')).toThrow(McpError);
+    });
+
+    it('throws McpError(InvalidParams) when args is a number', () => {
+      expect(() => parseGetDebtSummaryInput(42)).toThrow(McpError);
+    });
+  });
+
   // ---- parseAnalyzeProjectInput ----
   describe('parseAnalyzeProjectInput', () => {
     it('returns typed object for valid full input', () => {
@@ -118,6 +137,49 @@ describe('inputParser', () => {
 
     it('returns undefined limit when absent', () => {
       expect(parseGetRecommendationsInput({ path: '/p' }).limit).toBeUndefined();
+    });
+
+    it('throws McpError for NaN limit', () => {
+      expect(() =>
+        parseGetRecommendationsInput({ path: '/p', limit: NaN }),
+      ).toThrow(McpError);
+    });
+
+    it('throws McpError for Infinity limit', () => {
+      expect(() =>
+        parseGetRecommendationsInput({ path: '/p', limit: Infinity }),
+      ).toThrow(McpError);
+    });
+  });
+
+  // ---- numeric edge cases (optionalNumber) ----
+  describe('numeric edge cases', () => {
+    it('throws McpError for NaN developmentTime', () => {
+      expect(() =>
+        parseGetSqaleMetricsInput({ path: '/p', developmentTime: NaN }),
+      ).toThrow(McpError);
+    });
+
+    it('throws McpError for Infinity developmentTime', () => {
+      expect(() =>
+        parseGetSqaleMetricsInput({ path: '/p', developmentTime: Infinity }),
+      ).toThrow(McpError);
+    });
+
+    it('throws McpError for -Infinity developmentTime', () => {
+      expect(() =>
+        parseGetSqaleMetricsInput({ path: '/p', developmentTime: -Infinity }),
+      ).toThrow(McpError);
+    });
+
+    it('accepts 0 as a valid finite number for limit', () => {
+      const result = parseGetRecommendationsInput({ path: '/p', limit: 0 });
+      expect(result.limit).toBe(0);
+    });
+
+    it('accepts negative numbers as valid finite numbers (callers enforce domain constraints)', () => {
+      const result = parseGetRecommendationsInput({ path: '/p', limit: -1 });
+      expect(result.limit).toBe(-1);
     });
   });
 

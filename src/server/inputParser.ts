@@ -4,6 +4,7 @@ import {
   DebtCategory,
   Severity,
 } from '../types/index.js';
+import { LANGUAGE_CONFIGS } from '../config/languages.js';
 
 /** Typed input for analyze_project tool */
 export interface AnalyzeProjectInput {
@@ -92,22 +93,15 @@ const VALID_CATEGORIES: DebtCategory[] = [
   'performance',
   'maintainability',
 ];
-const VALID_LANGUAGES: SupportedLanguage[] = [
-  'javascript',
-  'typescript',
-  'python',
-  'java',
-  'swift',
-  'kotlin',
-  'objectivec',
-  'cpp',
-  'c',
-  'csharp',
-  'go',
-  'rust',
-  'ruby',
-  'php',
-];
+/** Derived from LANGUAGE_CONFIGS keys to stay in sync with supported languages. */
+const VALID_LANGUAGES: SupportedLanguage[] = Object.keys(LANGUAGE_CONFIGS) as SupportedLanguage[];
+
+/**
+ * Type guard: checks that a value is a plain, non-null, non-array object.
+ */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
 /**
  * Assert that a value is a non-empty string, throwing McpError if not.
@@ -211,7 +205,7 @@ function optionalSeverity(
   return value as Severity;
 }
 
-/** Optional number field — returns undefined if absent. */
+/** Optional number field — returns undefined if absent. Rejects NaN and Infinity. */
 function optionalNumber(
   args: Record<string, unknown>,
   key: string,
@@ -220,6 +214,9 @@ function optionalNumber(
   if (value === undefined || value === null) return undefined;
   if (typeof value !== 'number') {
     throw new McpError(ErrorCode.InvalidParams, `${key} must be a number`);
+  }
+  if (!Number.isFinite(value)) {
+    throw new McpError(ErrorCode.InvalidParams, `${key} must be a finite number`);
   }
   return value;
 }
@@ -238,17 +235,32 @@ function optionalString(
 }
 
 /**
+ * Assert that args is a plain non-null, non-array object, throwing McpError(InvalidParams) if not.
+ * Returns the narrowed Record so callers can safely index it.
+ */
+function requireRecord(args: unknown): Record<string, unknown> {
+  if (!isRecord(args)) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      'Tool arguments must be a plain object',
+    );
+  }
+  return args;
+}
+
+/**
  * Parse and validate typed input for the analyze_project tool.
  */
 export function parseAnalyzeProjectInput(
-  args: Record<string, unknown>,
+  args: unknown,
 ): AnalyzeProjectInput {
+  const a = requireRecord(args);
   return {
-    path: requireString(args, 'path'),
-    languages: optionalLanguages(args, 'languages'),
-    categories: optionalCategories(args, 'categories'),
-    severity: optionalSeverity(args, 'severity'),
-    maxFiles: optionalNumber(args, 'maxFiles'),
+    path: requireString(a, 'path'),
+    languages: optionalLanguages(a, 'languages'),
+    categories: optionalCategories(a, 'categories'),
+    severity: optionalSeverity(a, 'severity'),
+    maxFiles: optionalNumber(a, 'maxFiles'),
   };
 }
 
@@ -256,29 +268,32 @@ export function parseAnalyzeProjectInput(
  * Parse and validate typed input for the analyze_file tool.
  */
 export function parseAnalyzeFileInput(
-  args: Record<string, unknown>,
+  args: unknown,
 ): AnalyzeFileInput {
-  return { path: requireString(args, 'path') };
+  const a = requireRecord(args);
+  return { path: requireString(a, 'path') };
 }
 
 /**
  * Parse and validate typed input for the get_debt_summary tool.
  */
 export function parseGetDebtSummaryInput(
-  args: Record<string, unknown>,
+  args: unknown,
 ): GetDebtSummaryInput {
-  return { path: requireString(args, 'path') };
+  const a = requireRecord(args);
+  return { path: requireString(a, 'path') };
 }
 
 /**
  * Parse and validate typed input for the get_sqale_metrics tool.
  */
 export function parseGetSqaleMetricsInput(
-  args: Record<string, unknown>,
+  args: unknown,
 ): GetSqaleMetricsInput {
+  const a = requireRecord(args);
   return {
-    path: requireString(args, 'path'),
-    developmentTime: optionalNumber(args, 'developmentTime'),
+    path: requireString(a, 'path'),
+    developmentTime: optionalNumber(a, 'developmentTime'),
   };
 }
 
@@ -286,11 +301,12 @@ export function parseGetSqaleMetricsInput(
  * Parse and validate typed input for the get_recommendations tool.
  */
 export function parseGetRecommendationsInput(
-  args: Record<string, unknown>,
+  args: unknown,
 ): GetRecommendationsInput {
+  const a = requireRecord(args);
   return {
-    path: requireString(args, 'path'),
-    limit: optionalNumber(args, 'limit'),
+    path: requireString(a, 'path'),
+    limit: optionalNumber(a, 'limit'),
   };
 }
 
@@ -298,11 +314,12 @@ export function parseGetRecommendationsInput(
  * Parse and validate typed input for the get_issues_by_severity tool.
  */
 export function parseGetIssuesBySeverityInput(
-  args: Record<string, unknown>,
+  args: unknown,
 ): GetIssuesBySeverityInput {
+  const a = requireRecord(args);
   return {
-    path: requireString(args, 'path'),
-    severity: requireSeverity(args, 'severity'),
+    path: requireString(a, 'path'),
+    severity: requireSeverity(a, 'severity'),
   };
 }
 
@@ -310,11 +327,12 @@ export function parseGetIssuesBySeverityInput(
  * Parse and validate typed input for the get_issues_by_category tool.
  */
 export function parseGetIssuesByCategoryInput(
-  args: Record<string, unknown>,
+  args: unknown,
 ): GetIssuesByCategoryInput {
+  const a = requireRecord(args);
   return {
-    path: requireString(args, 'path'),
-    category: requireCategory(args, 'category'),
+    path: requireString(a, 'path'),
+    category: requireCategory(a, 'category'),
   };
 }
 
@@ -322,17 +340,18 @@ export function parseGetIssuesByCategoryInput(
  * Parse and validate typed input for the add_custom_rule tool.
  */
 export function parseAddCustomRuleInput(
-  args: Record<string, unknown>,
+  args: unknown,
 ): AddCustomRuleInput {
+  const a = requireRecord(args);
   return {
-    id: requireString(args, 'id'),
-    pattern: requireString(args, 'pattern'),
-    message: requireString(args, 'message'),
-    severity: requireSeverity(args, 'severity'),
-    category: requireCategory(args, 'category'),
-    suggestion: optionalString(args, 'suggestion'),
-    languages: optionalLanguages(args, 'languages'),
-    flags: optionalString(args, 'flags'),
+    id: requireString(a, 'id'),
+    pattern: requireString(a, 'pattern'),
+    message: requireString(a, 'message'),
+    severity: requireSeverity(a, 'severity'),
+    category: requireCategory(a, 'category'),
+    suggestion: optionalString(a, 'suggestion'),
+    languages: optionalLanguages(a, 'languages'),
+    flags: optionalString(a, 'flags'),
   };
 }
 
@@ -340,21 +359,23 @@ export function parseAddCustomRuleInput(
  * Parse and validate typed input for the remove_custom_rule tool.
  */
 export function parseRemoveCustomRuleInput(
-  args: Record<string, unknown>,
+  args: unknown,
 ): RemoveCustomRuleInput {
-  return { id: requireString(args, 'id') };
+  const a = requireRecord(args);
+  return { id: requireString(a, 'id') };
 }
 
 /**
  * Parse and validate typed input for the execute_custom_rules tool.
  */
 export function parseExecuteCustomRulesInput(
-  args: Record<string, unknown>,
+  args: unknown,
 ): ExecuteCustomRulesInput {
+  const a = requireRecord(args);
   return {
-    path: optionalString(args, 'path'),
-    code: optionalString(args, 'code'),
-    language: optionalString(args, 'language'),
+    path: optionalString(a, 'path'),
+    code: optionalString(a, 'code'),
+    language: optionalString(a, 'language'),
   };
 }
 
@@ -362,13 +383,14 @@ export function parseExecuteCustomRulesInput(
  * Parse and validate typed input for the validate_custom_pattern tool.
  */
 export function parseValidateCustomPatternInput(
-  args: Record<string, unknown>,
+  args: unknown,
 ): ValidateCustomPatternInput {
+  const a = requireRecord(args);
   return {
-    id: requireString(args, 'id'),
-    pattern: requireString(args, 'pattern'),
-    message: requireString(args, 'message'),
-    severity: requireSeverity(args, 'severity'),
-    category: requireCategory(args, 'category'),
+    id: requireString(a, 'id'),
+    pattern: requireString(a, 'pattern'),
+    message: requireString(a, 'message'),
+    severity: requireSeverity(a, 'severity'),
+    category: requireCategory(a, 'category'),
   };
 }

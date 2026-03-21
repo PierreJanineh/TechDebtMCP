@@ -54,34 +54,31 @@ export function attachHandlers(mcpServer: McpServer): void {
     try {
       switch (name) {
         case 'analyze_project':
-          return await handleAnalyzeProject(engine, args as Record<string, unknown>);
+          return await handleAnalyzeProject(engine, args);
         case 'analyze_file':
-          return await handleAnalyzeFile(args as Record<string, unknown>);
+          return await handleAnalyzeFile(args);
         case 'get_debt_summary':
-          return await handleGetDebtSummary(engine, args as Record<string, unknown>);
+          return await handleGetDebtSummary(engine, args);
         case 'get_sqale_metrics':
-          return await handleGetSqaleMetrics(engine, args as Record<string, unknown>);
+          return await handleGetSqaleMetrics(engine, args);
         case 'list_supported_languages':
           return handleListSupportedLanguages();
         case 'get_recommendations':
-          return await handleGetRecommendations(engine, args as Record<string, unknown>);
+          return await handleGetRecommendations(engine, args);
         case 'get_issues_by_severity':
-          return await handleGetIssuesBySeverity(engine, args as Record<string, unknown>);
+          return await handleGetIssuesBySeverity(engine, args);
         case 'get_issues_by_category':
-          return await handleGetIssuesByCategory(engine, args as Record<string, unknown>);
+          return await handleGetIssuesByCategory(engine, args);
         case 'add_custom_rule':
-          return await handleAddCustomRule(customRulesEngine, args as Record<string, unknown>);
+          return await handleAddCustomRule(customRulesEngine, args);
         case 'remove_custom_rule':
-          return handleRemoveCustomRule(customRulesEngine, args as Record<string, unknown>);
+          return handleRemoveCustomRule(customRulesEngine, args);
         case 'list_custom_rules':
           return handleListCustomRules(customRulesEngine);
         case 'execute_custom_rules':
-          return await handleExecuteCustomRules(
-            customRulesEngine,
-            args as Record<string, unknown>,
-          );
+          return await handleExecuteCustomRules(customRulesEngine, args);
         case 'validate_custom_pattern':
-          return handleValidateCustomPattern(args as Record<string, unknown>);
+          return handleValidateCustomPattern(args);
         case 'check_dependencies':
           return await handleCheckDependencies(args as Record<string, unknown>);
         case 'validate_config':
@@ -101,7 +98,7 @@ export function attachHandlers(mcpServer: McpServer): void {
 
 async function handleAnalyzeProject(
   engine: AnalysisEngine,
-  args: Record<string, unknown>,
+  args: unknown,
 ): Promise<ToolResponse> {
   const { path, languages, categories, severity, maxFiles } =
     parseAnalyzeProjectInput(args);
@@ -115,7 +112,7 @@ async function handleAnalyzeProject(
   return { content: [{ type: 'text', text: formatReport(report) }] };
 }
 
-async function handleAnalyzeFile(args: Record<string, unknown>): Promise<ToolResponse> {
+async function handleAnalyzeFile(args: unknown): Promise<ToolResponse> {
   const { path } = parseAnalyzeFileInput(args);
   if (!(await fileExists(path))) {
     throw new McpError(ErrorCode.InvalidParams, `File not found: ${path}`);
@@ -126,7 +123,7 @@ async function handleAnalyzeFile(args: Record<string, unknown>): Promise<ToolRes
 
 async function handleGetDebtSummary(
   engine: AnalysisEngine,
-  args: Record<string, unknown>,
+  args: unknown,
 ): Promise<ToolResponse> {
   const { path } = parseGetDebtSummaryInput(args);
   const report = await engine.analyzeProject({ path, maxFiles: 100 });
@@ -154,7 +151,7 @@ async function handleGetDebtSummary(
 
 async function handleGetSqaleMetrics(
   engine: AnalysisEngine,
-  args: Record<string, unknown>,
+  args: unknown,
 ): Promise<ToolResponse> {
   const { path, developmentTime: developmentTimeHours } = parseGetSqaleMetricsInput(args);
   const report = await engine.analyzeProject({ path, maxFiles: 100 });
@@ -243,7 +240,7 @@ ${languageList.map(l =>
 
 async function handleGetRecommendations(
   engine: AnalysisEngine,
-  args: Record<string, unknown>,
+  args: unknown,
 ): Promise<ToolResponse> {
   const { path, limit = 5 } = parseGetRecommendationsInput(args);
   const report = await engine.analyzeProject({ path });
@@ -266,7 +263,7 @@ async function handleGetRecommendations(
 
 async function handleGetIssuesBySeverity(
   engine: AnalysisEngine,
-  args: Record<string, unknown>,
+  args: unknown,
 ): Promise<ToolResponse> {
   const { path, severity } = parseGetIssuesBySeverityInput(args);
   const report = await engine.analyzeProject({ path, severity });
@@ -298,7 +295,7 @@ async function handleGetIssuesBySeverity(
 
 async function handleGetIssuesByCategory(
   engine: AnalysisEngine,
-  args: Record<string, unknown>,
+  args: unknown,
 ): Promise<ToolResponse> {
   const { path, category } = parseGetIssuesByCategoryInput(args);
   const report = await engine.analyzeProject({ path, categories: [category] });
@@ -332,7 +329,7 @@ async function handleGetIssuesByCategory(
 
 async function handleAddCustomRule(
   customRulesEngine: CustomRulesEngine,
-  args: Record<string, unknown>,
+  args: unknown,
 ): Promise<ToolResponse> {
   const input = parseAddCustomRuleInput(args);
 
@@ -368,7 +365,7 @@ async function handleAddCustomRule(
 
 function handleRemoveCustomRule(
   customRulesEngine: CustomRulesEngine,
-  args: Record<string, unknown>,
+  args: unknown,
 ): ToolResponse {
   const { id } = parseRemoveCustomRuleInput(args);
   const removed = customRulesEngine.removeRule(id);
@@ -417,7 +414,7 @@ function handleListCustomRules(customRulesEngine: CustomRulesEngine): ToolRespon
 
 async function handleExecuteCustomRules(
   customRulesEngine: CustomRulesEngine,
-  args: Record<string, unknown>,
+  args: unknown,
 ): Promise<ToolResponse> {
   const input = parseExecuteCustomRulesInput(args);
   let { path, code } = input;
@@ -464,7 +461,7 @@ async function handleExecuteCustomRules(
   return { content: [{ type: 'text', text: formatted }] };
 }
 
-function handleValidateCustomPattern(args: Record<string, unknown>): ToolResponse {
+function handleValidateCustomPattern(args: unknown): ToolResponse {
   const input = parseValidateCustomPatternInput(args);
   const customPattern: CustomPattern = {
     id: input.id,
