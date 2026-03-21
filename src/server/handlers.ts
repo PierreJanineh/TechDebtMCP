@@ -15,25 +15,24 @@ import { TOOL_DEFINITIONS } from './tools.js';
 import { handleValidateConfig } from './configValidator.js';
 import { handleCheckDependencies, handleGetVulnerabilityReport } from './dependencyHandlers.js';
 import {
-  SupportedLanguage,
-  DebtCategory,
-  Severity,
   CustomPattern,
 } from '../types/index.js';
+import {
+  parseAnalyzeProjectInput,
+  parseAnalyzeFileInput,
+  parseGetDebtSummaryInput,
+  parseGetSqaleMetricsInput,
+  parseGetRecommendationsInput,
+  parseGetIssuesBySeverityInput,
+  parseGetIssuesByCategoryInput,
+  parseAddCustomRuleInput,
+  parseRemoveCustomRuleInput,
+  parseExecuteCustomRulesInput,
+  parseValidateCustomPatternInput,
+} from './inputParser.js';
 
-// --- Type guard helpers ---
-
-/** Returns the string value of a key in an args record, or undefined. */
-function getString(args: Record<string, unknown>, key: string): string | undefined {
-  const value = args[key];
-  return typeof value === 'string' ? value : undefined;
-}
-
-/** Returns the number value of a key in an args record, or undefined. */
-function getNumber(args: Record<string, unknown>, key: string): number | undefined {
-  const value = args[key];
-  return typeof value === 'number' ? value : undefined;
-}
+/** MCP tool response shape */
+type ToolResponse = { content: Array<{ type: string; text: string }> };
 
 /**
  * Attach all tool handlers to a given McpServer instance.
@@ -91,44 +90,18 @@ export function attachHandlers(mcpServer: McpServer): void {
       }
     } catch (error) {
       if (error instanceof McpError) throw error;
-      const msg = error instanceof Error ? error.message : 'Unknown error';
-      throw new McpError(ErrorCode.InternalError, `Error executing ${name}: ${msg}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new McpError(ErrorCode.InternalError, `Error executing ${name}: ${message}`);
     }
   });
 }
 
 async function handleAnalyzeProject(
   engine: AnalysisEngine,
-  args: Record<string, unknown>
-): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = getString(args, 'path');
-  if (!path || !path.trim()) {
-    throw new McpError(ErrorCode.InvalidParams, "Parameter 'path' is required and must be a non-empty string.");
-  }
-  const allowedLanguages = Object.keys(LANGUAGE_CONFIGS) as SupportedLanguage[];
-  const languages = Array.isArray(args.languages)
-    ? (args.languages as string[]).filter(l => allowedLanguages.includes(l as SupportedLanguage)) as SupportedLanguage[]
-    : undefined;
-
-  const allowedCategories: DebtCategory[] = [
-    'dependency', 'code-quality', 'architecture', 'documentation',
-    'testing', 'security', 'performance', 'maintainability',
-  ];
-  const categories = Array.isArray(args.categories)
-    ? (args.categories as string[]).filter(c => allowedCategories.includes(c as DebtCategory)) as DebtCategory[]
-    : undefined;
-
-  const allowedSeverities: Severity[] = ['low', 'medium', 'high', 'critical'];
-  const severityRaw = getString(args, 'severity');
-  if (severityRaw !== undefined && !allowedSeverities.includes(severityRaw as Severity)) {
-    throw new McpError(
-      ErrorCode.InvalidParams,
-      `Invalid 'severity' parameter. Expected one of: ${allowedSeverities.join(', ')}.`
-    );
-  }
-  const severity = severityRaw as Severity | undefined;
-  const maxFiles = getNumber(args, 'maxFiles');
-
+  args: unknown,
+): Promise<ToolResponse> {
+  const { path, languages, categories, severity, maxFiles } =
+    parseAnalyzeProjectInput(args);
   const report = await engine.analyzeProject({
     path,
     languages,
@@ -136,17 +109,11 @@ async function handleAnalyzeProject(
     severity,
     maxFiles,
   });
-
   return { content: [{ type: 'text', text: formatReport(report) }] };
 }
 
-async function handleAnalyzeFile(
-  args: Record<string, unknown>
-): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = getString(args, 'path');
-  if (!path || !path.trim()) {
-    throw new McpError(ErrorCode.InvalidParams, "Parameter 'path' is required and must be a non-empty string.");
-  }
+async function handleAnalyzeFile(args: unknown): Promise<ToolResponse> {
+  const { path } = parseAnalyzeFileInput(args);
   if (!(await fileExists(path))) {
     throw new McpError(ErrorCode.InvalidParams, `File not found: ${path}`);
   }
@@ -156,12 +123,9 @@ async function handleAnalyzeFile(
 
 async function handleGetDebtSummary(
   engine: AnalysisEngine,
-  args: Record<string, unknown>
-): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = getString(args, 'path');
-  if (!path || !path.trim()) {
-    throw new McpError(ErrorCode.InvalidParams, "Parameter 'path' is required and must be a non-empty string.");
-  }
+  args: unknown,
+): Promise<ToolResponse> {
+  const { path } = parseGetDebtSummaryInput(args);
   const report = await engine.analyzeProject({ path, maxFiles: 100 });
 
   const summary = `# Tech Debt Summary
@@ -187,23 +151,16 @@ async function handleGetDebtSummary(
 
 async function handleGetSqaleMetrics(
   engine: AnalysisEngine,
-  args: Record<string, unknown>
-): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = getString(args, 'path');
-  if (!path || !path.trim()) {
-    throw new McpError(ErrorCode.InvalidParams, "Parameter 'path' is required and must be a non-empty string.");
-  }
-  const developmentTimeHours = getNumber(args, 'developmentTime');
-  if (developmentTimeHours !== undefined && (developmentTimeHours <= 0 || !Number.isFinite(developmentTimeHours))) {
-    throw new McpError(ErrorCode.InvalidParams, "'developmentTime' must be a finite number greater than 0.");
-  }
-
+  args: unknown,
+): Promise<ToolResponse> {
+  const { path, developmentTime: developmentTimeHours } = parseGetSqaleMetricsInput(args);
   const report = await engine.analyzeProject({ path, maxFiles: 100 });
   const sqale = report.sqale;
 
   let debtRatioText = 'N/A (provide developmentTime parameter to calculate)';
   if (developmentTimeHours !== undefined) {
-    const debtRatioWithTime = (sqale.totalRemediationTime / (developmentTimeHours * 60)) * 100;
+    const debtRatioWithTime =
+      (sqale.totalRemediationTime / (developmentTimeHours * 60)) * 100;
     debtRatioText = `${debtRatioWithTime.toFixed(1)}%`;
   }
 
@@ -256,7 +213,7 @@ async function handleGetSqaleMetrics(
 }
 
 
-function handleListSupportedLanguages(): { content: Array<{ type: string; text: string }> } {
+function handleListSupportedLanguages(): ToolResponse {
   const languages = getSupportedLanguages();
 
   const languageList = languages.map(lang => {
@@ -272,8 +229,10 @@ function handleListSupportedLanguages(): { content: Array<{ type: string; text: 
   const formatted = `# Supported Languages
 
 ${languageList.map(l =>
-    `## ${l.name}\n- **ID:** \`${l.id}\`\n- **Extensions:** ${l.extensions.join(', ')}\n` +
-    `- **Specific Checks:** ${l.checks.join(', ')}\n`
+    `## ${l.name}\n` +
+    `- **ID:** \`${l.id}\`\n` +
+    `- **Extensions:** ${l.extensions.join(', ')}\n` +
+    `- **Specific Checks:** ${l.checks.join(', ')}\n`,
   ).join('\n')}`;
 
   return { content: [{ type: 'text', text: formatted }] };
@@ -281,107 +240,87 @@ ${languageList.map(l =>
 
 async function handleGetRecommendations(
   engine: AnalysisEngine,
-  args: Record<string, unknown>
-): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = getString(args, 'path');
-  if (!path || !path.trim()) {
-    throw new McpError(ErrorCode.InvalidParams, "Parameter 'path' is required and must be a non-empty string.");
-  }
-  const limit = getNumber(args, 'limit') ?? 5;
-
+  args: unknown,
+): Promise<ToolResponse> {
+  const { path, limit = 5 } = parseGetRecommendationsInput(args);
   const report = await engine.analyzeProject({ path });
   const recommendations = report.recommendations.slice(0, limit);
 
-  const recLines = recommendations.map((r, i) =>
-    `## ${i + 1}. ${r.title}\n\n${r.description}\n\n` +
-    `**Priority:** ${r.priority} | **Effort:** ${r.effort} | **Impact:** ${r.impact}\n\n` +
-    `**Action Items:**\n${r.actionItems.map(a => `- ${a}`).join('\n')}\n`
-  ).join('\n---\n\n');
-
-  const formatted = `# Recommendations for Tech Debt Reduction\n\n${recLines}`;
+  const formatted =
+    `# Recommendations for Tech Debt Reduction\n\n` +
+    recommendations
+      .map(
+        (r, i) =>
+          `## ${i + 1}. ${r.title}\n\n` +
+          `${r.description}\n\n` +
+          `**Priority:** ${r.priority} | **Effort:** ${r.effort} | **Impact:** ${r.impact}\n\n` +
+          `**Action Items:**\n${r.actionItems.map(a => `- ${a}`).join('\n')}\n`,
+      )
+      .join('\n---\n\n');
 
   return { content: [{ type: 'text', text: formatted }] };
 }
 
 async function handleGetIssuesBySeverity(
   engine: AnalysisEngine,
-  args: Record<string, unknown>
-): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = getString(args, 'path');
-  if (!path || !path.trim()) {
-    throw new McpError(ErrorCode.InvalidParams, "Parameter 'path' is required and must be a non-empty string.");
-  }
-  const severityRaw = getString(args, 'severity');
-  const allowedSeverities: Severity[] = ['low', 'medium', 'high', 'critical'];
-  if (!severityRaw || !allowedSeverities.includes(severityRaw as Severity)) {
-    throw new McpError(
-      ErrorCode.InvalidParams,
-      `Invalid or missing 'severity' parameter. Expected one of: ${allowedSeverities.join(', ')}.`
-    );
-  }
-  const severity = severityRaw as Severity;
-
+  args: unknown,
+): Promise<ToolResponse> {
+  const { path, severity } = parseGetIssuesBySeverityInput(args);
   const report = await engine.analyzeProject({ path, severity });
   const issues = report.issues.filter(i => i.severity === severity);
 
-  const issueLines = issues.slice(0, 50).map(i =>
-    `## ${i.title}\n` +
-    `- **File:** ${i.file}${i.line ? `:${i.line}` : ''}\n` +
-    `- **Category:** ${i.category}\n` +
-    `- **Rule:** ${i.rule}\n` +
-    `- **Description:** ${i.description}\n` +
-    (i.suggestion ? `- **Suggestion:** ${i.suggestion}` : '')
-  ).join('\n---\n\n');
+  const issueLines = issues
+    .slice(0, 50)
+    .map(
+      i =>
+        `## ${i.title}\n` +
+        `- **File:** ${i.file}${i.line ? `:${i.line}` : ''}\n` +
+        `- **Category:** ${i.category}\n` +
+        `- **Rule:** ${i.rule}\n` +
+        `- **Description:** ${i.description}\n` +
+        (i.suggestion ? `- **Suggestion:** ${i.suggestion}` : ''),
+    )
+    .join('\n---\n\n');
 
-  const overflow = issues.length > 50 ? `\n... and ${issues.length - 50} more issues.` : '';
-
+  const tail = issues.length > 50 ? `\n... and ${issues.length - 50} more issues.` : '';
   const formatted =
     `# ${severity.toUpperCase()} Severity Issues\n\n` +
     `Found **${issues.length}** ${severity} severity issues.\n\n` +
-    `${issueLines}${overflow}\n`;
+    issueLines +
+    tail +
+    '\n';
 
   return { content: [{ type: 'text', text: formatted }] };
 }
 
 async function handleGetIssuesByCategory(
   engine: AnalysisEngine,
-  args: Record<string, unknown>
-): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = getString(args, 'path');
-  if (!path || !path.trim()) {
-    throw new McpError(ErrorCode.InvalidParams, "Parameter 'path' is required and must be a non-empty string.");
-  }
-  const categoryRaw = getString(args, 'category');
-  const allowedCategories: DebtCategory[] = [
-    'dependency', 'code-quality', 'architecture', 'documentation',
-    'testing', 'security', 'performance', 'maintainability',
-  ];
-  if (!categoryRaw || !allowedCategories.includes(categoryRaw as DebtCategory)) {
-    throw new McpError(
-      ErrorCode.InvalidParams,
-      `Invalid or missing 'category' parameter. Expected one of: ${allowedCategories.join(', ')}.`
-    );
-  }
-  const category = categoryRaw as DebtCategory;
-
+  args: unknown,
+): Promise<ToolResponse> {
+  const { path, category } = parseGetIssuesByCategoryInput(args);
   const report = await engine.analyzeProject({ path, categories: [category] });
   const issues = report.issues;
 
-  const issueLines = issues.slice(0, 50).map(i =>
-    `## ${i.title}\n` +
-    `- **File:** ${i.file}${i.line ? `:${i.line}` : ''}\n` +
-    `- **Severity:** ${i.severity}\n` +
-    `- **Rule:** ${i.rule}\n` +
-    `- **Description:** ${i.description}\n` +
-    (i.suggestion ? `- **Suggestion:** ${i.suggestion}` : '')
-  ).join('\n---\n\n');
+  const issueLines = issues
+    .slice(0, 50)
+    .map(
+      i =>
+        `## ${i.title}\n` +
+        `- **File:** ${i.file}${i.line ? `:${i.line}` : ''}\n` +
+        `- **Severity:** ${i.severity}\n` +
+        `- **Rule:** ${i.rule}\n` +
+        `- **Description:** ${i.description}\n` +
+        (i.suggestion ? `- **Suggestion:** ${i.suggestion}` : ''),
+    )
+    .join('\n---\n\n');
 
-  const overflow = issues.length > 50 ? `\n... and ${issues.length - 50} more issues.` : '';
-
+  const tail = issues.length > 50 ? `\n... and ${issues.length - 50} more issues.` : '';
   const formatted =
     `# ${category.toUpperCase()} Issues\n\n` +
     `Found **${issues.length}** issues in the ${category} category.\n\n` +
-    `${issueLines}${overflow}\n`;
+    issueLines +
+    tail +
+    '\n';
 
   return { content: [{ type: 'text', text: formatted }] };
 }
@@ -390,79 +329,26 @@ async function handleGetIssuesByCategory(
 
 async function handleAddCustomRule(
   customRulesEngine: CustomRulesEngine,
-  args: Record<string, unknown>
-): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const { suggestion, languages, flags } = args;
-
-  const id = getString(args, 'id');
-  if (!id || !id.trim()) {
-    throw new McpError(ErrorCode.InvalidParams, "Parameter 'id' is required and must be a non-empty string.");
-  }
-  const pattern = getString(args, 'pattern');
-  if (!pattern || !pattern.trim()) {
-    throw new McpError(ErrorCode.InvalidParams, "Parameter 'pattern' is required and must be a non-empty string.");
-  }
-  const message = getString(args, 'message');
-  if (!message || !message.trim()) {
-    throw new McpError(ErrorCode.InvalidParams, "Parameter 'message' is required and must be a non-empty string.");
-  }
-
-  const allowedSeverities: Severity[] = ['low', 'medium', 'high', 'critical'];
-  const severityRaw = getString(args, 'severity');
-  if (!severityRaw || !allowedSeverities.includes(severityRaw as Severity)) {
-    throw new McpError(
-      ErrorCode.InvalidParams,
-      `Invalid or missing 'severity' parameter. Expected one of: ${allowedSeverities.join(', ')}.`
-    );
-  }
-  const severity = severityRaw as Severity;
-
-  const allowedCategories: DebtCategory[] = [
-    'dependency', 'code-quality', 'architecture', 'documentation',
-    'testing', 'security', 'performance', 'maintainability',
-  ];
-  const categoryRaw = getString(args, 'category');
-  if (!categoryRaw || !allowedCategories.includes(categoryRaw as DebtCategory)) {
-    throw new McpError(
-      ErrorCode.InvalidParams,
-      `Invalid or missing 'category' parameter. Expected one of: ${allowedCategories.join(', ')}.`
-    );
-  }
-  const category = categoryRaw as DebtCategory;
-
-  const validLanguages = Object.keys(LANGUAGE_CONFIGS) as SupportedLanguage[];
-  let validatedLanguages: SupportedLanguage[] | undefined;
-  if (Array.isArray(languages)) {
-    for (const lang of languages as string[]) {
-      if (!validLanguages.includes(lang as SupportedLanguage)) {
-        throw new McpError(
-          ErrorCode.InvalidParams,
-          `Invalid language '${lang}': must be one of ${validLanguages.join(', ')}.`
-        );
-      }
-    }
-    validatedLanguages = languages as SupportedLanguage[];
-  }
+  args: unknown,
+): Promise<ToolResponse> {
+  const input = parseAddCustomRuleInput(args);
 
   const customPattern: CustomPattern = {
-    id,
-    pattern,
-    message,
-    severity,
-    category,
-    suggestion: typeof suggestion === 'string' ? suggestion : undefined,
-    languages: validatedLanguages,
-    flags: typeof flags === 'string' ? flags : undefined,
+    id: input.id,
+    pattern: input.pattern,
+    message: input.message,
+    severity: input.severity,
+    category: input.category,
+    suggestion: input.suggestion,
+    languages: input.languages,
+    flags: input.flags,
   };
 
   const validation = CustomRulesEngine.validatePattern(customPattern);
   if (!validation.valid) {
-    const errorList = validation.errors.map(e => `- ${e}`).join('\n');
+    const errors = validation.errors.map(e => `- ${e}`).join('\n');
     return {
-      content: [{
-        type: 'text',
-        text: `❌ Pattern validation failed:\n${errorList}`,
-      }],
+      content: [{ type: 'text', text: `❌ Pattern validation failed:\n${errors}` }],
     };
   }
 
@@ -471,45 +357,45 @@ async function handleAddCustomRule(
     content: [{
       type: 'text',
       text:
-        `✅ Custom rule '${id}' added successfully.\n\n` +
-        `Rule: ${pattern}\nSeverity: ${severity}\nCategory: ${category}`,
+        `✅ Custom rule '${input.id}' added successfully.\n\n` +
+        `Rule: ${input.pattern}\nSeverity: ${input.severity}\nCategory: ${input.category}`,
     }],
   };
 }
 
 function handleRemoveCustomRule(
   customRulesEngine: CustomRulesEngine,
-  args: Record<string, unknown>
-): { content: Array<{ type: string; text: string }> } {
-  const id = getString(args, 'id');
-  if (!id || !id.trim()) {
-    throw new McpError(ErrorCode.InvalidParams, "Parameter 'id' is required and must be a non-empty string.");
-  }
+  args: unknown,
+): ToolResponse {
+  const { id } = parseRemoveCustomRuleInput(args);
   const removed = customRulesEngine.removeRule(id);
   if (removed) {
-    return { content: [{ type: 'text', text: `✅ Custom rule '${id}' removed successfully.` }] };
+    return {
+      content: [{ type: 'text', text: `✅ Custom rule '${id}' removed successfully.` }],
+    };
   }
   return { content: [{ type: 'text', text: `❌ Custom rule '${id}' not found.` }] };
 }
 
-function handleListCustomRules(
-  customRulesEngine: CustomRulesEngine
-): { content: Array<{ type: string; text: string }> } {
+function handleListCustomRules(customRulesEngine: CustomRulesEngine): ToolResponse {
   const rules = customRulesEngine.getAllRules();
   const stats = customRulesEngine.getRuleStats();
   if (rules.length === 0) {
     return { content: [{ type: 'text', text: 'No custom rules defined.' }] };
   }
 
-  const rulesText = rules.map(r =>
-    `- **${r.id}**: ${r.message}\n` +
-    `  - Pattern: \`${r.pattern}\`\n` +
-    `  - Severity: ${r.severity}\n` +
-    `  - Category: ${r.category}\n` +
-    `  ${r.languages ? `- Languages: ${r.languages.join(', ')}` : '- Languages: All'}`
-  ).join('\n');
+  const rulesText = rules
+    .map(
+      r =>
+        `- **${r.id}**: ${r.message}\n` +
+        `  - Pattern: \`${r.pattern}\`\n` +
+        `  - Severity: ${r.severity}\n` +
+        `  - Category: ${r.category}\n` +
+        `  ${r.languages ? `- Languages: ${r.languages.join(', ')}` : '- Languages: All'}`,
+    )
+    .join('\n');
 
-  const catStats = Object.entries(stats.byCategory)
+  const categoryStats = Object.entries(stats.byCategory)
     .filter(([, count]) => count > 0)
     .map(([cat, count]) => `  - ${cat}: ${count}`)
     .join('\n');
@@ -517,122 +403,82 @@ function handleListCustomRules(
   const statsText =
     `\n## Statistics\n\n` +
     `- **Total Rules:** ${stats.totalRules}\n` +
-    `- **By Severity:** Low: ${stats.bySeverity.low}, Medium: ${stats.bySeverity.medium}, ` +
-    `High: ${stats.bySeverity.high}, Critical: ${stats.bySeverity.critical}\n` +
-    `- **By Category:** \n${catStats}\n`;
+    `- **By Severity:** Low: ${stats.bySeverity.low}, ` +
+    `Medium: ${stats.bySeverity.medium}, ` +
+    `High: ${stats.bySeverity.high}, ` +
+    `Critical: ${stats.bySeverity.critical}\n` +
+    `- **By Category:** \n${categoryStats}\n`;
 
   return { content: [{ type: 'text', text: `# Custom Rules\n\n${rulesText}\n${statsText}` }] };
 }
 
 async function handleExecuteCustomRules(
   customRulesEngine: CustomRulesEngine,
-  args: Record<string, unknown>
-): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = getString(args, 'path');
-  let code = getString(args, 'code');
-  const language = getString(args, 'language');
+  args: unknown,
+): Promise<ToolResponse> {
+  const input = parseExecuteCustomRulesInput(args);
+  let { path, code } = input;
+  const { language } = input;
 
   if (!path && !code) {
-    return { content: [{ type: 'text', text: '❌ Either path or code must be provided' }] };
+    throw new McpError(ErrorCode.InvalidParams, 'Either path or code must be provided');
   }
   if (!code && path) {
     if (!await fileExists(path)) {
-      return { content: [{ type: 'text', text: `❌ File not found: ${path}` }] };
+      throw new McpError(ErrorCode.InvalidParams, `File not found: ${path}`);
     }
     code = await readFile(path);
   }
   if (!code) {
-    return { content: [{ type: 'text', text: '❌ Could not read code from path or input' }] };
+    throw new McpError(ErrorCode.InvalidParams, 'Could not read code from path or input');
   }
 
-  const filePath = path ?? 'inline-code';
+  const filePath = path || 'inline-code';
   const issues = customRulesEngine.executeRules(filePath, code, language);
   if (issues.length === 0) {
     return {
-      content: [{
-        type: 'text',
-        text: `✅ No custom rule violations found in ${filePath}.`,
-      }],
+      content: [{ type: 'text', text: `✅ No custom rule violations found in ${filePath}.` }],
     };
   }
 
-  const issueLines = issues.map(issue =>
-    `## ${issue.title} [${issue.severity.toUpperCase()}]\n\n` +
-    `**File:** ${issue.file}:${issue.line}\n` +
-    `**Rule:** \`${issue.rule}\`\n` +
-    `**Category:** ${issue.category}\n` +
-    `**Suggestion:** ${issue.suggestion ?? 'N/A'}\n\n` +
-    `${'```'}\n${issue.description}\n${'```'}`
-  ).join('\n\n---\n\n');
+  const issueLines = issues
+    .map(
+      issue =>
+        `## ${issue.title} [${issue.severity.toUpperCase()}]\n\n` +
+        `**File:** ${issue.file}:${issue.line}\n` +
+        `**Rule:** \`${issue.rule}\`\n` +
+        `**Category:** ${issue.category}\n` +
+        `**Suggestion:** ${issue.suggestion ?? 'N/A'}\n\n` +
+        `${'```'}\n${issue.description}\n${'```'}`,
+    )
+    .join('\n\n---\n\n');
 
   const formatted =
     `# Custom Rule Violations in ${filePath}\n\n` +
-    `Found ${issues.length} issue(s):\n\n${issueLines}`;
+    `Found ${issues.length} issue(s):\n\n` +
+    issueLines;
 
   return { content: [{ type: 'text', text: formatted }] };
 }
 
-function handleValidateCustomPattern(
-  args: Record<string, unknown>
-): { content: Array<{ type: string; text: string }> } {
-  const id = getString(args, 'id');
-  if (!id || !id.trim()) {
-    throw new McpError(ErrorCode.InvalidParams, "Parameter 'id' is required and must be a non-empty string.");
-  }
-  const pattern = getString(args, 'pattern');
-  if (!pattern || !pattern.trim()) {
-    throw new McpError(ErrorCode.InvalidParams, "Parameter 'pattern' is required and must be a non-empty string.");
-  }
-  const message = getString(args, 'message');
-  if (!message || !message.trim()) {
-    throw new McpError(ErrorCode.InvalidParams, "Parameter 'message' is required and must be a non-empty string.");
-  }
-
-  const allowedSeverities: Severity[] = ['low', 'medium', 'high', 'critical'];
-  const severityRaw = getString(args, 'severity');
-  if (!severityRaw || !allowedSeverities.includes(severityRaw as Severity)) {
-    throw new McpError(
-      ErrorCode.InvalidParams,
-      `Invalid or missing 'severity' parameter. Expected one of: ${allowedSeverities.join(', ')}.`
-    );
-  }
-  const severity = severityRaw as Severity;
-
-  const allowedCategories: DebtCategory[] = [
-    'dependency', 'code-quality', 'architecture', 'documentation',
-    'testing', 'security', 'performance', 'maintainability',
-  ];
-  const categoryRaw = getString(args, 'category');
-  if (!categoryRaw || !allowedCategories.includes(categoryRaw as DebtCategory)) {
-    throw new McpError(
-      ErrorCode.InvalidParams,
-      `Invalid or missing 'category' parameter. Expected one of: ${allowedCategories.join(', ')}.`
-    );
-  }
-  const category = categoryRaw as DebtCategory;
-
+function handleValidateCustomPattern(args: unknown): ToolResponse {
+  const input = parseValidateCustomPatternInput(args);
   const customPattern: CustomPattern = {
-    id,
-    pattern,
-    message,
-    severity,
-    category,
+    id: input.id,
+    pattern: input.pattern,
+    message: input.message,
+    severity: input.severity,
+    category: input.category,
   };
 
   const validation = CustomRulesEngine.validatePattern(customPattern);
   if (validation.valid) {
     return {
-      content: [{
-        type: 'text',
-        text: '✅ Pattern is valid and can be used as a custom rule.',
-      }],
+      content: [{ type: 'text', text: `✅ Pattern is valid and can be used as a custom rule.` }],
     };
   }
-  const errorList = validation.errors.map(e => `- ${e}`).join('\n');
+  const errors = validation.errors.map(e => `- ${e}`).join('\n');
   return {
-    content: [{
-      type: 'text',
-      text: `❌ Pattern validation failed:\n${errorList}`,
-    }],
+    content: [{ type: 'text', text: `❌ Pattern validation failed:\n${errors}` }],
   };
 }

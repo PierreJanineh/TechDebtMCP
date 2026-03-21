@@ -49,6 +49,24 @@ describe('handleCheckDependencies', () => {
     mockGetRelativePath.mockImplementation((_base, full) => full);
   });
 
+  describe('non-object args rejection', () => {
+    it('should throw InvalidParams when args is null', async () => {
+      await expect(handleCheckDependencies(null)).rejects.toThrow('Tool arguments must be a plain object');
+    });
+
+    it('should throw InvalidParams when args is an array', async () => {
+      await expect(handleCheckDependencies([])).rejects.toThrow('Tool arguments must be a plain object');
+    });
+
+    it('should throw InvalidParams when args is a string', async () => {
+      await expect(handleCheckDependencies('path')).rejects.toThrow('Tool arguments must be a plain object');
+    });
+
+    it('should throw InvalidParams when args is a number', async () => {
+      await expect(handleCheckDependencies(42)).rejects.toThrow('Tool arguments must be a plain object');
+    });
+  });
+
   it('should throw InvalidParams when path is missing', async () => {
     await expect(handleCheckDependencies({})).rejects.toThrow('Missing or invalid required parameter: path');
   });
@@ -149,6 +167,24 @@ describe('handleGetVulnerabilityReport', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetRelativePath.mockImplementation((_base, full) => full);
+  });
+
+  describe('non-object args rejection', () => {
+    it('should throw InvalidParams when args is null', async () => {
+      await expect(handleGetVulnerabilityReport(null)).rejects.toThrow('Tool arguments must be a plain object');
+    });
+
+    it('should throw InvalidParams when args is an array', async () => {
+      await expect(handleGetVulnerabilityReport([])).rejects.toThrow('Tool arguments must be a plain object');
+    });
+
+    it('should throw InvalidParams when args is a string', async () => {
+      await expect(handleGetVulnerabilityReport('path')).rejects.toThrow('Tool arguments must be a plain object');
+    });
+
+    it('should throw InvalidParams when args is a number', async () => {
+      await expect(handleGetVulnerabilityReport(42)).rejects.toThrow('Tool arguments must be a plain object');
+    });
   });
 
   it('should throw InvalidParams when path is missing', async () => {

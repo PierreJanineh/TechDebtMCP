@@ -24,6 +24,24 @@ describe('handleValidateConfig', () => {
     jest.clearAllMocks();
   });
 
+  describe('non-object args rejection', () => {
+    it('should throw InvalidParams when args is null', async () => {
+      await expect(handleValidateConfig(null)).rejects.toThrow('Tool arguments must be a plain object');
+    });
+
+    it('should throw InvalidParams when args is an array', async () => {
+      await expect(handleValidateConfig([])).rejects.toThrow('Tool arguments must be a plain object');
+    });
+
+    it('should throw InvalidParams when args is a string', async () => {
+      await expect(handleValidateConfig('path')).rejects.toThrow('Tool arguments must be a plain object');
+    });
+
+    it('should throw InvalidParams when args is a number', async () => {
+      await expect(handleValidateConfig(42)).rejects.toThrow('Tool arguments must be a plain object');
+    });
+  });
+
   it('should throw InvalidParams when path is missing', async () => {
     await expect(handleValidateConfig({})).rejects.toThrow('Missing or invalid required parameter: path');
   });
