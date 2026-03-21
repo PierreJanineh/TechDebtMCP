@@ -101,7 +101,10 @@ async function handleAnalyzeProject(
   engine: AnalysisEngine,
   args: Record<string, unknown>
 ): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = getString(args, 'path') ?? '';
+  const path = getString(args, 'path');
+  if (!path || !path.trim()) {
+    throw new McpError(ErrorCode.InvalidParams, "Parameter 'path' is required and must be a non-empty string.");
+  }
   const languages = Array.isArray(args.languages)
     ? (args.languages as SupportedLanguage[])
     : undefined;
@@ -125,7 +128,10 @@ async function handleAnalyzeProject(
 async function handleAnalyzeFile(
   args: Record<string, unknown>
 ): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = getString(args, 'path') ?? '';
+  const path = getString(args, 'path');
+  if (!path || !path.trim()) {
+    throw new McpError(ErrorCode.InvalidParams, "Parameter 'path' is required and must be a non-empty string.");
+  }
   if (!(await fileExists(path))) {
     throw new McpError(ErrorCode.InvalidParams, `File not found: ${path}`);
   }
@@ -137,7 +143,10 @@ async function handleGetDebtSummary(
   engine: AnalysisEngine,
   args: Record<string, unknown>
 ): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = getString(args, 'path') ?? '';
+  const path = getString(args, 'path');
+  if (!path || !path.trim()) {
+    throw new McpError(ErrorCode.InvalidParams, "Parameter 'path' is required and must be a non-empty string.");
+  }
   const report = await engine.analyzeProject({ path, maxFiles: 100 });
 
   const summary = `# Tech Debt Summary
@@ -165,7 +174,10 @@ async function handleGetSqaleMetrics(
   engine: AnalysisEngine,
   args: Record<string, unknown>
 ): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = getString(args, 'path') ?? '';
+  const path = getString(args, 'path');
+  if (!path || !path.trim()) {
+    throw new McpError(ErrorCode.InvalidParams, "Parameter 'path' is required and must be a non-empty string.");
+  }
   const developmentTimeHours = getNumber(args, 'developmentTime');
 
   const report = await engine.analyzeProject({ path, maxFiles: 100 });
@@ -253,7 +265,10 @@ async function handleGetRecommendations(
   engine: AnalysisEngine,
   args: Record<string, unknown>
 ): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = getString(args, 'path') ?? '';
+  const path = getString(args, 'path');
+  if (!path || !path.trim()) {
+    throw new McpError(ErrorCode.InvalidParams, "Parameter 'path' is required and must be a non-empty string.");
+  }
   const limit = getNumber(args, 'limit') ?? 5;
 
   const report = await engine.analyzeProject({ path });
@@ -274,8 +289,19 @@ async function handleGetIssuesBySeverity(
   engine: AnalysisEngine,
   args: Record<string, unknown>
 ): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = getString(args, 'path') ?? '';
-  const severity = getString(args, 'severity') as Severity;
+  const path = getString(args, 'path');
+  if (!path || !path.trim()) {
+    throw new McpError(ErrorCode.InvalidParams, "Parameter 'path' is required and must be a non-empty string.");
+  }
+  const severityRaw = getString(args, 'severity');
+  const allowedSeverities: Severity[] = ['low', 'medium', 'high', 'critical'];
+  if (!severityRaw || !allowedSeverities.includes(severityRaw as Severity)) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      `Invalid or missing 'severity' parameter. Expected one of: ${allowedSeverities.join(', ')}.`
+    );
+  }
+  const severity = severityRaw as Severity;
 
   const report = await engine.analyzeProject({ path, severity });
   const issues = report.issues.filter(i => i.severity === severity);
@@ -303,8 +329,22 @@ async function handleGetIssuesByCategory(
   engine: AnalysisEngine,
   args: Record<string, unknown>
 ): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const path = getString(args, 'path') ?? '';
-  const category = getString(args, 'category') as DebtCategory;
+  const path = getString(args, 'path');
+  if (!path || !path.trim()) {
+    throw new McpError(ErrorCode.InvalidParams, "Parameter 'path' is required and must be a non-empty string.");
+  }
+  const categoryRaw = getString(args, 'category');
+  const allowedCategories: DebtCategory[] = [
+    'dependency', 'code-quality', 'architecture', 'documentation',
+    'testing', 'security', 'performance', 'maintainability',
+  ];
+  if (!categoryRaw || !allowedCategories.includes(categoryRaw as DebtCategory)) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      `Invalid or missing 'category' parameter. Expected one of: ${allowedCategories.join(', ')}.`
+    );
+  }
+  const category = categoryRaw as DebtCategory;
 
   const report = await engine.analyzeProject({ path, categories: [category] });
   const issues = report.issues;
@@ -375,7 +415,10 @@ function handleRemoveCustomRule(
   customRulesEngine: CustomRulesEngine,
   args: Record<string, unknown>
 ): { content: Array<{ type: string; text: string }> } {
-  const id = getString(args, 'id') ?? '';
+  const id = getString(args, 'id');
+  if (!id || !id.trim()) {
+    throw new McpError(ErrorCode.InvalidParams, "Parameter 'id' is required and must be a non-empty string.");
+  }
   const removed = customRulesEngine.removeRule(id);
   if (removed) {
     return { content: [{ type: 'text', text: `✅ Custom rule '${id}' removed successfully.` }] };
