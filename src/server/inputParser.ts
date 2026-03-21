@@ -97,10 +97,16 @@ const VALID_CATEGORIES: DebtCategory[] = [
 const VALID_LANGUAGES: SupportedLanguage[] = Object.keys(LANGUAGE_CONFIGS) as SupportedLanguage[];
 
 /**
- * Type guard: checks that a value is a plain, non-null, non-array object.
+ * Type guard: checks that a value is a plain, non-null, non-array object
+ * with a prototype of Object.prototype or null (i.e. not a class instance,
+ * Date, Map, etc.). Matches the stricter definition used in configValidator.ts.
  */
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return false;
+  }
+  const proto = Object.getPrototypeOf(value as object) as unknown;
+  return proto === Object.prototype || proto === null;
 }
 
 /**
