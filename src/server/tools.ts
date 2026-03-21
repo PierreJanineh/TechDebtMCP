@@ -68,7 +68,7 @@ export const TOOL_DEFINITIONS = [
       type: 'object',
       properties: {
         path: { type: 'string', description: 'Absolute path to the project root directory' },
-        limit: { type: 'number', description: 'Optional: maximum number of recommendations to return (default: 5)' },
+        limit: { type: 'number', description: 'Optional: maximum number of recommendations to return (default: 5, minimum: 1)' },
       },
       required: ['path'],
     },
