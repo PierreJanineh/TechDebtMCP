@@ -302,6 +302,43 @@ console.log("test3");`;
     });
   });
 
+  describe('Zero-length match guard', () => {
+    it('terminates and returns bounded results for a pattern that can match empty strings (e.g. .*)', () => {
+      const pattern: CustomPattern = {
+        id: 'empty-match-rule',
+        pattern: '.*',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Match anything',
+      };
+
+      engine.addRule(pattern);
+      const code = 'hello world';
+      // Should complete without hanging and return a finite number of issues
+      const issues = engine.executeRules('test.ts', code);
+      expect(issues.length).toBeGreaterThan(0);
+      expect(issues.length).toBeLessThan(100);
+    });
+
+    it('terminates for a non-capturing empty-string pattern (?:) with global flag', () => {
+      const pattern: CustomPattern = {
+        id: 'empty-group-rule',
+        pattern: '(?:)',
+        flags: 'g',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Empty non-capturing group',
+      };
+
+      engine.addRule(pattern);
+      const code = 'abc';
+      // Should complete without hanging
+      const issues = engine.executeRules('test.ts', code);
+      expect(issues.length).toBeGreaterThanOrEqual(0);
+      expect(issues.length).toBeLessThan(1000);
+    });
+  });
+
   describe('Error Handling', () => {
     it('handles invalid regex gracefully', () => {
       const pattern: CustomPattern = {
