@@ -105,10 +105,7 @@ async function handleAnalyzeProject(
   if (!path || !path.trim()) {
     throw new McpError(ErrorCode.InvalidParams, "Parameter 'path' is required and must be a non-empty string.");
   }
-  const allowedLanguages: SupportedLanguage[] = [
-    'javascript', 'typescript', 'python', 'java', 'swift', 'kotlin',
-    'objectivec', 'cpp', 'c', 'csharp', 'go', 'rust', 'ruby', 'php',
-  ];
+  const allowedLanguages = Object.keys(LANGUAGE_CONFIGS) as SupportedLanguage[];
   const languages = Array.isArray(args.languages)
     ? (args.languages as string[]).filter(l => allowedLanguages.includes(l as SupportedLanguage)) as SupportedLanguage[]
     : undefined;
@@ -197,6 +194,9 @@ async function handleGetSqaleMetrics(
     throw new McpError(ErrorCode.InvalidParams, "Parameter 'path' is required and must be a non-empty string.");
   }
   const developmentTimeHours = getNumber(args, 'developmentTime');
+  if (developmentTimeHours !== undefined && (developmentTimeHours <= 0 || !Number.isFinite(developmentTimeHours))) {
+    throw new McpError(ErrorCode.InvalidParams, "'developmentTime' must be a finite number greater than 0.");
+  }
 
   const report = await engine.analyzeProject({ path, maxFiles: 100 });
   const sqale = report.sqale;
@@ -430,6 +430,20 @@ async function handleAddCustomRule(
   }
   const category = categoryRaw as DebtCategory;
 
+  const validLanguages = Object.keys(LANGUAGE_CONFIGS) as SupportedLanguage[];
+  let validatedLanguages: SupportedLanguage[] | undefined;
+  if (Array.isArray(languages)) {
+    for (const lang of languages as string[]) {
+      if (!validLanguages.includes(lang as SupportedLanguage)) {
+        throw new McpError(
+          ErrorCode.InvalidParams,
+          `Invalid language '${lang}': must be one of ${validLanguages.join(', ')}.`
+        );
+      }
+    }
+    validatedLanguages = languages as SupportedLanguage[];
+  }
+
   const customPattern: CustomPattern = {
     id,
     pattern,
@@ -437,9 +451,7 @@ async function handleAddCustomRule(
     severity,
     category,
     suggestion: typeof suggestion === 'string' ? suggestion : undefined,
-    languages: Array.isArray(languages)
-      ? (languages as SupportedLanguage[])
-      : undefined,
+    languages: validatedLanguages,
     flags: typeof flags === 'string' ? flags : undefined,
   };
 
