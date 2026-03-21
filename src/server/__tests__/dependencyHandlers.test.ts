@@ -37,7 +37,7 @@ function makeMockParser(
   ecosystem = 'npm'
 ) {
   return {
-    parse: jest.fn<() => Promise<ParsedDependency[]>>().mockResolvedValue(deps),
+    parse: jest.fn<(filePath: string, content: string) => Promise<ParsedDependency[]>>().mockResolvedValue(deps),
     getEcosystem: jest.fn().mockReturnValue(ecosystem),
     canParse: jest.fn().mockReturnValue(true),
     getPackageFileNames: jest.fn().mockReturnValue(['package.json']),
@@ -140,7 +140,7 @@ describe('handleCheckDependencies', () => {
     mockStat.mockResolvedValueOnce({ isDirectory: () => false, isFile: () => true } as any);
 
     const parser = {
-      parse: jest.fn<() => Promise<ParsedDependency[]>>().mockRejectedValue(new Error('Malformed JSON')),
+      parse: jest.fn<(filePath: string, content: string) => Promise<ParsedDependency[]>>().mockRejectedValue(new Error('Malformed JSON')),
       getEcosystem: jest.fn().mockReturnValue('npm'),
       canParse: jest.fn().mockReturnValue(true),
       getPackageFileNames: jest.fn().mockReturnValue(['package.json']),
@@ -286,7 +286,7 @@ describe('handleGetVulnerabilityReport', () => {
     mockStat.mockResolvedValueOnce({ isDirectory: () => false, isFile: () => true } as any);
 
     const parser = {
-      parse: jest.fn<() => Promise<ParsedDependency[]>>().mockRejectedValue(new Error('Unexpected token')),
+      parse: jest.fn<(filePath: string, content: string) => Promise<ParsedDependency[]>>().mockRejectedValue(new Error('Unexpected token')),
       getEcosystem: jest.fn().mockReturnValue('npm'),
       canParse: jest.fn().mockReturnValue(true),
       getPackageFileNames: jest.fn().mockReturnValue(['package.json']),
