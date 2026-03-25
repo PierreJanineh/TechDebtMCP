@@ -192,6 +192,30 @@ export class PipParser extends BaseDependencyParser {
   }
 
   /**
+   * Collect dependencies from a TOML record of name→version pairs
+   */
+  private collectTomlDeps(
+    record: unknown,
+    isDev: boolean,
+    filePath: string,
+    excludeNames: string[] = [],
+  ): ParsedDependency[] {
+    if (!record || typeof record !== 'object') return [];
+
+    const deps: ParsedDependency[] = [];
+    for (const [name, version] of Object.entries(record as Record<string, unknown>)) {
+      if (excludeNames.includes(name)) continue;
+      deps.push({
+        name,
+        version: typeof version === 'string' ? version : JSON.stringify(version),
+        isDev,
+        source: filePath,
+      });
+    }
+    return deps;
+  }
+
+  /**
    * Parse Poetry-style dependencies including 1.2+ group format
    */
   private parsePoetryDependencies(data: Record<string, unknown>, dependencies: ParsedDependency[], filePath: string): void {
@@ -202,57 +226,30 @@ export class PipParser extends BaseDependencyParser {
 
     const poetry = tool.poetry as Record<string, unknown>;
 
-    // Poetry dependencies
-    if (poetry.dependencies && typeof poetry.dependencies === 'object') {
-      const deps = poetry.dependencies as Record<string, unknown>;
-      for (const [name, version] of Object.entries(deps)) {
-        if (name !== 'python') {
-          dependencies.push({
-            name,
-            version: typeof version === 'string' ? version : JSON.stringify(version),
-            isDev: false,
-            source: filePath,
-          });
-        }
-      }
-    }
+    // Poetry dependencies (exclude 'python' meta-dep)
+    dependencies.push(...this.collectTomlDeps(poetry.dependencies, false, filePath, ['python']));
 
     // Poetry dev-dependencies
-    if (poetry['dev-dependencies'] && typeof poetry['dev-dependencies'] === 'object') {
-      const devDeps = poetry['dev-dependencies'] as Record<string, unknown>;
-      for (const [name, version] of Object.entries(devDeps)) {
-        dependencies.push({
-          name,
-          version: typeof version === 'string' ? version : JSON.stringify(version),
-          isDev: true,
-          source: filePath,
-        });
-      }
-    }
+    dependencies.push(...this.collectTomlDeps(poetry['dev-dependencies'], true, filePath));
 
     // Poetry group dependencies (Poetry 1.2+)
-    if (poetry.group && typeof poetry.group === 'object') {
-      const groups = poetry.group as Record<string, unknown>;
-      for (const [groupName, groupData] of Object.entries(groups)) {
-        if (typeof groupData === 'object') {
-          const group = groupData as Record<string, unknown>;
-          // Only 'dev' is universally understood as dev-only; groups like 'test', 'lint', 'docs'
-          // vary by project convention, so we conservatively treat them as production.
-          const isDev = groupName === 'dev';
+    this.parsePoetryGroups(poetry.group, dependencies, filePath);
+  }
 
-          if (group.dependencies && typeof group.dependencies === 'object') {
-            const groupDeps = group.dependencies as Record<string, unknown>;
-            for (const [name, version] of Object.entries(groupDeps)) {
-              dependencies.push({
-                name,
-                version: typeof version === 'string' ? version : JSON.stringify(version),
-                isDev: isDev,
-                source: filePath,
-              });
-            }
-          }
-        }
-      }
+  /**
+   * Parse Poetry 1.2+ group dependencies
+   * Only 'dev' is universally understood as dev-only; groups like 'test', 'lint', 'docs'
+   * vary by project convention, so we conservatively treat them as production.
+   */
+  private parsePoetryGroups(groups: unknown, dependencies: ParsedDependency[], filePath: string): void {
+    if (!groups || typeof groups !== 'object') return;
+
+    for (const [groupName, groupData] of Object.entries(groups as Record<string, unknown>)) {
+      if (typeof groupData !== 'object' || !groupData) continue;
+
+      const group = groupData as Record<string, unknown>;
+      const isDev = groupName === 'dev';
+      dependencies.push(...this.collectTomlDeps(group.dependencies, isDev, filePath));
     }
   }
 
@@ -260,38 +257,12 @@ export class PipParser extends BaseDependencyParser {
    * Parse Pipfile format
    */
   private parsePipfile(content: string, filePath: string): ParsedDependency[] {
-    const dependencies: ParsedDependency[] = [];
-
     try {
       const data = toml.parse(content) as Record<string, unknown>;
-
-      // Parse packages
-      if (data.packages && typeof data.packages === 'object') {
-        const packages = data.packages as Record<string, unknown>;
-        for (const [name, version] of Object.entries(packages)) {
-          dependencies.push({
-            name,
-            version: typeof version === 'string' ? version : JSON.stringify(version),
-            isDev: false,
-            source: filePath,
-          });
-        }
-      }
-
-      // Parse dev-packages
-      if (data['dev-packages'] && typeof data['dev-packages'] === 'object') {
-        const devPackages = data['dev-packages'] as Record<string, unknown>;
-        for (const [name, version] of Object.entries(devPackages)) {
-          dependencies.push({
-            name,
-            version: typeof version === 'string' ? version : JSON.stringify(version),
-            isDev: true,
-            source: filePath,
-          });
-        }
-      }
-
-      return dependencies;
+      return [
+        ...this.collectTomlDeps(data.packages, false, filePath),
+        ...this.collectTomlDeps(data['dev-packages'], true, filePath),
+      ];
     } catch (error) {
       throw new Error(
         `Failed to parse Pipfile: ${error instanceof Error ? error.message : String(error)}`

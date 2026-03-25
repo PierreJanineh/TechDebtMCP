@@ -81,63 +81,42 @@ export class CppParser extends BaseDependencyParser {
         inRequires = true;
         continue;
       }
-
       if (trimmed.startsWith('[') && trimmed !== '[requires]') {
         inRequires = false;
         continue;
       }
+      if (!inRequires || !trimmed || trimmed.startsWith('#')) continue;
 
-      if (inRequires && trimmed && !trimmed.startsWith('#')) {
-        // Parse "package/version" format
-        const parts = trimmed.split('/');
-        if (parts.length >= 1) {
-          const name = parts[0];
-          const version = parts[1] || '*';
-
-          if (name) {
-            deps.push({
-              name,
-              version,
-              isDev: false,
-              source: filePath,
-            });
-          }
-        }
-      }
+      const dep = this.parseConanDep(trimmed, filePath);
+      if (dep) deps.push(dep);
     }
 
     return deps;
   }
 
+  /**
+   * Parse a "package/version" Conan dependency string
+   */
+  private parseConanDep(depString: string, filePath: string): ParsedDependency | null {
+    const parts = depString.split('/');
+    const name = parts[0];
+    if (!name) return null;
+
+    return { name, version: parts[1] || '*', isDev: false, source: filePath };
+  }
+
   private parseConanfilePy(content: string, filePath: string): ParsedDependency[] {
-    const deps: ParsedDependency[] = [];
-
-    // Match requires = ["package/version", ...] patterns
     const regex = /requires\s*=\s*\[\s*(?:"([^"]+)"[,\s]*)+\]/g;
-    let match = regex.exec(content);
+    const match = regex.exec(content);
+    if (!match) return [];
 
-    if (match) {
-      // Extract all quoted strings from the match
-      const quotedRegex = /"([^"]+)"/g;
-      let quotedMatch;
+    const deps: ParsedDependency[] = [];
+    const quotedRegex = /"([^"]+)"/g;
+    let quotedMatch;
 
-      while ((quotedMatch = quotedRegex.exec(match[0])) !== null) {
-        const dep = quotedMatch[1] || '';
-        const parts = dep.split('/');
-        if (parts.length >= 1) {
-          const name = parts[0];
-          const version = parts[1] || '*';
-
-          if (name) {
-            deps.push({
-              name,
-              version,
-              isDev: false,
-              source: filePath,
-            });
-          }
-        }
-      }
+    while ((quotedMatch = quotedRegex.exec(match[0])) !== null) {
+      const dep = this.parseConanDep(quotedMatch[1] || '', filePath);
+      if (dep) deps.push(dep);
     }
 
     return deps;

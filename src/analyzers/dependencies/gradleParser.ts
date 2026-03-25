@@ -51,35 +51,12 @@ export class GradleParser extends BaseDependencyParser {
     const dependencies: ParsedDependency[] = [];
 
     try {
-      // Simple XML parsing using regex (not a full XML parser)
-      // Match <dependency>...</dependency> blocks
       const depBlockRegex = /<dependency>([\s\S]*?)<\/dependency>/g;
       let match;
 
       while ((match = depBlockRegex.exec(content)) !== null) {
-        const depBlock = match[1];
-
-        // Extract groupId, artifactId, version, scope
-        const groupIdMatch = /<groupId>([\s\S]*?)<\/groupId>/.exec(depBlock);
-        const artifactIdMatch = /<artifactId>([\s\S]*?)<\/artifactId>/.exec(depBlock);
-        const versionMatch = /<version>([\s\S]*?)<\/version>/.exec(depBlock);
-        const scopeMatch = /<scope>([\s\S]*?)<\/scope>/.exec(depBlock);
-
-        if (groupIdMatch && artifactIdMatch && versionMatch) {
-          const groupId = groupIdMatch[1]?.trim() || '';
-          const artifactId = artifactIdMatch[1]?.trim() || '';
-          const version = versionMatch[1]?.trim() || '';
-          const scope = scopeMatch?.[1]?.trim() || 'compile';
-
-          if (groupId && artifactId) {
-            dependencies.push({
-              name: `${groupId}:${artifactId}`,
-              version,
-              isDev: scope === 'test' || scope === 'provided',
-              source: filePath,
-            });
-          }
-        }
+        const dep = this.extractMavenDep(match[1], filePath);
+        if (dep) dependencies.push(dep);
       }
 
       return dependencies;
@@ -91,69 +68,67 @@ export class GradleParser extends BaseDependencyParser {
   }
 
   /**
+   * Extract a single Maven dependency from a dependency XML block
+   */
+  private extractMavenDep(depBlock: string, filePath: string): ParsedDependency | null {
+    const groupId = /<groupId>([\s\S]*?)<\/groupId>/.exec(depBlock)?.[1]?.trim() || '';
+    const artifactId = /<artifactId>([\s\S]*?)<\/artifactId>/.exec(depBlock)?.[1]?.trim() || '';
+    const version = /<version>([\s\S]*?)<\/version>/.exec(depBlock)?.[1]?.trim() || '';
+    const scope = /<scope>([\s\S]*?)<\/scope>/.exec(depBlock)?.[1]?.trim() || 'compile';
+
+    if (!groupId || !artifactId || !version) return null;
+
+    return {
+      name: `${groupId}:${artifactId}`,
+      version,
+      isDev: scope === 'test' || scope === 'provided',
+      source: filePath,
+    };
+  }
+
+  /**
    * Parse Gradle build.gradle or build.gradle.kts file
    */
   private parseBuildGradle(content: string, filePath: string): ParsedDependency[] {
     const dependencies: ParsedDependency[] = [];
 
-    // Parse Gradle dependency declarations
-    // Handles both Groovy and Kotlin syntax:
-    // implementation 'group:artifact:version'
-    // implementation("group:artifact:version")
-    // testImplementation 'group:artifact:version'
-
-    // Match patterns like: implementation 'group:artifact:version' or implementation("group:artifact:version")
+    // Groovy syntax: implementation 'group:artifact:version'
     const depRegex = /(implementation|testImplementation|compileOnly|testCompileOnly|runtimeOnly|testRuntimeOnly)\s+['"]([^'"]+)['"]/g;
-    let match;
+    this.collectGradleDeps(depRegex, content, filePath, dependencies);
 
-    while ((match = depRegex.exec(content)) !== null) {
-      const configName = match[1] || '';
-      const depString = match[2] || '';
-
-      // Parse "group:artifact:version" format
-      const parts = depString.split(':');
-      if (parts.length >= 2) {
-        const group = parts[0];
-        const artifact = parts[1];
-        const version = parts[2] || '*';
-
-        dependencies.push({
-          name: `${group}:${artifact}`,
-          version,
-          isDev: /test|compileOnly/.test(configName),
-          source: filePath,
-        });
-      }
-    }
-
-    // Also match Kotlin syntax with parentheses: implementation("group:artifact:version")
+    // Kotlin syntax: implementation("group:artifact:version")
     const kotlinDepRegex = /(implementation|testImplementation|compileOnly|testCompileOnly|runtimeOnly|testRuntimeOnly)\s*\(\s*["']([^"']+)["']\s*\)/g;
-    while ((match = kotlinDepRegex.exec(content)) !== null) {
-      const configName = match[1] || '';
-      const depString = match[2] || '';
-
-      const parts = depString.split(':');
-      if (parts.length >= 2) {
-        const group = parts[0];
-        const artifact = parts[1];
-        const version = parts[2] || '*';
-
-        // Avoid duplicates
-        const isDuplicate = dependencies.some(
-          d => d.name === `${group}:${artifact}` && d.version === version
-        );
-
-        if (!isDuplicate) {
-          dependencies.push({
-            name: `${group}:${artifact}`,
-            version,
-            isDev: /test|compileOnly/.test(configName),
-            source: filePath,
-          });
-        }
-      }
-    }
+    this.collectGradleDeps(kotlinDepRegex, content, filePath, dependencies);
 
     return dependencies;
+  }
+
+  /**
+   * Collect Gradle dependencies matching the given regex, deduplicating against existing entries
+   */
+  private collectGradleDeps(regex: RegExp, content: string, filePath: string, dependencies: ParsedDependency[]): void {
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+      const dep = this.parseGradleDepString(match[1] || '', match[2] || '', filePath);
+      if (!dep) continue;
+
+      const isDuplicate = dependencies.some(d => d.name === dep.name && d.version === dep.version);
+      if (!isDuplicate) dependencies.push(dep);
+    }
+  }
+
+  /**
+   * Parse a "group:artifact:version" Gradle dependency string
+   */
+  private parseGradleDepString(configName: string, depString: string, filePath: string): ParsedDependency | null {
+    const parts = depString.split(':');
+    if (parts.length < 2) return null;
+
+    return {
+      name: `${parts[0]}:${parts[1]}`,
+      version: parts[2] || '*',
+      isDev: /test|compileOnly/.test(configName),
+      source: filePath,
+    };
   }
 }

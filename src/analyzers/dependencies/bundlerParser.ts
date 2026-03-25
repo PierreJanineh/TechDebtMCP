@@ -51,31 +51,21 @@ export class BundlerParser extends BaseDependencyParser {
 
       // Track group blocks for dev dependencies
       if (trimmed.startsWith('group')) {
-        // group :development, :test do
         const groupMatch = /group\s+(.+)\s+do/.exec(trimmed);
-        if (groupMatch) {
-          const groupName = groupMatch[1];
-          inDevGroup = /dev|test/.test(groupName);
-        }
+        inDevGroup = groupMatch ? /dev|test/.test(groupMatch[1]) : false;
         continue;
       }
 
-      // End of group block
       if (trimmed === 'end') {
         inDevGroup = false;
         continue;
       }
 
-      // Parse gem lines
-      if (trimmed.startsWith('gem')) {
-        const dep = this.parseGemLine(trimmed);
-        if (dep) {
-          dependencies.push({
-            ...dep,
-            isDev: inDevGroup,
-            source: filePath,
-          });
-        }
+      if (!trimmed.startsWith('gem')) continue;
+
+      const dep = this.parseGemLine(trimmed);
+      if (dep) {
+        dependencies.push({ ...dep, isDev: inDevGroup, source: filePath });
       }
     }
 

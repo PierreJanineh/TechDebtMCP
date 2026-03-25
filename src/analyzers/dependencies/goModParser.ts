@@ -58,15 +58,11 @@ export class GoModParser extends BaseDependencyParser {
       }
 
       // Parse require lines
-      if (inRequireBlock || trimmed.startsWith('require ')) {
-        const dep = this.parseRequireLine(trimmed);
-        if (dep) {
-          dependencies.push({
-            ...dep,
-            isDev: false,
-            source: filePath,
-          });
-        }
+      if (!inRequireBlock && !trimmed.startsWith('require ')) continue;
+
+      const dep = this.parseRequireLine(trimmed);
+      if (dep) {
+        dependencies.push({ ...dep, isDev: false, source: filePath });
       }
     }
 
