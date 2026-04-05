@@ -70,7 +70,7 @@ describe('checkMissingIdModifier', () => {
     }
   }
 }`;
-    // The check only triggers for ForEach collections containing "items" or "data".
+    // "numbers" contains neither "items" nor "data" as a substring
     const issues = checkMissingIdModifier(FILE, lines(code));
     expect(issues).toHaveLength(0);
   });

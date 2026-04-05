@@ -225,6 +225,9 @@ export interface SQALEMetrics {
   bySeverity: Record<Severity, number>;
 }
 
+// MCP Resource response shape
+export type ResourceResponse = { contents: Array<{ uri: string; mimeType: string; text: string }> };
+
 // ========================================
 // Phase 2: Dependency Analysis Types
 // ========================================

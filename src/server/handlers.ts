@@ -35,6 +35,53 @@ import {
 type ToolResponse = { content: Array<{ type: string; text: string }> };
 
 /**
+ * Dispatch a tool call by name to the appropriate handler.
+ */
+async function dispatchTool(
+  name: string,
+  args: Record<string, unknown>,
+  engine: AnalysisEngine,
+  customRulesEngine: CustomRulesEngine,
+): Promise<ToolResponse> {
+  switch (name) {
+    case 'analyze_project':
+      return handleAnalyzeProject(engine, args);
+    case 'analyze_file':
+      return handleAnalyzeFile(args);
+    case 'get_debt_summary':
+      return handleGetDebtSummary(engine, args);
+    case 'get_sqale_metrics':
+      return handleGetSqaleMetrics(engine, args);
+    case 'list_supported_languages':
+      return handleListSupportedLanguages();
+    case 'get_recommendations':
+      return handleGetRecommendations(engine, args);
+    case 'get_issues_by_severity':
+      return handleGetIssuesBySeverity(engine, args);
+    case 'get_issues_by_category':
+      return handleGetIssuesByCategory(engine, args);
+    case 'add_custom_rule':
+      return handleAddCustomRule(customRulesEngine, args);
+    case 'remove_custom_rule':
+      return handleRemoveCustomRule(customRulesEngine, args);
+    case 'list_custom_rules':
+      return handleListCustomRules(customRulesEngine);
+    case 'execute_custom_rules':
+      return handleExecuteCustomRules(customRulesEngine, args);
+    case 'validate_custom_pattern':
+      return handleValidateCustomPattern(args);
+    case 'check_dependencies':
+      return handleCheckDependencies(args);
+    case 'validate_config':
+      return handleValidateConfig(args);
+    case 'get_vulnerability_report':
+      return handleGetVulnerabilityReport(args);
+    default:
+      throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
+  }
+}
+
+/**
  * Attach all tool handlers to a given McpServer instance.
  */
 export function attachHandlers(mcpServer: McpServer): void {
@@ -50,44 +97,8 @@ export function attachHandlers(mcpServer: McpServer): void {
   // Handle tool calls
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args = {} } = request.params;
-
     try {
-      switch (name) {
-        case 'analyze_project':
-          return await handleAnalyzeProject(engine, args);
-        case 'analyze_file':
-          return await handleAnalyzeFile(args);
-        case 'get_debt_summary':
-          return await handleGetDebtSummary(engine, args);
-        case 'get_sqale_metrics':
-          return await handleGetSqaleMetrics(engine, args);
-        case 'list_supported_languages':
-          return handleListSupportedLanguages();
-        case 'get_recommendations':
-          return await handleGetRecommendations(engine, args);
-        case 'get_issues_by_severity':
-          return await handleGetIssuesBySeverity(engine, args);
-        case 'get_issues_by_category':
-          return await handleGetIssuesByCategory(engine, args);
-        case 'add_custom_rule':
-          return await handleAddCustomRule(customRulesEngine, args);
-        case 'remove_custom_rule':
-          return handleRemoveCustomRule(customRulesEngine, args);
-        case 'list_custom_rules':
-          return handleListCustomRules(customRulesEngine);
-        case 'execute_custom_rules':
-          return await handleExecuteCustomRules(customRulesEngine, args);
-        case 'validate_custom_pattern':
-          return handleValidateCustomPattern(args);
-        case 'check_dependencies':
-          return await handleCheckDependencies(args);
-        case 'validate_config':
-          return await handleValidateConfig(args);
-        case 'get_vulnerability_report':
-          return await handleGetVulnerabilityReport(args);
-        default:
-          throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
-      }
+      return await dispatchTool(name, args, engine, customRulesEngine);
     } catch (error) {
       if (error instanceof McpError) throw error;
       const message = error instanceof Error ? error.message : 'Unknown error';

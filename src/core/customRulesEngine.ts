@@ -108,68 +108,97 @@ export class CustomRulesEngine {
     content: string,
     pattern: CustomPattern
   ): TechDebtIssue[] {
-    const issues: TechDebtIssue[] = [];
-
     try {
-      // Normalize line endings for cross-platform consistency
       const lines = content.split(/\r?\n/);
-      const flags = pattern.flags || 'g';
-      const regex = new RegExp(pattern.pattern, flags);
-
-      for (let lineNum = 0; lineNum < lines.length; lineNum++) {
-        const line = lines[lineNum];
-        let matchIndex = 0;
-
-        // Handle multiple matches on the same line
-        if (regex.global) {
-          let match;
-          regex.lastIndex = 0;
-          while ((match = regex.exec(line)) !== null) {
-            issues.push({
-              id: `${pattern.id}-${lineNum + 1}-${matchIndex}`,
-              category: pattern.category,
-              severity: pattern.severity,
-              file: filePath,
-              line: lineNum + 1,
-              column: match.index,
-              title: pattern.message,
-              description: line.trim(),
-              suggestion: pattern.suggestion || `Review and fix according to rule: ${pattern.id}`,
-              effort: 'small',
-              rule: pattern.id,
-              tags: [pattern.id, 'custom-rule'],
-            });
-            matchIndex++;
-          }
-        } else {
-          // Non-global flag: match once per line
-          regex.lastIndex = 0;
-          const match = regex.exec(line);
-          if (match) {
-            issues.push({
-              id: `${pattern.id}-${lineNum + 1}`,
-              category: pattern.category,
-              severity: pattern.severity,
-              file: filePath,
-              line: lineNum + 1,
-              column: match.index,
-              title: pattern.message,
-              description: line.trim(),
-              suggestion: pattern.suggestion || `Review and fix according to rule: ${pattern.id}`,
-              effort: 'small',
-              rule: pattern.id,
-              tags: [pattern.id, 'custom-rule'],
-            });
-          }
-        }
-      }
+      const regex = new RegExp(pattern.pattern, pattern.flags || 'g');
+      return lines.flatMap((line, index) =>
+        this.matchLineIssues(filePath, line, index + 1, regex, pattern)
+      );
     } catch (error) {
       if (this.onRuleError) {
         this.onRuleError(pattern.id, error instanceof Error ? error : new Error(String(error)));
       }
+      return [];
+    }
+  }
+
+  /**
+   * Match all issues on a single line for a given pattern
+   */
+  private matchLineIssues(
+    filePath: string,
+    line: string,
+    lineNum: number,
+    regex: RegExp,
+    pattern: CustomPattern
+  ): TechDebtIssue[] {
+    if (!regex.global) {
+      return this.matchSingleIssue(filePath, line, lineNum, regex, pattern);
+    }
+
+    const issues: TechDebtIssue[] = [];
+    let matchIndex = 0;
+    let match: RegExpExecArray | null;
+    regex.lastIndex = 0;
+
+    while ((match = regex.exec(line)) !== null) {
+      // Guard against infinite loops and noisy reports: zero-length matches don't advance
+      // lastIndex in all runtimes and would emit one issue per character position.
+      // Skip issue emission and advance manually to ensure forward progress.
+      if (match[0].length === 0) {
+        regex.lastIndex++;
+        continue;
+      }
+      issues.push(
+        this.buildIssue(filePath, line, lineNum, match.index, `${lineNum}-${matchIndex}`, pattern)
+      );
+      matchIndex++;
     }
 
     return issues;
+  }
+
+  /**
+   * Match at most one issue on a line for a non-global regex
+   */
+  private matchSingleIssue(
+    filePath: string,
+    line: string,
+    lineNum: number,
+    regex: RegExp,
+    pattern: CustomPattern
+  ): TechDebtIssue[] {
+    regex.lastIndex = 0;
+    const match = regex.exec(line);
+    if (!match) return [];
+    return [this.buildIssue(filePath, line, lineNum, match.index, `${lineNum}`, pattern)];
+  }
+
+  /**
+   * Build a TechDebtIssue from a regex match
+   */
+  private buildIssue(
+    filePath: string,
+    line: string,
+    lineNum: number,
+    column: number,
+    idSuffix: string,
+    pattern: CustomPattern
+  ): TechDebtIssue {
+    return {
+      id: `${pattern.id}-${idSuffix}`,
+      category: pattern.category,
+      severity: pattern.severity,
+      file: filePath,
+      line: lineNum,
+      column,
+      title: pattern.message,
+      description: line.trim(),
+      suggestion: pattern.suggestion || `Review and fix according to rule: ${pattern.id}`,
+      effort: 'small',
+      rule: pattern.id,
+      tags: [pattern.id, 'custom-rule'],
+    };
   }
 
   /**
