@@ -21,6 +21,8 @@ src/
 │   ├── setup.ts          # Server creation, version resolution, stdio transport
 │   ├── handlers.ts       # Tool call dispatch + handler implementations
 │   ├── tools.ts          # Centralized TOOL_DEFINITIONS array
+│   ├── inputParser.ts    # Tool argument validation (requireString, optionalString, etc.)
+│   ├── argValidation.ts  # Argument coercion and constraint checks
 │   ├── resourceHandlers.ts # MCP resource templates (debt://summary, debt://issues)
 │   ├── formatters.ts     # Report formatting helpers
 │   ├── configValidator.ts # Config validation handler
@@ -29,6 +31,8 @@ src/
 │   ├── baseAnalyzer.ts   # Abstract base class (shared logic)
 │   ├── index.ts          # Factory: createAnalyzer()
 │   ├── [language]Analyzer.ts # One file per language (14 total)
+│   ├── swiftUiChecks.ts  # SwiftUI Phase 1 checks
+│   ├── swiftUiChecksPhase2.ts # SwiftUI Phase 2 checks
 │   └── dependencies/     # 10 ecosystem parsers + factory
 └── utils/fileUtils.ts    # File system helpers
 ```

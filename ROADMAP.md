@@ -26,7 +26,7 @@ Focus on project quality, code compliance, and transparent metrics.
 - ✅ .techdebtrc.json - Project-specific tech debt configuration
 - ✅ TECH_DEBT_SCAN.md - Complete self-scan analysis with before/after metrics
 - ✅ Measured impact: -20 issues (-19.8%), -10 hours (-14.3%) remediation time
-- ✅ SQALE Rating: A ⭐⭐⭐⭐⭐ (2.9% debt ratio)
+- ✅ SQALE Rating: A ⭐⭐⭐⭐⭐ (2.9% debt ratio at time of release)
 
 **Documentation Updates**
 - ✅ README.md - Added Code Quality section with SQALE rating badge
@@ -34,7 +34,7 @@ Focus on project quality, code compliance, and transparent metrics.
 - ✅ ARCHITECTURE.md - Code Quality Standards section
 - ✅ .github/copilot-instructions.md - Tech Debt Refactoring Rules with priorities
 
-**Metrics Summary**
+**Metrics Summary (at time of v2.0.0 release, Feb 2026)**
 - SQALE Rating: A ⭐⭐⭐⭐⭐ (2.9% debt ratio, improved from 3.4%)
 - Total Issues: 81 (down from 101)
 - Remediation Time: 60 hours (down from 70 hours)

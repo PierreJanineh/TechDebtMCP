@@ -2,13 +2,13 @@
 
 [![npm version](https://img.shields.io/npm/v/tech-debt-mcp)](https://www.npmjs.com/package/tech-debt-mcp)
 [![Add to MCP](https://img.shields.io/badge/MCP-Install_Server-6f42c1)](#installation)
-[![SQALE Rating](https://img.shields.io/badge/SQALE-A_(2.9%25)-brightgreen)](#code-quality)
+[![SQALE Rating](https://img.shields.io/badge/SQALE-A_(4.6%25)-brightgreen)](#code-quality)
 
 A Model Context Protocol (MCP) server for analyzing technical debt across multiple programming languages. Designed to integrate with GitHub Copilot and other MCP-compatible tools.
 
 > **Built with Vibe Coding** - This project was developed using AI-assisted "vibe coding" techniques, leveraging GitHub Copilot to rapidly prototype and iterate on features while maintaining code quality and test coverage.
 >
-> **Quality Assurance** - This project practices what it preaches! Tech Debt MCP maintains an **A rating** (3.4% debt ratio) by regularly scanning itself and following strict code quality standards. See [Code Quality](#code-quality) for details.
+> **Quality Assurance** - This project practices what it preaches! Tech Debt MCP maintains an **A rating** (4.6% debt ratio) by regularly scanning itself and following strict code quality standards. See [Code Quality](#code-quality) for details.
 
 ## Features
 
@@ -716,10 +716,11 @@ Project-specific rules are defined in `.techdebtrc.json`:
 }
 ```
 
-**Impact of Configuration:**
+**Impact of Configuration (original Feb 2026 baseline):**
 - Before: 101 issues, 70 hours remediation
 - After: 81 issues, 60 hours remediation
 - Improvement: -20 false positives, -10 hours
+- Current (March 2026, wider scan scope): 118 issues, ~96 hours
 
 See [ARCHITECTURE.md](ARCHITECTURE.md#code-quality-standards) for detailed metrics and refactoring targets.
 
