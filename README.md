@@ -681,15 +681,15 @@ npm test
 
 **Tech Debt MCP practices what it preaches!** 🎯
 
-### Self-Scan Results (Feb 2026)
+### Self-Scan Results (March 2026)
 
 - **SQALE Rating:** A ⭐⭐⭐⭐⭐ (Excellent)
-- **Debt Ratio:** 2.9% (Target: <5%)
-- **Total Issues:** 81 (0 critical, 14 high, 38 medium, 29 low)
-- **Remediation Time:** ~60 hours (down from 70 hours)
-- **Health Score:** 51.8/100
+- **Debt Ratio:** 4.6% (Target: <5%)
+- **Total Issues:** 118 (0 critical, 12 high, 49 medium, 57 low)
+- **Remediation Time:** ~96 hours
+- **Health Score:** 42.4/100
 
-> **📊 See [TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md)** for complete self-scan results including before/after comparison showing how `.techdebtrc.json` configuration reduced false positives by 20 issues (-19.8%).
+> **📊 See [TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md)** for complete self-scan results. Issue count increased from 81 → 118 due to wider scan scope in v2.0.1 (more files analyzed), not regression.
 
 ### Quality Standards
 

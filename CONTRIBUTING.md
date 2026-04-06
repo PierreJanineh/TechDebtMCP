@@ -96,7 +96,7 @@ src/
 
 ### Tech Debt Compliance (SQALE Rating: A ⭐⭐⭐⭐⭐)
 
-**Project maintains 2.9% debt ratio - follow these rules to keep it excellent:**
+**Project maintains 4.6% debt ratio - follow these rules to keep it excellent:**
 
 > **📊 See [TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md)** for complete self-scan results showing how `.techdebtrc.json` reduced false positives by 20 issues (-19.8%).
 
@@ -116,14 +116,13 @@ src/
 - ✅ **ADD JSDoc** to all public APIs
 
 #### Known Refactoring Targets (Don't make worse)
-1. `src/index.ts` - 883 lines (needs splitting into handlers/setup/entry modules)
-2. `src/analyzers/csharpAnalyzer.ts:267` - Deep nesting (14 levels)
-3. Non-null assertions at `src/index.ts:804, 809` - Replace with safe alternatives
+1. ~~`src/index.ts` - 883 lines~~ ✅ Resolved in v2.0.0 (split into `src/server/` modules)
+2. `src/analyzers/csharpAnalyzer.ts:267` - Deep nesting (14 levels) — Issue #84
+3. ~~Non-null assertions at `src/index.ts:804, 809`~~ ✅ Resolved in v2.0.0
 
 #### Configuration Impact
-**Before .techdebtrc.json:** 101 issues, 70 hours  
-**After .techdebtrc.json:** 81 issues, 60 hours  
-**Improvement:** -20 false positives, -10 hours
+**Current (March 2026):** 118 issues, ~96 hours (wider scan scope in v2.0.1)
+**Original baseline (Feb 2026):** 101 issues, 70 hours → 81 issues, 60 hours after `.techdebtrc.json`
 
 **Configuration:** See `.techdebtrc.json` for project-specific rules.
 

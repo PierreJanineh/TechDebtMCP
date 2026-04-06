@@ -455,7 +455,7 @@ Follow [Semantic Versioning](https://semver.org/):
 
 ---
 
-**Last Updated:** 2026-02-14
+**Last Updated:** 2026-04-06
 
 For questions or issues, see [CONTRIBUTING.md](CONTRIBUTING.md) or open an issue.
 

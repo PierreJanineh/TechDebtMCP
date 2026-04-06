@@ -96,9 +96,27 @@ Copilot **must** check documentation consistency on every PR. **Do not approve**
 
 ## Tech Debt Self-Scan
 
-**Project Health:** SQALE Rating A (2.9% debt ratio)
+**Project Health:** SQALE Rating A (4.6% debt ratio, March 2026)
 
 When touching files, check for:
 - Deep nesting (>4 levels) — use guard clauses
-- File length (>300 lines) — consider splitting
+- File length (>500 lines) — must be split (matches `.claude/rules/code-quality.md`)
 - Missing JSDoc on public APIs
+
+## Security Review
+
+When reviewing PRs that touch MCP tool handlers or file system operations, check for:
+
+- **Path validation:** Verify path arguments use `path.isAbsolute()` and `path.resolve()` before filesystem access. Flag direct use of `args.path` in `fs` calls.
+- **Regex safety:** Flag `new RegExp()` with user-supplied patterns that lack length limits or flag allowlisting.
+- **String interpolation in RegExp:** Verify captured strings are escaped before interpolation into `new RegExp()`.
+- **Error message leakage:** Verify error messages use `getRelativePath()` — flag any absolute filesystem paths in client-facing responses.
+
+## Testing Review
+
+When reviewing PRs that add or modify tests:
+
+- Verify all imports include `.js` extension (required by NodeNext resolution)
+- Check that `jest.mock(...)` calls are at the top of the file
+- Verify mocked references use `as jest.MockedFunction<typeof X>` typing
+- Flag new features without corresponding test files in `__tests__/` directories

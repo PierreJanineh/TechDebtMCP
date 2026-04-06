@@ -4,7 +4,7 @@ This guide explains how to install and use Tech Debt MCP from GitHub Packages.
 
 ## What is GitHub Packages?
 
-GitHub Packages is a package hosting service that lets you host your code packages privately or publicly. The Tech Debt MCP is published to GitHub Packages for easy installation via npm.
+GitHub Packages is a package hosting service that lets you host your code packages privately or publicly. Tech Debt MCP is primarily published to **npm** (the recommended install method). GitHub Packages is available as an alternative for corporate environments or private registry setups.
 
 ## Installation from GitHub Packages
 
@@ -66,28 +66,13 @@ tech-debt-mcp
 
 This starts the MCP server on stdio, ready to communicate with GitHub Copilot or other MCP clients.
 
-### 2. In Your Project
+### 2. As an MCP Server in Your Project
 
-Create a local installation:
+Tech Debt MCP is an MCP server — it communicates over stdio with MCP-compatible clients (Claude Code, GitHub Copilot, etc.). It is not imported as a library.
 
-```bash
-npm install tech-debt-mcp
-```
+## MCP Client Integration
 
-Then use it in your code:
-
-```javascript
-const { analyzeFile } = require('tech-debt-mcp');
-
-// Analyze a file
-analyzeFile('./src/index.ts').then(result => {
-  console.log(result);
-});
-```
-
-## GitHub Copilot Integration
-
-To use Tech Debt MCP with GitHub Copilot:
+To use Tech Debt MCP with an MCP-compatible client:
 
 1. **Install the package** (using either method above)
 

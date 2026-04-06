@@ -86,4 +86,4 @@ npm version patch  # Fix issue and release new version
 5. **Test installation:** Install in fresh directory
 6. **Merge to master:** Keep master in sync with develop
 ---
-**Last Updated:** 2026-02-07
+**Last Updated:** 2026-04-06

@@ -608,17 +608,14 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
 
 ### Project Health Metrics (Self-Scan)
 
-**Current Status (Feb 14, 2026):**
+**Current Status (March 20, 2026):**
 - **SQALE Rating:** A ⭐⭐⭐⭐⭐ (Excellent)
-- **Debt Ratio:** 2.9% (Target: <5%)
-- **Health Score:** 51.8/100
-- **Total Issues:** 81 (0 critical, 14 high, 38 medium, 29 low)
-- **Remediation Time:** ~60 hours
+- **Debt Ratio:** 4.6% (Target: <5%)
+- **Health Score:** 42.4/100
+- **Total Issues:** 118 (0 critical, 12 high, 49 medium, 57 low)
+- **Remediation Time:** ~96 hours
 
-**Configuration Impact:**
-- **Before .techdebtrc.json:** 101 issues, 70 hours
-- **After .techdebtrc.json:** 81 issues, 60 hours
-- **Improvement:** -20 false positives (-19.8%), -10 hours (-14.3%)
+**Note:** Issue count increased from 81 → 118 due to more files analyzed (wider scan scope in v2.0.1), not regression.
 
 > See [TECH_DEBT_SCAN.md](../TECH_DEBT_SCAN.md) for complete analysis including before/after comparison.
 
@@ -631,7 +628,7 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
 | Function length | 50 lines | Compliant | ✅ Good |
 | Cyclomatic complexity | 10 | Compliant | ✅ Good |
 
-**Note:** After test exclusion, 8 files reduced from previous scan (34 → 26 files analyzed).
+**Note:** File count increased from 25 to 43 between Feb and March scans due to wider analysis scope (more analyzers, dependency parsers added in v2.0.0/v2.0.1).
 
 ### Known Technical Debt Items
 
@@ -678,22 +675,17 @@ These rules are enforced via `.techdebtrc.json` and CI checks:
 - Analyzer files may reference keywords (e.g., "debugger" in pattern definitions)
 - Configuration in `.techdebtrc.json` excludes test directories
 
-**Configuration Impact (Measured):**
+**Configuration Impact (Measured, March 2026):**
 ```bash
-# Without .techdebtrc.json:
+# With .techdebtrc.json:
+- 118 issues, ~96 hours remediation
+- 43 files analyzed (wider scope in v2.0.1)
+- 12 high-severity issues
+
+# Original baseline (Feb 2026, pre-.techdebtrc.json):
 - 101 issues, 70 hours remediation
 - 33 files analyzed (including tests)
 - 17 high-severity issues (includes test false positives)
-
-# With .techdebtrc.json:
-- 81 issues, 60 hours remediation  
-- 25 files analyzed (production only)
-- 14 high-severity issues (13 are analyzer pattern definitions)
-
-# Improvement:
-- -20 false positives (-19.8%)
-- -10 hours remediation time (-14.3%)
-- Better focus on real production issues
 ```
 
 **Regular Health Checks:**

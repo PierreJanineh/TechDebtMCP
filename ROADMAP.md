@@ -137,15 +137,18 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 
 ## Current Status
 
-**Latest Release:** v2.0.0 (Dependency Analysis) - 2026-03-09
+**Latest Release:** v2.0.1 (MCP Resources) — on npm
 
-**Latest Merge:** Phase 6 - MCP Resources (v2.0.1) — merged to `develop` 2026-03-20
+**In Progress:** v2.0.2 Security Patch — Sprint 1 (Apr 13-27)
 
 **Next Up:**
-- **Phase 3 (v2.1.0):** Snapshot & Trend Tracking — Issues #39-44 — branch `feature/issue-39-trend-tracking`
-- **Phase 4 (v2.2.0):** Complexity Metrics — Issues #45-49 — branch `feature/issue-45-complexity-metrics`
+- **v2.0.2:** Security hardening + refactor merges — Issues #124-130 — Sprint 1
+- **Phase 3 (v2.1.0):** Snapshot & Trend Tracking — Issues #39-44 — Sprint 2-3
+- **Phase 4 (v2.2.0):** Complexity Metrics — Issues #45-49 — Sprint 4-5
 
-**Design Spec:** See `docs/superpowers/specs/2026-03-19-phases-3-4-6-design.md` for full implementation details for both phases.
+**Design Spec:** See `docs/superpowers/specs/2026-03-19-phases-3-4-6-design.md` for Phases 3 & 4 implementation details.
+
+**Project Management:** Linear — two-way sync with GitHub.
 
 ## Phase Overview
 
@@ -158,10 +161,48 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 | Quality & Compliance | Unreleased | ✅ Ready | Code of Conduct, .techdebtrc.json, TECH_DEBT_SCAN.md, documentation |
 | Phase 2 | v2.0.0 | ✅ Complete | Dependency analysis — 10 parsers, 3 MCP tools, index.ts refactor |
 | Phase 6 | v2.0.1 | ✅ Complete | MCP Resources (debt://summary, debt://issues) |
+| Security Patch | v2.0.2 | 🔧 In Progress | Security hardening, refactor merges, CI guardrails (Issues #124-130) |
 | Phase 3 | v2.1.0 | 📋 Planned | Snapshot & trend tracking |
 | Phase 4 | v2.2.0 | 📋 Planned | Code complexity analysis |
 
 ## Future Phases
+
+### Security Patch (v2.0.2)
+
+**Status:** 🔧 **IN PROGRESS** — Sprint 1 (Apr 13-27)
+
+**Objective:** Fix 5 security vulnerabilities found during audit, merge pending refactors, add CI security guardrails.
+
+**Linear:** TEC project — v2.0.2 Security Patch
+
+#### Issues
+
+| Issue | Title | Severity |
+|-------|-------|----------|
+| #125 | Path traversal on tool path parameters | High |
+| #126 | Resource template projectPath bypasses validation | High |
+| #127 | ReDoS via user-controlled regex in custom rules engine | High |
+| #128 | Unescaped string interpolated into RegExp in swiftUiChecks | Medium |
+| #129 | Absolute filesystem paths leaked in error messages | Low |
+| #124 | Add CodeQL security scanning workflow | — |
+| #130 | Docs freshness CI check + Claude Code hook | — |
+
+#### Also included
+
+- Merge 3 pending refactor branches (#85, #86, #88 — nesting reductions)
+- ~18 commits already on `develop` (refactors, Swift analyzer split, npm-shrinkwrap fix)
+
+#### Acceptance Criteria
+
+- [ ] All 5 security issues fixed with tests (>80% coverage)
+- [ ] CodeQL workflow running on push/PR
+- [ ] Docs freshness check warns on PRs missing doc updates
+- [ ] `npm test && npm run build` pass
+- [ ] All existing tests still pass
+- [ ] CLAUDE.md, ARCHITECTURE.md, README.md, ROADMAP.md, CHANGELOG.md updated
+- [ ] Tagged and published to npm as v2.0.2
+
+---
 
 ### Phase 2: Dependency Analysis (v2.0.0)
 
@@ -494,5 +535,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
 
 ---
 
-**Last Updated:** 2026-03-20
+**Last Updated:** 2026-04-06
 

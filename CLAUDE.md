@@ -26,6 +26,8 @@ src/
 │   ├── setup.ts                # McpServer instantiation and transport wiring
 │   ├── handlers.ts             # Core MCP tool request handlers (CallToolRequestSchema)
 │   ├── tools.ts                # TOOL_DEFINITIONS array (tool schemas/descriptions)
+│   ├── inputParser.ts          # Tool argument validation (requireString, optionalString, etc.)
+│   ├── argValidation.ts        # Argument coercion and constraint checks
 │   ├── resourceHandlers.ts     # MCP resource templates (debt://summary, debt://issues)
 │   ├── formatters.ts           # Output formatting helpers
 │   ├── configValidator.ts      # .techdebtrc.json validation handler
@@ -40,6 +42,8 @@ src/
 │   ├── baseAnalyzer.ts         # Abstract base — shared logic, checkPattern(), applyRuleExclusions()
 │   ├── index.ts                # createAnalyzer() factory
 │   ├── [language]Analyzer.ts   # 14 language-specific analyzers
+│   ├── swiftUiChecks.ts        # SwiftUI Phase 1 checks (companion to swiftAnalyzer)
+│   ├── swiftUiChecksPhase2.ts  # SwiftUI Phase 2 checks (advanced patterns)
 │   └── dependencies/
 │       ├── baseParser.ts       # Abstract dependency parser
 │       ├── index.ts            # createDependencyParser() factory
@@ -125,8 +129,8 @@ Use this to prevent self-detection false positives in analyzer source files — 
 1. Add a `mcpServer.registerResource()` call in `src/server/resourceHandlers.ts`.
 2. Use `ResourceTemplate` with `{ list: undefined }` for non-enumerable templates.
 3. RFC 6570 `{+variable}` expansion allows slashes in path variables.
-4. Return `{ contents: [{ uri: uri.href, mimeType: 'application/json', text: JSON.stringify(data, null, 2) }] }`.
-5. Wrap callback body in try/catch returning `{ error: message }` on failure.
+4. Use `jsonSuccessResponse(uri, data)` to return results and `jsonErrorResponse(uri, message)` for validation errors. Both produce the standard `{ contents: [{ uri, mimeType, text }] }` shape.
+5. Wrap the callback logic with `withResourceErrorHandling(uri, () => ...)` — it catches thrown errors and returns `jsonErrorResponse` automatically.
 6. No changes needed in `setup.ts` — SDK auto-registers `resources` capability.
 
 ## Adding a New MCP Tool
@@ -134,6 +138,7 @@ Use this to prevent self-detection false positives in analyzer source files — 
 1. Add the tool schema to `TOOL_DEFINITIONS` in `src/server/tools.ts`.
 2. Add a `case 'tool_name':` in `handlers.ts` `CallToolRequestSchema` handler.
 3. Implement the handler function — in `handlers.ts` for core tools, or in a dedicated file (e.g., `configValidator.ts`, `dependencyHandlers.ts`) for domain-specific tools. Keep `handlers.ts` under 500 lines.
+4. Validate tool arguments using `inputParser.ts` helpers (`requireString`, `requireRecord`, `optionalString`, `optionalNumber`, etc.) — never access `args` properties directly.
 
 ## Adding a New Dependency Parser
 
@@ -156,33 +161,15 @@ Implementation details for planned phases are in `docs/superpowers/specs/2026-03
 
 ## Documentation Maintenance
 
-**After every implementation PR**, update the following files to reflect the changes:
-
-| File | What to update |
-|------|----------------|
-| `CLAUDE.md` | Architecture tree, request flow, recipes (if new patterns introduced) |
-| `ARCHITECTURE.md` | Project structure, component descriptions, dependency graph, data flow diagrams |
-| `README.md` | Features list, tool/resource documentation, usage examples |
-| `ROADMAP.md` | Phase status, current status section, "Last Updated" date |
-| `CHANGELOG.md` | Add version entry when tagging a release |
-
-`.github/copilot-instructions.md` is only used for Copilot PR reviews — update its architecture diagram only if the high-level structure changes.
-
-Do not defer docs to a separate PR — include them in the implementation PR.
+See `.claude/rules/docs-maintenance.md` for the canonical list of files to update after every implementation PR. Do not defer docs to a separate PR — include them in the implementation PR.
 
 ## Git & PR Workflow
 
-- **Branch from `develop`**, never commit to `master` directly.
-- Branch naming: `feature/issue-{number}-short-description` or `fix/issue-{number}-...`.
-- PRs target `develop` (not `master`).
-- Releases: tag `vX.X.X` on `develop` → GitHub Actions publishes to npm → merge `develop` → `master`.
-- Use conventional commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`.
+See `.claude/rules/git-workflow.md` for branching, PR, and commit conventions.
 
 ## Code Quality Limits
 
-- Max file length: 500 lines; max function length: 50 lines; max nesting: 4 levels.
-- Max cyclomatic complexity: 10.
-- Use early returns to reduce nesting instead of deep if-else chains.
+See `.claude/rules/code-quality.md` for file length, function length, nesting, and complexity limits. Applied automatically when editing `src/**/*.ts`.
 
 ## Testing
 
@@ -191,3 +178,13 @@ Do not defer docs to a separate PR — include them in the implementation PR.
 - All imports in test files must include `.js` extension.
 - Target >80% coverage on new code.
 - Mock pattern: `jest.mock(...)` at top of file, typed references via `as jest.MockedFunction<typeof X>`.
+- Jest config uses `moduleNameMapper` to strip `.js` extensions at runtime — this is why `.js` imports work in tests despite TypeScript sources.
+
+## Security
+
+When handling user input from MCP tool calls:
+
+- **Path arguments:** Always validate with `path.isAbsolute()` and normalize with `path.resolve()` before any filesystem operation. Never pass user-supplied paths directly to `fs` functions. See Issues #125, #126.
+- **User-supplied regex:** Never compile user-provided patterns via `new RegExp()` without length limits and flag allowlisting (`gimsuy` only). See Issue #127.
+- **String interpolation into RegExp:** Always escape captured strings with a `RegExp.escape()` polyfill before interpolating into `new RegExp()`. See Issue #128.
+- **Error messages:** Use `getRelativePath()` in error messages returned to clients — never leak absolute filesystem paths. See Issue #129.
