@@ -133,8 +133,9 @@ jobs:
 
       - name: Remove stale warning comment
         if: |
-          steps.src_changes.outputs.changed != 'true' ||
-          steps.doc_changes.outputs.missing == ''
+          github.event.pull_request.head.repo.fork == false &&
+          (steps.src_changes.outputs.changed != 'true' ||
+          steps.doc_changes.outputs.missing == '')
         uses: actions/github-script@v7
         with:
           script: |
