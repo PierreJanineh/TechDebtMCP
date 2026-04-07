@@ -118,6 +118,49 @@ zlib/1.2.13`;
       expect(deps[0]?.name).toBe('boost');
       expect(deps[1]?.name).toBe('zlib');
     });
+
+    it('should skip empty and whitespace-only string entries', async () => {
+      const content = JSON.stringify({
+        name: 'myapp',
+        dependencies: ['boost', '', '   ', 'zlib'],
+      });
+
+      const deps = await parser.parse('vcpkg.json', content);
+
+      expect(deps.length).toBe(2);
+      expect(deps[0]?.name).toBe('boost');
+      expect(deps[1]?.name).toBe('zlib');
+    });
+
+    it('should skip object-form entries with empty or whitespace-only name', async () => {
+      const content = JSON.stringify({
+        name: 'myapp',
+        dependencies: [
+          { name: 'boost' },
+          { name: '' },
+          { name: '   ' },
+          'zlib',
+        ],
+      });
+
+      const deps = await parser.parse('vcpkg.json', content);
+
+      expect(deps.length).toBe(2);
+      expect(deps[0]?.name).toBe('boost');
+      expect(deps[1]?.name).toBe('zlib');
+    });
+
+    it('should trim whitespace from valid string entries', async () => {
+      const content = JSON.stringify({
+        name: 'myapp',
+        dependencies: [' boost ', 'zlib'],
+      });
+
+      const deps = await parser.parse('vcpkg.json', content);
+
+      expect(deps.length).toBe(2);
+      expect(deps[0]?.name).toBe('boost');
+    });
   });
 
   describe('error handling', () => {

@@ -142,10 +142,14 @@ export class CppParser extends BaseDependencyParser {
    */
   private makeVcpkgDep(dep: unknown, filePath: string): ParsedDependency | null {
     if (typeof dep === 'string') {
-      return { name: dep, version: '*', isDev: false, source: filePath };
+      const name = dep.trim();
+      if (!name) return null;
+      return { name, version: '*', isDev: false, source: filePath };
     }
     if (dep !== null && typeof dep === 'object' && 'name' in dep && typeof (dep as { name: unknown }).name === 'string') {
-      return { name: (dep as { name: string }).name, version: '*', isDev: false, source: filePath };
+      const name = (dep as { name: string }).name.trim();
+      if (!name) return null;
+      return { name, version: '*', isDev: false, source: filePath };
     }
     return null;
   }
