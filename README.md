@@ -296,7 +296,7 @@ List all active custom rules with their statistics. No parameters.
 
 Run all custom rules against code or a file.
 
-- `path` (optional): Path to the file to analyze
+- `path` (optional): Path to the file to analyze (file size limited to 500,000 bytes before reading)
 - `code` (optional): Code content to analyze directly (limited to 500,000 characters)
 - `language` (optional): Programming language for filtering rules
 

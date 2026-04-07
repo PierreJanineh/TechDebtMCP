@@ -6,7 +6,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { AnalysisEngine } from '../core/analysisEngine.js';
-import { CustomRulesEngine, MAX_CODE_LENGTH } from '../core/customRulesEngine.js';
+import { CustomRulesEngine, MAX_CODE_LENGTH, MAX_FILE_SIZE_BYTES } from '../core/customRulesEngine.js';
 import { analyzeFile } from '../analyzers/index.js';
 import { getSupportedLanguages, LANGUAGE_CONFIGS } from '../config/languages.js';
 import { readFile, fileExists, getFileStats } from '../utils/fileUtils.js';
@@ -439,10 +439,16 @@ async function handleExecuteCustomRules(
       throw new McpError(ErrorCode.InvalidParams, `File not found: ${path}`);
     }
     const stats = await getFileStats(path);
-    if (stats && stats.size > MAX_CODE_LENGTH) {
+    if (!stats) {
       throw new McpError(
         ErrorCode.InvalidParams,
-        `File exceeds maximum size of ${MAX_CODE_LENGTH} bytes for regex matching`
+        `Could not read file stats for: ${path}`
+      );
+    }
+    if (stats.size > MAX_FILE_SIZE_BYTES) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        `File exceeds maximum size of ${MAX_FILE_SIZE_BYTES} bytes for regex matching`
       );
     }
     code = await readFile(path);

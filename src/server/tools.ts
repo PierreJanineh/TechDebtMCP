@@ -140,7 +140,7 @@ export const TOOL_DEFINITIONS = [
     inputSchema: {
       type: 'object',
       properties: {
-        path: { type: 'string', description: 'Path to the file to analyze' },
+        path: { type: 'string', description: 'Path to the file to analyze (file size limited to 500 000 bytes)' },
         code: { type: 'string', description: 'Code content to analyze (alternative to path; limited to 500 000 characters)' },
         language: { type: 'string', description: 'Optional: programming language for filtering rules' },
       },

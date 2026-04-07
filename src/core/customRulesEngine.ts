@@ -39,6 +39,12 @@ const ALLOWED_FLAGS_RE = /^[gimsuy]*$/;
 export const MAX_CODE_LENGTH = 500_000;
 
 /**
+ * Maximum allowed file size in bytes for `path` inputs to `execute_custom_rules`.
+ * Enforced via `fs.Stats.size` before reading the file into memory.
+ */
+export const MAX_FILE_SIZE_BYTES = 500_000;
+
+/**
  * Custom Rules Engine
  * Allows users to define and execute custom pattern-based tech debt checks
  */
