@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replaced non-null assertions with destructured variables in `analysisEngine` (#101)
 - Security: absolute filesystem paths no longer leaked in `scanErrors` returned to MCP clients; `findPackageFiles` now uses `getRelativePath()` for error messages (#129)
 - Security: `projectPath` extracted from URI template variables in `debt://summary` and `debt://issues` resource handlers is now validated with `isAbsolute()` and normalized with `resolve()`, preventing path traversal attacks (#126)
+- Security: all MCP tool `path` parameters (`analyze_project`, `analyze_file`, `get_debt_summary`, `get_sqale_metrics`, `get_recommendations`, `get_issues_by_severity`, `get_issues_by_category`, `execute_custom_rules`) are now validated with `isAbsolute()` and normalized with `resolve()` in `inputParser.ts`, preventing path traversal and relative-path attacks (#125)
 
 ### Added
 - Direct unit tests for `swiftUiChecks` and `swiftUiChecksPhase2` modules

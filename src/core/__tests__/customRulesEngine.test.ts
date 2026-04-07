@@ -231,6 +231,81 @@ console.log("test3");`;
       const validation = CustomRulesEngine.validatePattern(pattern);
       expect(validation.valid).toBe(false);
     });
+
+    it('rejects pattern whose length exceeds 1000 characters', () => {
+      const pattern: CustomPattern = {
+        id: 'long-rule',
+        pattern: 'a'.repeat(1001),
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Too long',
+      };
+
+      const validation = CustomRulesEngine.validatePattern(pattern);
+      expect(validation.valid).toBe(false);
+      expect(validation.errors.some(e => e.includes('maximum length'))).toBe(true);
+    });
+
+    it('accepts pattern exactly at the 1000-character limit', () => {
+      const pattern: CustomPattern = {
+        id: 'boundary-rule',
+        pattern: 'a'.repeat(1000),
+        severity: 'low',
+        category: 'code-quality',
+        message: 'At boundary',
+      };
+
+      const validation = CustomRulesEngine.validatePattern(pattern);
+      expect(validation.valid).toBe(true);
+    });
+
+    it('rejects flags containing disallowed characters', () => {
+      const pattern: CustomPattern = {
+        id: 'bad-flags-rule',
+        pattern: 'test',
+        flags: 'gx',  // 'x' is not a valid JS regex flag
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Bad flags',
+      };
+
+      const validation = CustomRulesEngine.validatePattern(pattern);
+      expect(validation.valid).toBe(false);
+      expect(validation.errors.some(e => e.includes('Invalid regex flags'))).toBe(true);
+    });
+
+    it('accepts all valid flag characters', () => {
+      const pattern: CustomPattern = {
+        id: 'good-flags-rule',
+        pattern: 'test',
+        flags: 'gimsuy',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'All valid flags',
+      };
+
+      const validation = CustomRulesEngine.validatePattern(pattern);
+      // The validation may fail due to conflicting flags (u+y), but not due to disallowed chars
+      expect(validation.errors.some(e => e.includes('Invalid regex flags'))).toBe(false);
+    });
+
+    it('strips disallowed flag characters at execution time for rules bypassing validation', () => {
+      const engine = new CustomRulesEngine();
+      const pattern: CustomPattern = {
+        id: 'bad-flags-exec',
+        pattern: 'hello',
+        flags: 'gX',  // 'X' is disallowed — stripped to 'g' at runtime
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Bad flags at exec',
+      };
+
+      // Add directly (bypassing validatePattern) to simulate a config-loaded rule
+      engine.addRule(pattern);
+      // Should not throw and should still find the match
+      const issues = engine.executeRules('test.ts', 'hello world');
+      expect(issues.length).toBe(1);
+    });
   });
 
   describe('Helper Methods', () => {
