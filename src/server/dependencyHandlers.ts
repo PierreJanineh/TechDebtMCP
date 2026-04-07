@@ -28,7 +28,7 @@ export async function handleCheckDependencies(args: unknown): Promise<{ content:
   const packageFileNames = getAllPackageFileNames();
   const packageFiles: string[] = [];
   const scanErrors: string[] = [];
-  await findPackageFiles(projectPath, packageFileNames, packageFiles, scanErrors);
+  await findPackageFiles(projectPath, projectPath, packageFileNames, packageFiles, scanErrors);
 
   const { dependencies, failedParses } = await parseAllDependencies(packageFiles, projectPath, includeDev);
   const report = generateDependencyReport(projectPath, packageFiles, dependencies, failedParses, scanErrors);
@@ -54,7 +54,7 @@ export async function handleGetVulnerabilityReport(args: unknown): Promise<{ con
   const packageFileNames = getAllPackageFileNames();
   const packageFiles: string[] = [];
   const scanErrors: string[] = [];
-  await findPackageFiles(projectPath, packageFileNames, packageFiles, scanErrors);
+  await findPackageFiles(projectPath, projectPath, packageFileNames, packageFiles, scanErrors);
 
   const { dependencies, failedParses } = await parseAllDependencies(packageFiles, projectPath, includeDev);
 
@@ -142,6 +142,7 @@ function isPackageManifest(entry: string, targetFiles: string[]): boolean {
 async function processEntry(
   entry: string,
   dir: string,
+  projectPath: string,
   targetFiles: string[],
   results: string[],
   scanErrors: string[],
@@ -154,7 +155,7 @@ async function processEntry(
   const entryStats = await stat(fullPath);
 
   if (entryStats.isDirectory()) {
-    await findPackageFiles(fullPath, targetFiles, results, scanErrors, maxDepth, currentDepth + 1);
+    await findPackageFiles(fullPath, projectPath, targetFiles, results, scanErrors, maxDepth, currentDepth + 1);
     return;
   }
 
@@ -168,6 +169,7 @@ async function processEntry(
  * Skips common non-source directories (node_modules, .git, dist, etc.) and
  * limits traversal depth to avoid runaway recursion in deep trees.
  * @param dir Root directory to begin searching from
+ * @param projectPath Root project path used to relativise error messages
  * @param targetFiles Array of package file names to look for
  * @param results Accumulator array for discovered file paths (mutated in place)
  * @param scanErrors Accumulator array for filesystem errors encountered during traversal
@@ -176,6 +178,7 @@ async function processEntry(
  */
 async function findPackageFiles(
   dir: string,
+  projectPath: string,
   targetFiles: string[],
   results: string[],
   scanErrors: string[] = [],
@@ -187,10 +190,11 @@ async function findPackageFiles(
   try {
     const entries = await readdir(dir);
     for (const entry of entries) {
-      await processEntry(entry, dir, targetFiles, results, scanErrors, maxDepth, currentDepth);
+      await processEntry(entry, dir, projectPath, targetFiles, results, scanErrors, maxDepth, currentDepth);
     }
   } catch (error) {
-    scanErrors.push(`${dir}: ${error instanceof Error ? error.message : String(error)}`);
+    const relDir = getRelativePath(projectPath, dir);
+    scanErrors.push(`${relDir}: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 

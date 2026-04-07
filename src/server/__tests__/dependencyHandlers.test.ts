@@ -162,6 +162,20 @@ describe('handleCheckDependencies', () => {
     expect(result.content[0].text).toContain('Filesystem scan errors');
     expect(result.content[0].text).toContain('EACCES');
   });
+
+  it('should use relative paths in filesystem scan error messages', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
+    mockReaddir.mockRejectedValueOnce(new Error('EACCES: permission denied'));
+    mockGetRelativePath.mockImplementation((_base, full) => full.replace('/project', '.'));
+
+    const result = await handleCheckDependencies({ path: '/project' });
+    const text = result.content[0].text;
+    // The scan-error bullet should use the relative path, not the absolute dir
+    const scanErrorSection = text.substring(text.indexOf('Filesystem scan errors'));
+    expect(scanErrorSection).not.toContain('/project');
+    expect(scanErrorSection).toContain('EACCES');
+  });
 });
 
 describe('handleGetVulnerabilityReport', () => {
@@ -277,6 +291,20 @@ describe('handleGetVulnerabilityReport', () => {
     const result = await handleGetVulnerabilityReport({ path: '/project' });
     expect(result.content[0].text).toContain('Filesystem scan errors');
     expect(result.content[0].text).toContain('EACCES');
+  });
+
+  it('should use relative paths in filesystem scan error messages', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
+    mockReaddir.mockRejectedValueOnce(new Error('EACCES: permission denied'));
+    mockGetRelativePath.mockImplementation((_base, full) => full.replace('/project', '.'));
+
+    const result = await handleGetVulnerabilityReport({ path: '/project' });
+    const text = result.content[0].text;
+    // The scan-error bullet should use the relative path, not the absolute dir
+    const scanErrorSection = text.substring(text.indexOf('Filesystem scan errors'));
+    expect(scanErrorSection).not.toContain('/project');
+    expect(scanErrorSection).toContain('EACCES');
   });
 
   it('should report failed parses', async () => {
