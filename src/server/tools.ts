@@ -141,7 +141,7 @@ export const TOOL_DEFINITIONS = [
       type: 'object',
       properties: {
         path: { type: 'string', description: 'Path to the file to analyze' },
-        code: { type: 'string', description: 'Code content to analyze (alternative to path)' },
+        code: { type: 'string', description: 'Code content to analyze (alternative to path; limited to 500 000 characters)' },
         language: { type: 'string', description: 'Optional: programming language for filtering rules' },
       },
     },
@@ -153,7 +153,7 @@ export const TOOL_DEFINITIONS = [
       type: 'object',
       properties: {
         id: { type: 'string', description: 'Unique identifier for the rule' },
-        pattern: { type: 'string', description: 'Regex pattern to validate' },
+        pattern: { type: 'string', description: 'Regex pattern to validate (limited to 1 000 characters)' },
         message: { type: 'string', description: 'Issue title/message' },
         severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'], description: 'Issue severity level' },
         category: { type: 'string', enum: ['dependency', 'code-quality', 'architecture', 'documentation', 'testing', 'security', 'performance', 'maintainability'], description: 'Debt category' },

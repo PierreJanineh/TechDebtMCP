@@ -297,17 +297,17 @@ List all active custom rules with their statistics. No parameters.
 Run all custom rules against code or a file.
 
 - `path` (optional): Path to the file to analyze
-- `code` (optional): Code content to analyze directly
+- `code` (optional): Code content to analyze directly (limited to 500,000 characters)
 - `language` (optional): Programming language for filtering rules
 
 _Either `path` or `code` must be provided._
 
 ### `validate_custom_pattern`
 
-Validate a custom pattern before adding it as a rule.
+Validate a custom pattern before adding it as a rule. Enforces the same 1,000-character pattern cap as `add_custom_rule`.
 
 - `id` (required): Unique identifier for the rule
-- `pattern` (required): Regex pattern to validate
+- `pattern` (required): Regex pattern to validate (limited to 1,000 characters)
 - `message` (required): Issue title/message
 - `severity` (required): low, medium, high, or critical
 - `category` (required): One of the debt categories
