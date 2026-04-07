@@ -34,8 +34,15 @@ const ALLOWED_FLAGS_RE = /^[gimsuy]*$/;
 /**
  * Maximum allowed character length for the inline `code` parameter passed to
  * `execute_custom_rules`. This caps the input fed to regex matching per call.
+ * Enforced using JavaScript string length semantics (`string.length`).
  */
 export const MAX_CODE_LENGTH = 500_000;
+
+/**
+ * Maximum allowed file size in bytes for `path` inputs to `execute_custom_rules`.
+ * Compared against `fs.Stats.size` before reading the file into memory.
+ */
+export const MAX_FILE_SIZE_BYTES = 500_000;
 
 /**
  * Custom Rules Engine
