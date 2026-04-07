@@ -3,7 +3,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { McpError } from '@modelcontextprotocol/sdk/types.js';
 import { attachHandlers } from '../handlers.js';
 import { fileExists, getFileStats } from '../../utils/fileUtils.js';
-import { MAX_CODE_LENGTH } from '../../core/customRulesEngine.js';
+import { MAX_FILE_SIZE_BYTES } from '../../core/customRulesEngine.js';
 
 // Mock the dependencies
 jest.mock('../../core/analysisEngine.js');
@@ -17,6 +17,7 @@ jest.mock('../../core/customRulesEngine.js', () => ({
     executeRules = jest.fn(() => []);
   },
   MAX_CODE_LENGTH: 500_000,
+  MAX_FILE_SIZE_BYTES: 500_000,
 }));
 jest.mock('../../analyzers/index.js');
 jest.mock('../../analyzers/dependencies/index.js');
@@ -68,9 +69,9 @@ describe('Handlers', () => {
       callToolHandler = calls[calls.length - 1][1];
     });
 
-    it('rejects a path input whose file size exceeds MAX_CODE_LENGTH', async () => {
+    it('rejects a path input whose file size exceeds MAX_FILE_SIZE_BYTES', async () => {
       mockFileExists.mockResolvedValue(true);
-      mockGetFileStats.mockResolvedValue({ size: MAX_CODE_LENGTH + 1 } as any);
+      mockGetFileStats.mockResolvedValue({ size: MAX_FILE_SIZE_BYTES + 1 } as any);
 
       await expect(
         callToolHandler({
@@ -82,9 +83,9 @@ describe('Handlers', () => {
       ).rejects.toThrow(McpError);
     });
 
-    it('accepts a path input whose file size is exactly MAX_CODE_LENGTH', async () => {
+    it('accepts a path input whose file size is exactly MAX_FILE_SIZE_BYTES', async () => {
       mockFileExists.mockResolvedValue(true);
-      mockGetFileStats.mockResolvedValue({ size: MAX_CODE_LENGTH } as any);
+      mockGetFileStats.mockResolvedValue({ size: MAX_FILE_SIZE_BYTES } as any);
       // readFile needs to return something — mock it
       const { readFile } = await import('../../utils/fileUtils.js');
       (readFile as jest.MockedFunction<typeof readFile>).mockResolvedValue('const x = 1;');
