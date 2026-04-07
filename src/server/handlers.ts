@@ -436,17 +436,18 @@ async function handleExecuteCustomRules(
     throw new McpError(ErrorCode.InvalidParams, 'Either path or code must be provided');
   }
   if (!code && path) {
+    const displayPath = basename(path) || '(root path)';
     const stats = await getFileStats(path);
     if (!stats) {
       throw new McpError(
         ErrorCode.InvalidParams,
-        `Path not found or not accessible: ${basename(path)}`
+        `Path not found or not accessible: ${displayPath}`
       );
     }
     if (!stats.isFile()) {
       throw new McpError(
         ErrorCode.InvalidParams,
-        `Path is not a regular file: ${basename(path)}`
+        `Path is not a regular file: ${displayPath}`
       );
     }
     if (stats.size > MAX_FILE_SIZE_BYTES) {
