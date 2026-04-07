@@ -3,7 +3,7 @@
  * Centralized tool schemas for better organization and maintainability
  */
 
-import { MAX_CODE_LENGTH } from '../core/customRulesEngine.js';
+import { MAX_CODE_LENGTH, MAX_FILE_SIZE_BYTES } from '../core/customRulesEngine.js';
 
 export const TOOL_DEFINITIONS = [
   {
@@ -142,7 +142,7 @@ export const TOOL_DEFINITIONS = [
     inputSchema: {
       type: 'object',
       properties: {
-        path: { type: 'string', description: 'Absolute filesystem path to the file to analyze' },
+        path: { type: 'string', description: `Absolute filesystem path to the file to analyze (maximum ${String(MAX_FILE_SIZE_BYTES)} bytes)` },
         code: { type: 'string', maxLength: MAX_CODE_LENGTH, description: `Source code content to analyze directly (maximum ${String(MAX_CODE_LENGTH)} characters; alternative to path)` },
         language: { type: 'string', description: 'Optional: programming language for filtering rules' },
       },
