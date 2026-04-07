@@ -196,7 +196,7 @@ async function findPackageFiles(
     const relDir = getRelativePath(projectPath, dir);
     const displayDir = relDir === '' ? '.' : relDir;
     const rawMessage = error instanceof Error ? error.message : String(error);
-    const safeMessage = rawMessage.split(projectPath).join(displayDir);
+    const safeMessage = rawMessage.split(dir).join(displayDir);
     scanErrors.push(`${displayDir}: ${safeMessage}`);
   }
 }
