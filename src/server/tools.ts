@@ -143,9 +143,13 @@ export const TOOL_DEFINITIONS = [
       type: 'object',
       properties: {
         path: { type: 'string', description: 'Absolute filesystem path to the file to analyze' },
-        code: { type: 'string', description: `Source code content to analyze directly (maximum ${String(MAX_CODE_LENGTH)} characters; alternative to path)` },
+        code: { type: 'string', maxLength: MAX_CODE_LENGTH, description: `Source code content to analyze directly (maximum ${String(MAX_CODE_LENGTH)} characters; alternative to path)` },
         language: { type: 'string', description: 'Optional: programming language for filtering rules' },
       },
+      anyOf: [
+        { required: ['path'] },
+        { required: ['code'] },
+      ],
     },
   },
   {
