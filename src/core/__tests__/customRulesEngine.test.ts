@@ -232,7 +232,7 @@ console.log("test3");`;
       expect(validation.valid).toBe(false);
     });
 
-    it('rejects pattern whose length exceeds 1000 characters', () => {
+    it(`rejects pattern whose length exceeds ${MAX_PATTERN_LENGTH} characters`, () => {
       const pattern: CustomPattern = {
         id: 'long-rule',
         pattern: 'a'.repeat(MAX_PATTERN_LENGTH + 1),
@@ -246,7 +246,7 @@ console.log("test3");`;
       expect(validation.errors.some(e => e.includes('maximum length'))).toBe(true);
     });
 
-    it('accepts pattern exactly at the 1000-character limit', () => {
+    it(`accepts pattern exactly at the ${MAX_PATTERN_LENGTH}-character limit`, () => {
       const pattern: CustomPattern = {
         id: 'boundary-rule',
         pattern: 'a'.repeat(MAX_PATTERN_LENGTH),
