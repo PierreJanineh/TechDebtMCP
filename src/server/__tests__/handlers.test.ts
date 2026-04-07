@@ -2,7 +2,7 @@ import { jest } from '@jest/globals';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { McpError } from '@modelcontextprotocol/sdk/types.js';
 import { attachHandlers } from '../handlers.js';
-import { fileExists, getFileStats, readFile } from '../../utils/fileUtils.js';
+import { getFileStats, readFile } from '../../utils/fileUtils.js';
 import { MAX_FILE_SIZE_BYTES } from '../../core/customRulesEngine.js';
 
 // Mock the dependencies
@@ -29,7 +29,6 @@ jest.mock('../../utils/fileUtils.js', () => ({
   getRelativePath: jest.fn((_b: string, f: string) => f),
 }));
 
-const mockFileExists = fileExists as jest.MockedFunction<typeof fileExists>;
 const mockGetFileStats = getFileStats as jest.MockedFunction<typeof getFileStats>;
 const mockReadFile = readFile as jest.MockedFunction<typeof readFile>;
 
@@ -44,11 +43,7 @@ describe('Handlers', () => {
     // Create mock server that captures the registered handlers
     mockServer = {
       server: {
-        setRequestHandler: jest.fn((schema: any, handler: any) => {
-          if (schema?.method === 'tools/call') {
-            callToolHandler = handler;
-          }
-        }),
+        setRequestHandler: jest.fn(),
       },
     } as any;
   });
@@ -70,7 +65,6 @@ describe('Handlers', () => {
     });
 
     it('rejects a path input whose file size exceeds MAX_FILE_SIZE_BYTES', async () => {
-      mockFileExists.mockResolvedValue(true);
       mockGetFileStats.mockResolvedValue({ size: MAX_FILE_SIZE_BYTES + 1, isFile: () => true } as any);
 
       await expect(
@@ -84,7 +78,6 @@ describe('Handlers', () => {
     });
 
     it('rejects a path input that is not a regular file', async () => {
-      mockFileExists.mockResolvedValue(true);
       mockGetFileStats.mockResolvedValue({ size: 0, isFile: () => false } as any);
 
       await expect(
@@ -98,7 +91,6 @@ describe('Handlers', () => {
     });
 
     it('accepts a path input whose file size is exactly MAX_FILE_SIZE_BYTES', async () => {
-      mockFileExists.mockResolvedValue(true);
       mockGetFileStats.mockResolvedValue({ size: MAX_FILE_SIZE_BYTES, isFile: () => true } as any);
       mockReadFile.mockResolvedValue('const x = 1;');
 
@@ -113,7 +105,6 @@ describe('Handlers', () => {
     });
 
     it('rejects when getFileStats returns null', async () => {
-      mockFileExists.mockResolvedValue(true);
       mockGetFileStats.mockResolvedValue(null);
 
       await expect(

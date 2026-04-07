@@ -127,7 +127,8 @@ async function handleAnalyzeProject(
 async function handleAnalyzeFile(args: unknown): Promise<ToolResponse> {
   const { path } = parseAnalyzeFileInput(args);
   if (!(await fileExists(path))) {
-    throw new McpError(ErrorCode.InvalidParams, `File not found: ${path}`);
+    const displayPath = basename(path) || '(root path)';
+    throw new McpError(ErrorCode.InvalidParams, `File not found: ${displayPath}`);
   }
   const result = await analyzeFile(path);
   return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
