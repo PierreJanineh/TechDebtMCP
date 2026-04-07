@@ -13,6 +13,7 @@ jobs:
 
     permissions:
       pull-requests: write
+      issues: write
 
     steps:
       - name: Checkout code
@@ -63,7 +64,8 @@ jobs:
       - name: Post warning comment
         if: |
           steps.src_changes.outputs.changed == 'true' &&
-          steps.doc_changes.outputs.missing != ''
+          steps.doc_changes.outputs.missing != '' &&
+          github.event.pull_request.head.repo.fork == false
         uses: actions/github-script@v7
         env:
           MISSING_DOCS: ${{ steps.doc_changes.outputs.missing }}
@@ -169,7 +171,7 @@ jobs:
           if [ "$SRC_CHANGED" != "true" ]; then
             echo "No \`src/\` changes detected -- docs check skipped." >> "$GITHUB_STEP_SUMMARY"
           elif [ -z "$MISSING_DOCS" ]; then
-            echo "All required documentation files were updated in this PR." >> "$GITHUB_STEP_SUMMARY"
+            echo "At least one required documentation file was updated in this PR." >> "$GITHUB_STEP_SUMMARY"
           else
             echo "**Warning:** The following docs may need updating:" >> "$GITHUB_STEP_SUMMARY"
             echo "" >> "$GITHUB_STEP_SUMMARY"
