@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- **README.md** — Restructured for scannability: added stat line, grouped tools table with collapsible parameter reference, Resources table, collapsed SwiftUI section, merged Custom Rules into Configuration
+- **ARCHITECTURE.md** — Fixed project structure tree (added `inputParser.ts`, `argValidation.ts`, `swiftUiChecks.ts`, `swiftUiChecksPhase2.ts`), removed phantom `src/services/` directory, updated test count (522), fixed file size table, marked resolved debt items
+- **CLAUDE.md** — Deduplicated Git and Code Quality sections (reference `.claude/rules/`), updated resource recipe, added Security section
+- **.github/copilot-instructions.md** — Added Security Review and Testing Review sections, updated architecture tree, aligned file length threshold (500)
+- **ROADMAP.md** — Added v2.0.2 security patch section with issues #124-130
+- **CONTRIBUTING.md** — Updated metrics to March 2026 scan, marked resolved refactoring targets
+- **GITHUB_PACKAGES.md** — Clarified npm as primary distribution, removed incorrect `require()` API example
+
+### Fixed
+- **npm-shrinkwrap.json** — Removed to stop publishing lockfile to npm (#123)
+
+### Refactored
+- Reduced nesting in core engines (`analysisEngine`, `customRulesEngine`) to ≤4 levels (#118)
+- Reduced nesting in server modules to ≤4 levels (#119)
+- Reduced nesting depth in 10 dependency parsers (#88)
+- Reduced `csharpAnalyzer.ts` nesting from 7 to ≤4 levels (#113)
+- Split `swiftAnalyzer.ts` into companion modules (`swiftUiChecks.ts`, `swiftUiChecksPhase2.ts`) (#121)
+- Replaced `<any>` generics and suppressed non-null-assertion false positives (#112)
+- Replaced type assertions in `handlers.ts` with typed input parsers (#110)
+- Replaced type assertions in `configValidator.ts` and `dependencyHandlers.ts` with type guards (#106)
+- Replaced type assertions in `resourceHandlers.ts` with type guards (#107)
+
+### Added
+- Direct unit tests for `swiftUiChecks` and `swiftUiChecksPhase2` modules
+- Unit tests for `inputParser` module
+- Inline suppression comments for tech debt issues (#105)
+- Regex precision improvements to eliminate 11 analyzer false positives (#102, #104)
+
 ## [2.0.1] - 2026-03-20
 
 ### Added
@@ -102,7 +133,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Created configuration to prevent false positives in self-scanning
 - All documentation now cross-references TECH_DEBT_SCAN.md for transparency
 
-### Metrics Summary
+### Metrics Summary (at time of v2.0.0 release)
 - **SQALE Rating:** A ⭐⭐⭐⭐⭐ (2.9% debt ratio, improved from 3.4%)
 - **Total Issues:** 81 (down from 101)
 - **Remediation Time:** 60 hours (down from 70 hours)

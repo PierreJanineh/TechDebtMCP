@@ -37,6 +37,8 @@ TechDebtMCP/
 │   │   ├── setup.ts             # McpServer instantiation and transport wiring
 │   │   ├── handlers.ts          # Core MCP tool request handlers & dispatch
 │   │   ├── tools.ts             # Centralized TOOL_DEFINITIONS array
+│   │   ├── inputParser.ts       # Tool argument validation (requireString, optionalString, etc.)
+│   │   ├── argValidation.ts     # Argument coercion and constraint checks
 │   │   ├── formatters.ts        # Output formatting helpers
 │   │   ├── configValidator.ts   # .techdebtrc.json validation handler
 │   │   ├── dependencyHandlers.ts # Dependency analysis & vulnerability report handlers
@@ -53,12 +55,12 @@ TechDebtMCP/
 │   │   ├── baseAnalyzer.ts      # Abstract base class for all language analyzers
 │   │   ├── index.ts             # Analyzer factory (createAnalyzer)
 │   │   ├── [language]Analyzer.ts # 14 language-specific analyzers
+│   │   ├── swiftUiChecks.ts     # SwiftUI Phase 1 checks (companion to swiftAnalyzer)
+│   │   ├── swiftUiChecksPhase2.ts # SwiftUI Phase 2 checks (advanced patterns)
 │   │   └── dependencies/        # ✅ Dependency parsers (Phase 2 - COMPLETE)
 │   │       ├── baseParser.ts    # Abstract base parser
 │   │       ├── index.ts         # Parser factory (createDependencyParser)
 │   │       └── [ecosystem]Parser.ts # 10 ecosystem parsers
-│   ├── services/
-│   │   └── vulnerabilityService.ts # External API integration (Phase 2b, future)
 │   └── utils/
 │       └── fileUtils.ts         # File system utilities
 ├── dist/                        # Compiled output
@@ -253,7 +255,7 @@ The server is split into focused modules under `src/server/`:
 - **`dependencyHandlers.ts`** — `check_dependencies` and `get_vulnerability_report` handlers
 - **`resourceHandlers.ts`** — MCP resource templates (`debt://summary`, `debt://issues`)
 
-**Entry point:** `src/index.ts` (16 lines) creates server, attaches handlers + resources, runs.
+**Entry point:** `src/index.ts` (18 lines) creates server, attaches handlers + resources, runs.
 
 **16 MCP Tools:**
 - Core: `analyze_project`, `analyze_file`, `get_debt_summary`, `list_supported_languages`, `get_recommendations`, `get_issues_by_severity`, `get_issues_by_category`, `get_sqale_metrics`
@@ -554,7 +556,7 @@ This reduces overhead from O(N × checks) to O(1) for content splitting.
 
 ### Test Coverage
 
-**Total Repository Tests:** 118 (96 passing + 22 todo across all phases)
+**Total Repository Tests:** 522 (501 passing + 21 todo across all phases)
 
 **SwiftUI Analyzer Tests:**
 - **Phase 1 Tests:** 13 implemented test cases
@@ -617,14 +619,14 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
 
 **Note:** Issue count increased from 81 → 118 due to more files analyzed (wider scan scope in v2.0.1), not regression.
 
-> See [TECH_DEBT_SCAN.md](../TECH_DEBT_SCAN.md) for complete analysis including before/after comparison.
+> See [TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md) for complete analysis including before/after comparison.
 
 ### File Size & Complexity Limits
 
 | Metric | Limit | Current Max | Status |
 |--------|-------|-------------|--------|
-| File length | 500 lines | ~325 (`src/server/handlers.ts`) | ✅ Good (index.ts split in v2.0.0) |
-| Nesting depth | 4 levels | 14 (`csharpAnalyzer.ts:267`) | ⚠️ Needs refactoring |
+| File length | 500 lines | 495 (`src/server/handlers.ts`) | ⚠️ Near limit (index.ts split in v2.0.0) |
+| Nesting depth | 4 levels | ≤4 (all files) | ✅ Good (csharpAnalyzer fixed in PR #113, engines in PR #118) |
 | Function length | 50 lines | Compliant | ✅ Good |
 | Cyclomatic complexity | 10 | Compliant | ✅ Good |
 
@@ -636,10 +638,7 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
 
 1. ~~**`src/index.ts` (883 lines)** - Split into modules~~ ✅ **DONE** (v2.0.0) — now 16 lines, split into `src/server/` modules
 
-2. **`src/analyzers/csharpAnalyzer.ts:267`** - Deep nesting (14 levels)
-   - Extract nested logic into helper methods
-   - Use early returns to reduce indentation
-   - Apply guard clauses pattern
+2. ~~**`src/analyzers/csharpAnalyzer.ts:267`** - Deep nesting (14 levels)~~ ✅ **DONE** (PR #113) — refactored to ≤4 levels via helper methods and early returns
 
 3. ~~**False positives in analyzers** (13 high-severity false positives)~~ ✅ **DONE** (v2.0.1+) — Two complementary mechanisms: (a) `ruleExclusions` config in `.techdebtrc.json` for file-level glob suppression; (b) inline suppression comments (`// techdebt-ignore-next-line [rule]` and `// techdebt-ignore-start/end [rule]`) for line- and block-level suppression directly in source code. Analyzer pattern definitions use block suppression to avoid self-detection. See `src/analyzers/baseAnalyzer.ts` `isLineSuppressed()` and `buildBlockSuppressionMap()`.
 
@@ -700,7 +699,7 @@ npx tech-debt-mcp analyze_project --path=/path/to/TechDebtMCP
 # - File length violations: 0
 ```
 
-**See [TECH_DEBT_SCAN.md](../TECH_DEBT_SCAN.md)** for complete before/after analysis and detailed findings.
+**See [TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md)** for complete before/after analysis and detailed findings.
 
 ## Future Enhancements
 
