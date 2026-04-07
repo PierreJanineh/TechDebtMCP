@@ -12,6 +12,7 @@ import {
   parseExecuteCustomRulesInput,
   parseValidateCustomPatternInput,
 } from '../inputParser.js';
+import { MAX_CODE_LENGTH } from '../../core/customRulesEngine.js';
 
 describe('inputParser', () => {
   // ---- top-level shape validation ----
@@ -348,15 +349,15 @@ describe('inputParser', () => {
       expect(() => parseExecuteCustomRulesInput({ code: 123 })).toThrow(McpError);
     });
 
-    it('throws McpError when code exceeds 500 000 characters', () => {
+    it('throws McpError when code exceeds MAX_CODE_LENGTH characters', () => {
       expect(() =>
-        parseExecuteCustomRulesInput({ code: 'a'.repeat(500_001) }),
+        parseExecuteCustomRulesInput({ code: 'a'.repeat(MAX_CODE_LENGTH + 1) }),
       ).toThrow(McpError);
     });
 
-    it('accepts code exactly at the 500 000-character limit', () => {
-      const result = parseExecuteCustomRulesInput({ code: 'a'.repeat(500_000) });
-      expect(result.code).toHaveLength(500_000);
+    it('accepts code exactly at the MAX_CODE_LENGTH limit', () => {
+      const result = parseExecuteCustomRulesInput({ code: 'a'.repeat(MAX_CODE_LENGTH) });
+      expect(result.code).toHaveLength(MAX_CODE_LENGTH);
     });
   });
 
