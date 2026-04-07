@@ -38,6 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Security: `path` parameters for `analyze_project`, `analyze_file`, `get_debt_summary`, `get_sqale_metrics`, `get_recommendations`, `get_issues_by_severity`, `get_issues_by_category`, and `execute_custom_rules` are now validated with `isAbsolute()` and normalized with `resolve()` in `inputParser.ts`, preventing path traversal and relative-path attacks (#125)
 
 ### Added
+- CI workflow (`.github/workflows/docs-check.yml`) warns on PRs with `src/` changes when none of the five required docs were touched; non-blocking, posts an actionable comment listing the required files and removes the comment automatically when docs are subsequently updated (#130)
+- Claude Code local hook (`.claude/hooks/pre-pr-docs-check.sh`) warns before `gh pr create` when docs were not updated alongside `src/` changes; the hook lives in `.claude/` which is gitignored and therefore local-only, not distributed with the repo (#130)
 - Direct unit tests for `swiftUiChecks` and `swiftUiChecksPhase2` modules
 - Unit tests for `inputParser` module
 - Inline suppression comments for tech debt issues (#105)
