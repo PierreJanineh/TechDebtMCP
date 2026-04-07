@@ -94,13 +94,12 @@ Copilot **must** check documentation consistency on every PR. **Do not approve**
 ## Git Workflow
 
 - **Branch from `develop`**, never commit to `master` directly
-- Branch naming: `feature/issue-{number}-short-description` or `fix/issue-{number}-...`
+- Branch naming: `feature/tec-{N}-short-description` or `fix/tec-{N}-...` (where `TEC-N` is the Linear issue). Fallback: `feature/issue-{number}-...` for issues without a Linear ticket.
 - PRs target `develop` (not `master`)
 - Releases: tag on `develop` → GitHub Actions publishes → merge `develop` → `master`
+- **Issues are created on GitHub only** — Linear two-way sync auto-creates corresponding `TEC-N` issues. Verify PR branch names match one of the naming patterns above.
 
 ## Tech Debt Self-Scan
-
-**Project Health:** SQALE Rating A (4.6% debt ratio, March 2026)
 
 When touching files, check for:
 - Deep nesting (>4 levels) — use guard clauses
@@ -111,8 +110,8 @@ When touching files, check for:
 
 When reviewing PRs that touch MCP tool handlers or file system operations, check for:
 
-- **Path validation:** Verify path arguments use `path.isAbsolute()` and `path.resolve()` before filesystem access. Flag direct use of `args.path` in `fs` calls.
-- **Regex safety:** Flag `new RegExp()` with user-supplied patterns that lack length limits or flag allowlisting.
+- **Path validation:** Verify path arguments use `requireAbsolutePath()` or `optionalAbsolutePath()` from `inputParser.ts`. Flag any use of `requireString` for path parameters, or direct use of `args.path` in `fs` calls.
+- **Regex safety:** Flag `new RegExp()` with user-supplied patterns that lack length limits or flag allowlisting. Verify security constants (`MAX_PATTERN_LENGTH`, `MAX_CODE_LENGTH`, `MAX_FILE_SIZE_BYTES` from `customRulesEngine.ts`) are imported — flag hardcoded values.
 - **String interpolation in RegExp:** Verify captured strings are escaped before interpolation into `new RegExp()`.
 - **Error message leakage:** Verify error messages use `getRelativePath()` — flag any absolute filesystem paths in client-facing responses.
 
