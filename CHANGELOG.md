@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reduced nesting in server modules to ≤4 levels (#119)
 - Reduced nesting depth in 10 dependency parsers (#88)
 - Reduced `csharpAnalyzer.ts` nesting from 7 to ≤4 levels (#113)
+- Reduced `cppParser.parseVcpkgJson` nesting from 5 to ≤4 levels via `makeVcpkgDep()` helper (#131)
 - Split `swiftAnalyzer.ts` into companion modules (`swiftUiChecks.ts`, `swiftUiChecksPhase2.ts`) (#121)
 - Replaced `<any>` generics and suppressed non-null-assertion false positives (#112)
 - Replaced type assertions in `handlers.ts` with typed input parsers (#110)
