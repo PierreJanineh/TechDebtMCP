@@ -106,7 +106,7 @@ BaseAnalyzer (abstract)
 TypeScriptAnalyzer
 PythonAnalyzer
 JavaAnalyzer
-... (10 more)
+... (11 more)
 ```
 
 **Files involved:**
