@@ -105,6 +105,8 @@ When touching files, check for:
 - Deep nesting (>4 levels) — use guard clauses
 - File length (>500 lines) — must be split (matches `.claude/rules/code-quality.md`)
 - Missing JSDoc on public APIs
+- Verify `// techdebt-ignore-next-line` directives include the specific rule name, not a blanket suppress
+- Flag use of `any` type (prefer `unknown`). Flag `@ts-ignore` (use `@ts-expect-error` with explanation)
 
 ## Security Review
 

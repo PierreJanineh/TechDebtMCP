@@ -179,9 +179,8 @@ See `.claude/rules/testing.md` for test file conventions, TDD workflow, mock pat
 
 When handling user input from MCP tool calls:
 
-- **Path arguments:** Always validate with `path.isAbsolute()` and normalize with `path.resolve()` before any filesystem operation. Never pass user-supplied paths directly to `fs` functions. See Issues #125, #126.
-- **Path argument helpers:** Use `requireAbsolutePath(args, 'path')` or `optionalAbsolutePath(args, 'path')` from `inputParser.ts` — these handle validation and normalization. Never use `requireString` for path parameters.
-- **User-supplied regex:** Never compile user-provided patterns via `new RegExp()` without length limits and flag allowlisting (`dgimsuy` only — all flags supported by Node.js 18+). See Issue #127.
-- **String interpolation into RegExp:** Always escape captured strings with a `RegExp.escape()` polyfill before interpolating into `new RegExp()`. See Issue #128.
+- **Path arguments:** Use `requireAbsolutePath(args, 'path')` or `optionalAbsolutePath(args, 'path')` from `inputParser.ts` — these validate with `path.isAbsolute()` and normalize with `path.resolve()`. Never use `requireString` for path parameters. See Issues #125, #126.
+- **User-supplied regex:** Never compile user-provided patterns via `new RegExp()` without length limits and flag allowlisting (`dgimsuy` only — the `v` flag for Node.js 20+ is pending Issue #140). See Issue #127.
+- **String interpolation into RegExp:** Captured strings interpolated into `new RegExp()` must be escaped first (Issue #128 — not yet implemented).
 - **Error messages:** Use `getRelativePath()` in error messages returned to clients — never leak absolute filesystem paths. See Issue #129.
 - **Security constants** in `customRulesEngine.ts`: `MAX_PATTERN_LENGTH` (1,000 chars), `MAX_CODE_LENGTH` (500,000 chars), `MAX_FILE_SIZE_BYTES` (500,000 bytes). Import and reference these — never hardcode the values.
