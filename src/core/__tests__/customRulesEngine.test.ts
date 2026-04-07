@@ -285,7 +285,7 @@ console.log("test3");`;
       };
 
       const validation = CustomRulesEngine.validatePattern(pattern);
-      // The validation may fail due to conflicting flags (u+y), but not due to disallowed chars
+      // All of gimsuy are valid JS regex flags; validation must not reject them as disallowed chars
       expect(validation.errors.some(e => e.includes('Invalid regex flags'))).toBe(false);
     });
 
