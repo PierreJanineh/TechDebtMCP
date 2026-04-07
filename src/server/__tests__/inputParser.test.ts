@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { McpError } from '@modelcontextprotocol/sdk/types.js';
 import {
   parseAnalyzeProjectInput,
@@ -12,6 +13,7 @@ import {
   parseExecuteCustomRulesInput,
   parseValidateCustomPatternInput,
 } from '../inputParser.js';
+import { MAX_CODE_LENGTH } from '../../core/customRulesEngine.js';
 
 describe('inputParser', () => {
   // ---- top-level shape validation ----
@@ -348,15 +350,15 @@ describe('inputParser', () => {
       expect(() => parseExecuteCustomRulesInput({ code: 123 })).toThrow(McpError);
     });
 
-    it('throws McpError when code exceeds 500 000 characters', () => {
+    it('throws McpError when code exceeds MAX_CODE_LENGTH characters', () => {
       expect(() =>
-        parseExecuteCustomRulesInput({ code: 'a'.repeat(500_001) }),
+        parseExecuteCustomRulesInput({ code: 'a'.repeat(MAX_CODE_LENGTH + 1) }),
       ).toThrow(McpError);
     });
 
-    it('accepts code exactly at the 500 000-character limit', () => {
-      const result = parseExecuteCustomRulesInput({ code: 'a'.repeat(500_000) });
-      expect(result.code).toHaveLength(500_000);
+    it('accepts code exactly at the MAX_CODE_LENGTH limit', () => {
+      const result = parseExecuteCustomRulesInput({ code: 'a'.repeat(MAX_CODE_LENGTH) });
+      expect(result.code).toHaveLength(MAX_CODE_LENGTH);
     });
   });
 
@@ -386,6 +388,86 @@ describe('inputParser', () => {
       expect(() =>
         parseValidateCustomPatternInput({ ...valid, severity: 'bad' }),
       ).toThrow(McpError);
+    });
+  });
+
+  // ---- path validation (requireAbsolutePath / optionalAbsolutePath) ----
+  describe('path validation', () => {
+    it('throws McpError when path is relative in parseAnalyzeProjectInput', () => {
+      expect(() =>
+        parseAnalyzeProjectInput({ path: 'relative/path' }),
+      ).toThrow(McpError);
+    });
+
+    it('throws McpError when path is relative in parseAnalyzeFileInput', () => {
+      expect(() =>
+        parseAnalyzeFileInput({ path: './file.ts' }),
+      ).toThrow(McpError);
+    });
+
+    it('throws McpError when path is relative in parseGetDebtSummaryInput', () => {
+      expect(() =>
+        parseGetDebtSummaryInput({ path: '../etc/passwd' }),
+      ).toThrow(McpError);
+    });
+
+    it('throws McpError when path is relative in parseGetSqaleMetricsInput', () => {
+      expect(() =>
+        parseGetSqaleMetricsInput({ path: 'some/dir' }),
+      ).toThrow(McpError);
+    });
+
+    it('throws McpError when path is relative in parseGetRecommendationsInput', () => {
+      expect(() =>
+        parseGetRecommendationsInput({ path: 'dir' }),
+      ).toThrow(McpError);
+    });
+
+    it('throws McpError when path is relative in parseGetIssuesBySeverityInput', () => {
+      expect(() =>
+        parseGetIssuesBySeverityInput({ path: 'dir', severity: 'high' }),
+      ).toThrow(McpError);
+    });
+
+    it('throws McpError when path is relative in parseGetIssuesByCategoryInput', () => {
+      expect(() =>
+        parseGetIssuesByCategoryInput({ path: 'dir', category: 'security' }),
+      ).toThrow(McpError);
+    });
+
+    it('normalizes path with .. sequences', () => {
+      const raw = '/foo/../bar/baz.ts';
+      const result = parseAnalyzeFileInput({ path: raw });
+      expect(result.path).toBe(path.resolve(raw));
+    });
+
+    it('returns absolute path unchanged when already clean', () => {
+      const raw = '/foo/bar/baz.ts';
+      const result = parseAnalyzeFileInput({ path: raw });
+      expect(result.path).toBe(path.resolve(raw));
+    });
+
+    it('throws McpError for relative path in optional path field (parseExecuteCustomRulesInput)', () => {
+      expect(() =>
+        parseExecuteCustomRulesInput({ path: 'relative/path' }),
+      ).toThrow(McpError);
+    });
+
+    it('accepts undefined for optional path field', () => {
+      const result = parseExecuteCustomRulesInput({ code: 'const x = 1;', language: 'typescript' });
+      expect(result.path).toBeUndefined();
+    });
+
+    it('accepts and normalizes absolute path in optional path field', () => {
+      const raw = '/foo/../bar/file.ts';
+      const result = parseExecuteCustomRulesInput({ path: raw });
+      expect(result.path).toBe(path.resolve(raw));
+    });
+
+    it('error message mentions "must be an absolute path"', () => {
+      expect(() =>
+        parseAnalyzeProjectInput({ path: 'relative' }),
+      ).toThrow(/must be an absolute path/);
     });
   });
 

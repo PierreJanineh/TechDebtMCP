@@ -185,6 +185,6 @@ See `.claude/rules/code-quality.md` for file length, function length, nesting, a
 When handling user input from MCP tool calls:
 
 - **Path arguments:** Always validate with `path.isAbsolute()` and normalize with `path.resolve()` before any filesystem operation. Never pass user-supplied paths directly to `fs` functions. See Issues #125, #126.
-- **User-supplied regex:** Never compile user-provided patterns via `new RegExp()` without length limits and flag allowlisting (`gimsuy` only). See Issue #127.
+- **User-supplied regex:** Never compile user-provided patterns via `new RegExp()` without length limits and flag allowlisting (`dgimsuy` only — all flags supported by Node.js 18+). See Issue #127.
 - **String interpolation into RegExp:** Always escape captured strings with a `RegExp.escape()` polyfill before interpolating into `new RegExp()`. See Issue #128.
 - **Error messages:** Use `getRelativePath()` in error messages returned to clients — never leak absolute filesystem paths. See Issue #129.

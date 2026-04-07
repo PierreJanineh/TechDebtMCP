@@ -1,3 +1,4 @@
+import { basename } from 'node:path';
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
@@ -9,7 +10,7 @@ import { AnalysisEngine } from '../core/analysisEngine.js';
 import { CustomRulesEngine, MAX_FILE_SIZE_BYTES } from '../core/customRulesEngine.js';
 import { analyzeFile } from '../analyzers/index.js';
 import { getSupportedLanguages, LANGUAGE_CONFIGS } from '../config/languages.js';
-import { readFile, fileExists, getFileStats } from '../utils/fileUtils.js';
+import { readFile, getFileStats } from '../utils/fileUtils.js';
 import { formatReport, formatMinutes } from './formatters.js';
 import { TOOL_DEFINITIONS } from './tools.js';
 import { handleValidateConfig } from './configValidator.js';
@@ -125,8 +126,13 @@ async function handleAnalyzeProject(
 
 async function handleAnalyzeFile(args: unknown): Promise<ToolResponse> {
   const { path } = parseAnalyzeFileInput(args);
-  if (!(await fileExists(path))) {
-    throw new McpError(ErrorCode.InvalidParams, `File not found: ${path}`);
+  const displayPath = basename(path) || '(root path)';
+  const stats = await getFileStats(path);
+  if (!stats) {
+    throw new McpError(ErrorCode.InvalidParams, `File not found or not accessible: ${displayPath}`);
+  }
+  if (!stats.isFile()) {
+    throw new McpError(ErrorCode.InvalidParams, `Path is not a regular file: ${displayPath}`);
   }
   const result = await analyzeFile(path);
   return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
@@ -435,14 +441,18 @@ async function handleExecuteCustomRules(
     throw new McpError(ErrorCode.InvalidParams, 'Either path or code must be provided');
   }
   if (!code && path) {
-    if (!await fileExists(path)) {
-      throw new McpError(ErrorCode.InvalidParams, `File not found: ${path}`);
-    }
+    const displayPath = basename(path) || '(root path)';
     const stats = await getFileStats(path);
     if (!stats) {
       throw new McpError(
         ErrorCode.InvalidParams,
-        `Could not read file stats for: ${path}`
+        `Path not found or not accessible: ${displayPath}`
+      );
+    }
+    if (!stats.isFile()) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        `Path is not a regular file: ${displayPath}`
       );
     }
     if (stats.size > MAX_FILE_SIZE_BYTES) {

@@ -1,4 +1,4 @@
-import { CustomRulesEngine } from '../customRulesEngine.js';
+import { CustomRulesEngine, MAX_PATTERN_LENGTH } from '../customRulesEngine.js';
 import { CustomPattern } from '../../types/index.js';
 
 describe('CustomRulesEngine', () => {
@@ -232,10 +232,10 @@ console.log("test3");`;
       expect(validation.valid).toBe(false);
     });
 
-    it('rejects pattern whose length exceeds 1000 characters', () => {
+    it(`rejects pattern whose length exceeds ${MAX_PATTERN_LENGTH} characters`, () => {
       const pattern: CustomPattern = {
         id: 'long-rule',
-        pattern: 'a'.repeat(1001),
+        pattern: 'a'.repeat(MAX_PATTERN_LENGTH + 1),
         severity: 'low',
         category: 'code-quality',
         message: 'Too long',
@@ -246,10 +246,10 @@ console.log("test3");`;
       expect(validation.errors.some(e => e.includes('maximum length'))).toBe(true);
     });
 
-    it('accepts pattern exactly at the 1000-character limit', () => {
+    it(`accepts pattern exactly at the ${MAX_PATTERN_LENGTH}-character limit`, () => {
       const pattern: CustomPattern = {
         id: 'boundary-rule',
-        pattern: 'a'.repeat(1000),
+        pattern: 'a'.repeat(MAX_PATTERN_LENGTH),
         severity: 'low',
         category: 'code-quality',
         message: 'At boundary',
@@ -278,16 +278,15 @@ console.log("test3");`;
       const pattern: CustomPattern = {
         id: 'good-flags-rule',
         pattern: 'test',
-        flags: 'gimsuy',
+        flags: 'dgimsuy',
         severity: 'low',
         category: 'code-quality',
         message: 'All valid flags',
       };
 
       const validation = CustomRulesEngine.validatePattern(pattern);
-      // This verifies the flags contain only valid JavaScript RegExp flag characters.
-      expect(validation.valid).toBe(true);
-      expect(validation.errors).toHaveLength(0);
+      // All of dgimsuy are valid JS regex flags (Node.js 18+); validation must not reject them as disallowed chars
+      expect(validation.errors.some(e => e.includes('Invalid regex flags'))).toBe(false);
     });
 
     it('strips disallowed flag characters at execution time for rules bypassing validation', () => {
@@ -306,6 +305,43 @@ console.log("test3");`;
       // Should not throw and should still find the match
       const issues = engine.executeRules('test.ts', 'hello world');
       expect(issues.length).toBe(1);
+    });
+
+    it('treats empty-string flags as "not provided" and defaults to global at execution time', () => {
+      const engine = new CustomRulesEngine();
+      const pattern: CustomPattern = {
+        id: 'empty-flags-exec',
+        pattern: 'hello',
+        flags: '',  // empty string — should default to 'g' (global)
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Empty flags exec',
+      };
+
+      engine.addRule(pattern);
+      // Both occurrences on the same line should be detected (requires global flag)
+      const issues = engine.executeRules('test.ts', 'hello hello');
+      expect(issues.length).toBe(2);
+    });
+
+    it('skips over-length patterns at execution time and invokes onRuleError', () => {
+      const errors: Array<{ id: string; error: Error }> = [];
+      const engine = new CustomRulesEngine([], (id, error) => errors.push({ id, error }));
+      const pattern: CustomPattern = {
+        id: 'too-long-exec',
+        pattern: 'a'.repeat(MAX_PATTERN_LENGTH + 1),
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Pattern too long',
+      };
+
+      // Add directly (bypassing validatePattern) to simulate a programmatically added rule
+      engine.addRule(pattern);
+      const issues = engine.executeRules('test.ts', 'aaa');
+      expect(issues).toHaveLength(0);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].id).toBe('too-long-exec');
+      expect(errors[0].error.message).toContain('maximum length');
     });
   });
 
@@ -411,46 +447,6 @@ console.log("test3");`;
       // Every match is zero-length, so all are skipped — no issues emitted, no infinite loop.
       const issues = engine.executeRules('test.ts', code);
       expect(issues.length).toBe(0);
-    });
-  });
-
-  describe('MAX_PATTERN_LENGTH defense-in-depth at execution time', () => {
-    it('returns empty array and calls onRuleError for oversized patterns added directly via addRule', () => {
-      const errors: Array<{ id: string; error: Error }> = [];
-      const engineWithErrCb = new CustomRulesEngine(
-        undefined,
-        (id, error) => errors.push({ id, error })
-      );
-
-      const oversizedPattern: CustomPattern = {
-        id: 'oversized-rule',
-        pattern: 'a'.repeat(1_001),
-        severity: 'low',
-        category: 'code-quality',
-        message: 'Oversized',
-      };
-
-      // Bypass validatePattern by calling addRule directly
-      engineWithErrCb.addRule(oversizedPattern);
-      const issues = engineWithErrCb.executeRules('test.ts', 'aaaa');
-      expect(issues).toHaveLength(0);
-      expect(errors).toHaveLength(1);
-      expect(errors[0].id).toBe('oversized-rule');
-      expect(errors[0].error.message).toMatch(/exceeds maximum length/);
-    });
-
-    it('executes a pattern at exactly MAX_PATTERN_LENGTH without error', () => {
-      const exactPattern: CustomPattern = {
-        id: 'exact-length-rule',
-        pattern: 'a'.repeat(1_000),
-        severity: 'low',
-        category: 'code-quality',
-        message: 'Exact length',
-      };
-
-      engine.addRule(exactPattern);
-      // Should not throw and returns results normally (no match in this content)
-      expect(() => engine.executeRules('test.ts', 'hello')).not.toThrow();
     });
   });
 

@@ -2,7 +2,7 @@ import { jest } from '@jest/globals';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { McpError } from '@modelcontextprotocol/sdk/types.js';
 import { attachHandlers } from '../handlers.js';
-import { fileExists, getFileStats } from '../../utils/fileUtils.js';
+import { getFileStats, readFile } from '../../utils/fileUtils.js';
 import { MAX_FILE_SIZE_BYTES } from '../../core/customRulesEngine.js';
 
 // Mock the dependencies
@@ -29,8 +29,8 @@ jest.mock('../../utils/fileUtils.js', () => ({
   getRelativePath: jest.fn((_b: string, f: string) => f),
 }));
 
-const mockFileExists = fileExists as jest.MockedFunction<typeof fileExists>;
 const mockGetFileStats = getFileStats as jest.MockedFunction<typeof getFileStats>;
+const mockReadFile = readFile as jest.MockedFunction<typeof readFile>;
 
 describe('Handlers', () => {
   let mockServer: McpServer;
@@ -43,12 +43,7 @@ describe('Handlers', () => {
     // Create mock server that captures the registered handlers
     mockServer = {
       server: {
-        setRequestHandler: jest.fn((schema: any, handler: any) => {
-          // Capture the CallToolRequestSchema handler (second call)
-          if (schema?.method === 'tools/call' || typeof handler === 'function') {
-            callToolHandler = handler;
-          }
-        }),
+        setRequestHandler: jest.fn(),
       },
     } as any;
   });
@@ -70,8 +65,7 @@ describe('Handlers', () => {
     });
 
     it('rejects a path input whose file size exceeds MAX_FILE_SIZE_BYTES', async () => {
-      mockFileExists.mockResolvedValue(true);
-      mockGetFileStats.mockResolvedValue({ size: MAX_FILE_SIZE_BYTES + 1 } as any);
+      mockGetFileStats.mockResolvedValue({ size: MAX_FILE_SIZE_BYTES + 1, isFile: () => true } as any);
 
       await expect(
         callToolHandler({
@@ -83,12 +77,22 @@ describe('Handlers', () => {
       ).rejects.toThrow(McpError);
     });
 
+    it('rejects a path input that is not a regular file', async () => {
+      mockGetFileStats.mockResolvedValue({ size: 0, isFile: () => false } as any);
+
+      await expect(
+        callToolHandler({
+          params: {
+            name: 'execute_custom_rules',
+            arguments: { path: '/some/directory' },
+          },
+        })
+      ).rejects.toThrow(McpError);
+    });
+
     it('accepts a path input whose file size is exactly MAX_FILE_SIZE_BYTES', async () => {
-      mockFileExists.mockResolvedValue(true);
-      mockGetFileStats.mockResolvedValue({ size: MAX_FILE_SIZE_BYTES } as any);
-      // readFile needs to return something — mock it
-      const { readFile } = await import('../../utils/fileUtils.js');
-      (readFile as jest.MockedFunction<typeof readFile>).mockResolvedValue('const x = 1;');
+      mockGetFileStats.mockResolvedValue({ size: MAX_FILE_SIZE_BYTES, isFile: () => true } as any);
+      mockReadFile.mockResolvedValue('const x = 1;');
 
       await expect(
         callToolHandler({
@@ -98,6 +102,19 @@ describe('Handlers', () => {
           },
         })
       ).resolves.toBeDefined();
+    });
+
+    it('rejects when getFileStats returns null', async () => {
+      mockGetFileStats.mockResolvedValue(null);
+
+      await expect(
+        callToolHandler({
+          params: {
+            name: 'execute_custom_rules',
+            arguments: { path: '/some/file.ts' },
+          },
+        })
+      ).rejects.toThrow(McpError);
     });
   });
 

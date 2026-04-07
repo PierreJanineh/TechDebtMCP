@@ -3,6 +3,8 @@
  * Centralized tool schemas for better organization and maintainability
  */
 
+import { MAX_CODE_LENGTH, MAX_FILE_SIZE_BYTES } from '../core/customRulesEngine.js';
+
 export const TOOL_DEFINITIONS = [
   {
     name: 'analyze_project',
@@ -104,13 +106,13 @@ export const TOOL_DEFINITIONS = [
       type: 'object',
       properties: {
         id: { type: 'string', description: 'Unique identifier for the rule' },
-        pattern: { type: 'string', description: 'Regex pattern to match (limited to 1 000 characters)' },
+        pattern: { type: 'string', description: 'Regex pattern to match' },
         message: { type: 'string', description: 'Issue title/message' },
         severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'], description: 'Issue severity level' },
         category: { type: 'string', enum: ['dependency', 'code-quality', 'architecture', 'documentation', 'testing', 'security', 'performance', 'maintainability'], description: 'Debt category' },
         suggestion: { type: 'string', description: 'Optional: how to fix the issue' },
         languages: { type: 'array', items: { type: 'string' }, description: 'Optional: apply only to specific languages' },
-        flags: { type: 'string', description: 'Optional: regex flags — allowed characters: g, i, m, s, u, y' },
+        flags: { type: 'string', description: 'Optional: regex flags (g, i, m, s, etc.)' },
       },
       required: ['id', 'pattern', 'message', 'severity', 'category'],
     },
@@ -140,10 +142,14 @@ export const TOOL_DEFINITIONS = [
     inputSchema: {
       type: 'object',
       properties: {
-        path: { type: 'string', description: 'Path to the file to analyze (file size limited to 500 000 bytes)' },
-        code: { type: 'string', description: 'Code content to analyze (alternative to path; limited to 500 000 characters)' },
+        path: { type: 'string', minLength: 1, description: `Absolute filesystem path to the file to analyze (maximum ${String(MAX_FILE_SIZE_BYTES)} bytes)` },
+        code: { type: 'string', minLength: 1, maxLength: MAX_CODE_LENGTH, description: `Source code content to analyze directly (maximum ${String(MAX_CODE_LENGTH)} characters; alternative to path)` },
         language: { type: 'string', description: 'Optional: programming language for filtering rules' },
       },
+      anyOf: [
+        { required: ['path'] },
+        { required: ['code'] },
+      ],
     },
   },
   {
@@ -153,7 +159,7 @@ export const TOOL_DEFINITIONS = [
       type: 'object',
       properties: {
         id: { type: 'string', description: 'Unique identifier for the rule' },
-        pattern: { type: 'string', description: 'Regex pattern to validate (limited to 1 000 characters)' },
+        pattern: { type: 'string', description: 'Regex pattern to validate' },
         message: { type: 'string', description: 'Issue title/message' },
         severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'], description: 'Issue severity level' },
         category: { type: 'string', enum: ['dependency', 'code-quality', 'architecture', 'documentation', 'testing', 'security', 'performance', 'maintainability'], description: 'Debt category' },

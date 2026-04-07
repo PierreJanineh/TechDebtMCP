@@ -20,19 +20,19 @@ const VALID_CATEGORIES: DebtCategory[] = [
 ];
 
 /**
- * Maximum allowed length in UTF-16 code units for a user-supplied regex
- * pattern string. Patterns longer than this are rejected to prevent DoS via large patterns.
+ * Maximum allowed character length for a user-supplied regex pattern string.
+ * Patterns longer than this are rejected to prevent DoS via large patterns.
  */
-const MAX_PATTERN_LENGTH = 1_000;
+export const MAX_PATTERN_LENGTH = 1_000;
 
 /**
  * Allowlisted regex flag characters. Any character outside this set is rejected.
- * See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/flags
+ * Covers all flags supported by Node.js 18+: d, g, i, m, s, u, y.
  */
-const ALLOWED_FLAGS_RE = /^[gimsuy]*$/;
+const ALLOWED_FLAGS_RE = /^[dgimsuy]*$/;
 
 /**
- * Maximum allowed string length for the inline `code` parameter passed to
+ * Maximum allowed character length for the inline `code` parameter passed to
  * `execute_custom_rules`. This caps the input fed to regex matching per call.
  * Enforced using JavaScript string length semantics (`string.length`).
  */
@@ -40,7 +40,7 @@ export const MAX_CODE_LENGTH = 500_000;
 
 /**
  * Maximum allowed file size in bytes for `path` inputs to `execute_custom_rules`.
- * Enforced via `fs.Stats.size` before reading the file into memory.
+ * Compared against `fs.Stats.size` before reading the file into memory.
  */
 export const MAX_FILE_SIZE_BYTES = 500_000;
 
@@ -134,22 +134,15 @@ export class CustomRulesEngine {
     pattern: CustomPattern
   ): TechDebtIssue[] {
     try {
-      // Defense-in-depth: reject oversized patterns even if they bypassed validatePattern().
       if (pattern.pattern.length > MAX_PATTERN_LENGTH) {
         if (this.onRuleError) {
-          this.onRuleError(
-            pattern.id,
-            new Error(`Pattern exceeds maximum length of ${MAX_PATTERN_LENGTH} characters`)
-          );
+          this.onRuleError(pattern.id, new Error(`Pattern exceeds maximum length of ${MAX_PATTERN_LENGTH} characters`));
         }
         return [];
       }
       const lines = content.split(/\r?\n/);
-      const stripped = pattern.flags !== undefined
-        ? pattern.flags.replace(/[^gimsuy]/g, '')
-        : 'g';
-      const deduped = Array.from(new Set(stripped.split(''))).join('');
-      const safeFlags = deduped.length > 0 ? deduped : 'g';
+      const sanitizedFlags = (pattern.flags ?? '').replace(/[^dgimsuy]/g, '');
+      const safeFlags = sanitizedFlags || 'g';
       const regex = new RegExp(pattern.pattern, safeFlags);
       return lines.flatMap((line, index) =>
         this.matchLineIssues(filePath, line, index + 1, regex, pattern)
@@ -251,27 +244,22 @@ export class CustomRulesEngine {
       errors.push('Pattern ID is required');
     }
 
-    // Validate and normalize flags first so the regex compilation uses safe flags.
-    if (pattern.flags !== undefined && !ALLOWED_FLAGS_RE.test(pattern.flags)) {
-      errors.push(`Invalid regex flags: "${pattern.flags}". Only the characters g, i, m, s, u, y are allowed`);
-    }
-
     if (!pattern.pattern) {
       errors.push('Pattern regex is required');
     } else {
       if (pattern.pattern.length > MAX_PATTERN_LENGTH) {
         errors.push(`Pattern exceeds maximum length of ${MAX_PATTERN_LENGTH} characters`);
       } else {
-        // Compile with the same normalized (stripped + deduped) flags used at execution time.
-        const stripped = pattern.flags !== undefined
-          ? pattern.flags.replace(/[^gimsuy]/g, '')
-          : 'g';
-        const deduped = Array.from(new Set(stripped.split(''))).join('');
-        const normalizedFlags = deduped.length > 0 ? deduped : 'g';
-        try {
-          new RegExp(pattern.pattern, normalizedFlags);
-        } catch (error) {
-          errors.push(`Invalid regex pattern: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        const flagsValid = pattern.flags === undefined || ALLOWED_FLAGS_RE.test(pattern.flags);
+        if (!flagsValid) {
+          errors.push(`Invalid regex flags: "${pattern.flags}". Only the characters d, g, i, m, s, u, y are allowed`);
+        } else {
+          try {
+            // Test if regex is valid (flags are already known-good at this point)
+            new RegExp(pattern.pattern, pattern.flags || 'g');
+          } catch (error) {
+            errors.push(`Invalid regex pattern: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          }
         }
       }
     }
