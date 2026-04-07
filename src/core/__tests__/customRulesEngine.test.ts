@@ -1,4 +1,4 @@
-import { CustomRulesEngine } from '../customRulesEngine.js';
+import { CustomRulesEngine, MAX_PATTERN_LENGTH } from '../customRulesEngine.js';
 import { CustomPattern } from '../../types/index.js';
 
 describe('CustomRulesEngine', () => {
@@ -305,6 +305,43 @@ console.log("test3");`;
       // Should not throw and should still find the match
       const issues = engine.executeRules('test.ts', 'hello world');
       expect(issues.length).toBe(1);
+    });
+
+    it('treats empty-string flags as "not provided" and defaults to global at execution time', () => {
+      const engine = new CustomRulesEngine();
+      const pattern: CustomPattern = {
+        id: 'empty-flags-exec',
+        pattern: 'hello',
+        flags: '',  // empty string — should default to 'g' (global)
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Empty flags exec',
+      };
+
+      engine.addRule(pattern);
+      // Both occurrences on the same line should be detected (requires global flag)
+      const issues = engine.executeRules('test.ts', 'hello hello');
+      expect(issues.length).toBe(2);
+    });
+
+    it('skips over-length patterns at execution time and invokes onRuleError', () => {
+      const errors: Array<{ id: string; error: Error }> = [];
+      const engine = new CustomRulesEngine([], (id, error) => errors.push({ id, error }));
+      const pattern: CustomPattern = {
+        id: 'too-long-exec',
+        pattern: 'a'.repeat(MAX_PATTERN_LENGTH + 1),
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Pattern too long',
+      };
+
+      // Add directly (bypassing validatePattern) to simulate a programmatically added rule
+      engine.addRule(pattern);
+      const issues = engine.executeRules('test.ts', 'aaa');
+      expect(issues).toHaveLength(0);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].id).toBe('too-long-exec');
+      expect(errors[0].error.message).toContain('maximum length');
     });
   });
 

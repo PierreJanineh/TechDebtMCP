@@ -23,7 +23,7 @@ const VALID_CATEGORIES: DebtCategory[] = [
  * Maximum allowed character length for a user-supplied regex pattern string.
  * Patterns longer than this are rejected to prevent DoS via large patterns.
  */
-const MAX_PATTERN_LENGTH = 1_000;
+export const MAX_PATTERN_LENGTH = 1_000;
 
 /**
  * Allowlisted regex flag characters. Any character outside this set is rejected.
@@ -127,10 +127,15 @@ export class CustomRulesEngine {
     pattern: CustomPattern
   ): TechDebtIssue[] {
     try {
+      if (pattern.pattern.length > MAX_PATTERN_LENGTH) {
+        if (this.onRuleError) {
+          this.onRuleError(pattern.id, new Error(`Pattern exceeds maximum length of ${MAX_PATTERN_LENGTH} characters`));
+        }
+        return [];
+      }
       const lines = content.split(/\r?\n/);
-      const safeFlags = pattern.flags !== undefined
-        ? pattern.flags.replace(/[^gimsuy]/g, '')
-        : 'g';
+      const sanitizedFlags = (pattern.flags ?? '').replace(/[^gimsuy]/g, '');
+      const safeFlags = sanitizedFlags || 'g';
       const regex = new RegExp(pattern.pattern, safeFlags);
       return lines.flatMap((line, index) =>
         this.matchLineIssues(filePath, line, index + 1, regex, pattern)
