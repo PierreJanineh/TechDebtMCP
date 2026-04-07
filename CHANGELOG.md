@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replaced `console.warn` with `console.error` for MCP stdio compatibility (#100)
 - Eliminated analyzer false positives via `ruleExclusions` config mechanism (#78)
 - Replaced non-null assertions with destructured variables in `analysisEngine` (#101)
+- Security: absolute filesystem paths no longer leaked in `scanErrors` returned to MCP clients; `findPackageFiles` now uses `getRelativePath()` for error messages (#129)
 
 ### Added
 - Direct unit tests for `swiftUiChecks` and `swiftUiChecksPhase2` modules

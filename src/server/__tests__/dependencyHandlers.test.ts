@@ -162,6 +162,48 @@ describe('handleCheckDependencies', () => {
     expect(result.content[0].text).toContain('Filesystem scan errors');
     expect(result.content[0].text).toContain('EACCES');
   });
+
+  it('should use relative paths in filesystem scan error messages', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
+    mockReaddir.mockRejectedValueOnce(new Error("EACCES: permission denied, scandir '/project'"));
+    mockGetRelativePath.mockImplementation((_base, full) => full.replace('/project', '.'));
+
+    const result = await handleCheckDependencies({ path: '/project' });
+    const text = result.content[0].text;
+    // The scan-error bullet should use the relative path, not the absolute dir
+    expect(text).toContain('Filesystem scan errors');
+    const scanErrorSection = text.substring(text.indexOf('Filesystem scan errors'));
+    expect(scanErrorSection).not.toContain('/project');
+    expect(scanErrorSection).toContain('EACCES');
+  });
+
+  it('should use correct relative path in nested dir scan error messages', async () => {
+    mockFileExists.mockResolvedValue(true);
+    // First stat: project dir validation
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
+    // First readdir: root succeeds, returns a subdir
+    mockReaddir.mockResolvedValueOnce(['subdir'] as any);
+    // stat for processEntry on 'subdir'
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true, isFile: () => false } as any);
+    // Second readdir: nested dir fails with absolute path in message
+    mockReaddir.mockRejectedValueOnce(new Error("EACCES: permission denied, scandir '/project/subdir'"));
+    mockGetRelativePath.mockImplementation((_base, full) => {
+      if (full === '/project') return '.';
+      return full.replace('/project/', '');
+    });
+
+    const result = await handleCheckDependencies({ path: '/project' });
+    const text = result.content[0].text;
+    expect(text).toContain('Filesystem scan errors');
+    const scanErrorSection = text.substring(text.indexOf('Filesystem scan errors'));
+    // Must not contain any absolute path
+    expect(scanErrorSection).not.toContain('/project');
+    // Must use the correct relative dir name once, not doubled (e.g. 'subdir/subdir')
+    expect(scanErrorSection).toContain('subdir');
+    expect(scanErrorSection).not.toContain('subdir/subdir');
+    expect(scanErrorSection).toContain('EACCES');
+  });
 });
 
 describe('handleGetVulnerabilityReport', () => {
@@ -277,6 +319,48 @@ describe('handleGetVulnerabilityReport', () => {
     const result = await handleGetVulnerabilityReport({ path: '/project' });
     expect(result.content[0].text).toContain('Filesystem scan errors');
     expect(result.content[0].text).toContain('EACCES');
+  });
+
+  it('should use relative paths in filesystem scan error messages', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
+    mockReaddir.mockRejectedValueOnce(new Error("EACCES: permission denied, scandir '/project'"));
+    mockGetRelativePath.mockImplementation((_base, full) => full.replace('/project', '.'));
+
+    const result = await handleGetVulnerabilityReport({ path: '/project' });
+    const text = result.content[0].text;
+    // The scan-error bullet should use the relative path, not the absolute dir
+    expect(text).toContain('Filesystem scan errors');
+    const scanErrorSection = text.substring(text.indexOf('Filesystem scan errors'));
+    expect(scanErrorSection).not.toContain('/project');
+    expect(scanErrorSection).toContain('EACCES');
+  });
+
+  it('should use correct relative path in nested dir scan error messages', async () => {
+    mockFileExists.mockResolvedValue(true);
+    // First stat: project dir validation
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
+    // First readdir: root succeeds, returns a subdir
+    mockReaddir.mockResolvedValueOnce(['subdir'] as any);
+    // stat for processEntry on 'subdir'
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true, isFile: () => false } as any);
+    // Second readdir: nested dir fails with absolute path in message
+    mockReaddir.mockRejectedValueOnce(new Error("EACCES: permission denied, scandir '/project/subdir'"));
+    mockGetRelativePath.mockImplementation((_base, full) => {
+      if (full === '/project') return '.';
+      return full.replace('/project/', '');
+    });
+
+    const result = await handleGetVulnerabilityReport({ path: '/project' });
+    const text = result.content[0].text;
+    expect(text).toContain('Filesystem scan errors');
+    const scanErrorSection = text.substring(text.indexOf('Filesystem scan errors'));
+    // Must not contain any absolute path
+    expect(scanErrorSection).not.toContain('/project');
+    // Must use the correct relative dir name once, not doubled (e.g. 'subdir/subdir')
+    expect(scanErrorSection).toContain('subdir');
+    expect(scanErrorSection).not.toContain('subdir/subdir');
+    expect(scanErrorSection).toContain('EACCES');
   });
 
   it('should report failed parses', async () => {
