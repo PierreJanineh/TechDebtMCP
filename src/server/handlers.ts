@@ -436,14 +436,11 @@ async function handleExecuteCustomRules(
     throw new McpError(ErrorCode.InvalidParams, 'Either path or code must be provided');
   }
   if (!code && path) {
-    if (!await fileExists(path)) {
-      throw new McpError(ErrorCode.InvalidParams, `File not found: ${basename(path)}`);
-    }
     const stats = await getFileStats(path);
     if (!stats) {
       throw new McpError(
         ErrorCode.InvalidParams,
-        `Could not read file stats for: ${basename(path)}`
+        `Path not found or not accessible: ${basename(path)}`
       );
     }
     if (!stats.isFile()) {
