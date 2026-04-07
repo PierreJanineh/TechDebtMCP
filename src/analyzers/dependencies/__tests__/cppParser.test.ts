@@ -82,7 +82,84 @@ zlib/1.2.13`;
 
       const deps = await parser.parse('vcpkg.json', content);
 
-      expect(deps.length).toBeGreaterThan(0);
+      expect(deps.length).toBe(3);
+      expect(deps[0]).toEqual({ name: 'boost', version: '*', isDev: false, source: 'vcpkg.json' });
+      expect(deps[1]).toEqual({ name: 'openssl', version: '*', isDev: false, source: 'vcpkg.json' });
+      expect(deps[2]).toEqual({ name: 'zlib', version: '*', isDev: false, source: 'vcpkg.json' });
+    });
+
+    it('should parse object-form vcpkg dependencies', async () => {
+      const content = JSON.stringify({
+        name: 'myapp',
+        dependencies: [
+          { name: 'boost', 'version>=': '1.70' },
+          'zlib',
+          { name: 'fmt', features: ['header-only'] },
+        ],
+      });
+
+      const deps = await parser.parse('vcpkg.json', content);
+
+      expect(deps.length).toBe(3);
+      expect(deps[0]).toEqual({ name: 'boost', version: '*', isDev: false, source: 'vcpkg.json' });
+      expect(deps[1]).toEqual({ name: 'zlib', version: '*', isDev: false, source: 'vcpkg.json' });
+      expect(deps[2]).toEqual({ name: 'fmt', version: '*', isDev: false, source: 'vcpkg.json' });
+    });
+
+    it('should skip malformed vcpkg dependency entries', async () => {
+      const content = JSON.stringify({
+        name: 'myapp',
+        dependencies: ['boost', 42, null, { noName: true }, 'zlib'],
+      });
+
+      const deps = await parser.parse('vcpkg.json', content);
+
+      expect(deps.length).toBe(2);
+      expect(deps[0]?.name).toBe('boost');
+      expect(deps[1]?.name).toBe('zlib');
+    });
+
+    it('should skip empty and whitespace-only string entries', async () => {
+      const content = JSON.stringify({
+        name: 'myapp',
+        dependencies: ['boost', '', '   ', 'zlib'],
+      });
+
+      const deps = await parser.parse('vcpkg.json', content);
+
+      expect(deps.length).toBe(2);
+      expect(deps[0]?.name).toBe('boost');
+      expect(deps[1]?.name).toBe('zlib');
+    });
+
+    it('should skip object-form entries with empty or whitespace-only name', async () => {
+      const content = JSON.stringify({
+        name: 'myapp',
+        dependencies: [
+          { name: 'boost' },
+          { name: '' },
+          { name: '   ' },
+          'zlib',
+        ],
+      });
+
+      const deps = await parser.parse('vcpkg.json', content);
+
+      expect(deps.length).toBe(2);
+      expect(deps[0]?.name).toBe('boost');
+      expect(deps[1]?.name).toBe('zlib');
+    });
+
+    it('should trim whitespace from valid string entries', async () => {
+      const content = JSON.stringify({
+        name: 'myapp',
+        dependencies: [' boost ', 'zlib'],
+      });
+
+      const deps = await parser.parse('vcpkg.json', content);
+
+      expect(deps.length).toBe(2);
+      expect(deps[0]?.name).toBe('boost');
     });
   });
 

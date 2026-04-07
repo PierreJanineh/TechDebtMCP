@@ -626,7 +626,7 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
 | Metric | Limit | Current Max | Status |
 |--------|-------|-------------|--------|
 | File length | 500 lines | 495 (`src/server/handlers.ts`) | ⚠️ Near limit (index.ts split in v2.0.0) |
-| Nesting depth | 4 levels | ≤4 (all files) | ✅ Good (csharpAnalyzer fixed in PR #113, engines in PR #118) |
+| Nesting depth | 4 levels | ≤4 (all files) | ✅ Good (csharpAnalyzer fixed in PR #113, engines in PR #118, cppParser fixed in #131) |
 | Function length | 50 lines | Compliant | ✅ Good |
 | Cyclomatic complexity | 10 | Compliant | ✅ Good |
 
@@ -647,6 +647,7 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
 5. ~~**Deep nesting in multiple files:**~~
    - ~~`src/core/customRulesEngine.ts:129` - 7 levels~~ ✅ **DONE** (PR #118) — refactored to ≤4 levels via helper methods
    - ~~`src/core/analysisEngine.ts:93` - 5 levels~~ ✅ **DONE** (PR #118) — refactored to ≤4 levels via early returns
+   - ~~`src/analyzers/dependencies/cppParser.ts` - 5 levels in `parseVcpkgJson`~~ ✅ **DONE** (#131) — extracted `makeVcpkgDep()` helper and early-return guard
 
 6. **Test file organization** - Previously had 9-level deep nesting
    - Now excluded from production analysis via `.techdebtrc.json`

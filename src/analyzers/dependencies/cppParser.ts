@@ -123,25 +123,34 @@ export class CppParser extends BaseDependencyParser {
   }
 
   private parseVcpkgJson(content: string, filePath: string): ParsedDependency[] {
-    const deps: ParsedDependency[] = [];
-
     try {
-      const json = JSON.parse(content) as { dependencies?: string[] };
-
-      if (json.dependencies && Array.isArray(json.dependencies)) {
-        for (const dep of json.dependencies) {
-          deps.push({
-            name: dep,
-            version: '*',
-            isDev: false,
-            source: filePath,
-          });
-        }
-      }
+      const json = JSON.parse(content) as { dependencies?: unknown };
+      if (!Array.isArray(json.dependencies)) return [];
+      return (json.dependencies as unknown[])
+        .map((dep) => this.makeVcpkgDep(dep, filePath))
+        .filter((d): d is ParsedDependency => d !== null);
     } catch {
-      // Ignore parse errors for now
+      // Ignore parse errors
+      return [];
     }
+  }
 
-    return deps;
+  /**
+   * Build a ParsedDependency entry for a vcpkg dependency.
+   * Handles both string form ("boost") and object form ({ name: "boost" }).
+   * Returns null for unrecognized shapes.
+   */
+  private makeVcpkgDep(dep: unknown, filePath: string): ParsedDependency | null {
+    if (typeof dep === 'string') {
+      const name = dep.trim();
+      if (!name) return null;
+      return { name, version: '*', isDev: false, source: filePath };
+    }
+    if (dep !== null && typeof dep === 'object' && 'name' in dep && typeof (dep as { name: unknown }).name === 'string') {
+      const name = (dep as { name: string }).name.trim();
+      if (!name) return null;
+      return { name, version: '*', isDev: false, source: filePath };
+    }
+    return null;
   }
 }
