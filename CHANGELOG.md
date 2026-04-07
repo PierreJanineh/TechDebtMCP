@@ -35,8 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Security: absolute filesystem paths no longer leaked in `scanErrors` returned to MCP clients; `findPackageFiles` now uses `getRelativePath()` for error messages (#129)
 
 ### Added
-- CI workflow (`.github/workflows/docs-check.yml`) warns on PRs with `src/` changes but no doc changes; non-blocking, posts an actionable comment listing missing files (#130)
-- Claude Code local hook (`.claude/hooks/pre-pr-docs-check.sh`) warns before `gh pr create` when docs were not updated alongside `src/` changes (#130)
+- CI workflow (`.github/workflows/docs-check.yml`) warns on PRs with `src/` changes when none of the five required docs were touched; non-blocking, posts an actionable comment listing the required files and removes the comment automatically when docs are subsequently updated (#130)
+- Claude Code local hook (`.claude/hooks/pre-pr-docs-check.sh`) warns before `gh pr create` when docs were not updated alongside `src/` changes; the hook lives in `.claude/` which is gitignored and therefore local-only, not distributed with the repo (#130)
 - Direct unit tests for `swiftUiChecks` and `swiftUiChecksPhase2` modules
 - Unit tests for `inputParser` module
 - Inline suppression comments for tech debt issues (#105)
