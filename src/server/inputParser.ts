@@ -1,3 +1,4 @@
+import { resolve, isAbsolute } from 'node:path';
 import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
 import {
   SupportedLanguage,
@@ -6,6 +7,7 @@ import {
 } from '../types/index.js';
 import { LANGUAGE_CONFIGS } from '../config/languages.js';
 import { requireRecord } from './argValidation.js';
+import { MAX_CODE_LENGTH } from '../core/customRulesEngine.js';
 
 /** Typed input for analyze_project tool */
 export interface AnalyzeProjectInput {
@@ -106,6 +108,37 @@ function requireString(args: Record<string, unknown>, key: string): string {
     throw new McpError(ErrorCode.InvalidParams, `Missing or invalid parameter: ${key}`);
   }
   return value;
+}
+
+/**
+ * Assert that a value is a non-empty absolute path string, throwing McpError if not.
+ * Normalizes the path with resolve() to collapse any `..` sequences.
+ */
+function requireAbsolutePath(args: Record<string, unknown>, key: string): string {
+  const value = requireString(args, key);
+  if (!isAbsolute(value)) {
+    throw new McpError(ErrorCode.InvalidParams, `${key} must be an absolute path`);
+  }
+  return resolve(value);
+}
+
+/**
+ * Optionally validate and normalize a path string.
+ * Returns undefined if absent; throws McpError if present but not an absolute path.
+ */
+function optionalAbsolutePath(
+  args: Record<string, unknown>,
+  key: string,
+): string | undefined {
+  const value = args[key];
+  if (value === undefined) return undefined;
+  if (typeof value !== 'string') {
+    throw new McpError(ErrorCode.InvalidParams, `${key} must be a string`);
+  }
+  if (!isAbsolute(value)) {
+    throw new McpError(ErrorCode.InvalidParams, `${key} must be an absolute path`);
+  }
+  return resolve(value);
 }
 
 /**
@@ -279,7 +312,7 @@ export function parseAnalyzeProjectInput(
 ): AnalyzeProjectInput {
   const a = requireRecord(args);
   return {
-    path: requireString(a, 'path'),
+    path: requireAbsolutePath(a, 'path'),
     languages: optionalLanguages(a, 'languages'),
     categories: optionalCategories(a, 'categories'),
     severity: optionalSeverity(a, 'severity'),
@@ -294,7 +327,7 @@ export function parseAnalyzeFileInput(
   args: unknown,
 ): AnalyzeFileInput {
   const a = requireRecord(args);
-  return { path: requireString(a, 'path') };
+  return { path: requireAbsolutePath(a, 'path') };
 }
 
 /**
@@ -304,7 +337,7 @@ export function parseGetDebtSummaryInput(
   args: unknown,
 ): GetDebtSummaryInput {
   const a = requireRecord(args);
-  return { path: requireString(a, 'path') };
+  return { path: requireAbsolutePath(a, 'path') };
 }
 
 /**
@@ -315,7 +348,7 @@ export function parseGetSqaleMetricsInput(
 ): GetSqaleMetricsInput {
   const a = requireRecord(args);
   return {
-    path: requireString(a, 'path'),
+    path: requireAbsolutePath(a, 'path'),
     developmentTime: optionalNumber(a, 'developmentTime'),
   };
 }
@@ -328,7 +361,7 @@ export function parseGetRecommendationsInput(
 ): GetRecommendationsInput {
   const a = requireRecord(args);
   return {
-    path: requireString(a, 'path'),
+    path: requireAbsolutePath(a, 'path'),
     limit: optionalPositiveInteger(a, 'limit'),
   };
 }
@@ -341,7 +374,7 @@ export function parseGetIssuesBySeverityInput(
 ): GetIssuesBySeverityInput {
   const a = requireRecord(args);
   return {
-    path: requireString(a, 'path'),
+    path: requireAbsolutePath(a, 'path'),
     severity: requireSeverity(a, 'severity'),
   };
 }
@@ -354,7 +387,7 @@ export function parseGetIssuesByCategoryInput(
 ): GetIssuesByCategoryInput {
   const a = requireRecord(args);
   return {
-    path: requireString(a, 'path'),
+    path: requireAbsolutePath(a, 'path'),
     category: requireCategory(a, 'category'),
   };
 }
@@ -395,9 +428,22 @@ export function parseExecuteCustomRulesInput(
   args: unknown,
 ): ExecuteCustomRulesInput {
   const a = requireRecord(args);
+  const code = optionalString(a, 'code');
+  if (code !== undefined && code.length === 0) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      'Inline code must not be empty',
+    );
+  }
+  if (code !== undefined && code.length > MAX_CODE_LENGTH) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      `Inline code exceeds maximum length of ${MAX_CODE_LENGTH} characters`,
+    );
+  }
   return {
-    path: optionalString(a, 'path'),
-    code: optionalString(a, 'code'),
+    path: optionalAbsolutePath(a, 'path'),
+    code,
     language: optionalString(a, 'language'),
   };
 }

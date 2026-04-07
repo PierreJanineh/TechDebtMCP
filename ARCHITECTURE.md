@@ -263,8 +263,8 @@ The server is split into focused modules under `src/server/`:
 - Dependencies (Phase 2): `check_dependencies`, `validate_config`, `get_vulnerability_report`
 
 **2 MCP Resources (Phase 6):**
-- `debt://summary/{+projectPath}` — Health score, SQALE metrics, issue counts
-- `debt://issues/{+projectPath}` — Filterable issues list (severity, category, limit)
+- `debt://summary/{+projectPath}` — Health score, SQALE metrics, issue counts (`projectPath` must be an absolute filesystem path)
+- `debt://issues/{+projectPath}` — Filterable issues list (severity, category, limit) (`projectPath` must be an absolute filesystem path)
 
 **Future Tools:**
 - `save_baseline`, `compare_with_baseline`, `get_trend`, `list_snapshots`, `delete_snapshot` (Phase 3)
