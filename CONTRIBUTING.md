@@ -51,18 +51,34 @@ npm run watch
 
 ```
 src/
-├── index.ts              # MCP Server entry point and tool routing
-├── types/
-│   └── index.ts          # All TypeScript interfaces
-├── config/
-│   └── languages.ts      # Language configurations
+├── index.ts                    # Entry point — creates server, attaches handlers + resources, runs
+├── server/
+│   ├── setup.ts                # McpServer instantiation and transport wiring
+│   ├── handlers.ts             # Core MCP tool request handlers (CallToolRequestSchema)
+│   ├── tools.ts                # TOOL_DEFINITIONS array (tool schemas/descriptions)
+│   ├── inputParser.ts          # Tool argument validation (requireString, optionalString, etc.)
+│   ├── argValidation.ts        # Argument coercion and constraint checks
+│   ├── resourceHandlers.ts     # MCP resource templates (debt://summary, debt://issues)
+│   ├── formatters.ts           # Output formatting helpers
+│   ├── configValidator.ts      # .techdebtrc.json validation handler
+│   └── dependencyHandlers.ts   # Dependency analysis & vulnerability report handlers
+├── types/index.ts              # Single source of truth for all TypeScript interfaces
+├── config/languages.ts         # Per-language config: extensions, package files, patterns
 ├── core/
-│   └── analysisEngine.ts # Main orchestrator
+│   ├── analysisEngine.ts       # Project-level orchestrator: discovers files, fans out to analyzers
+│   ├── sqaleEngine.ts          # SQALE rating/debt ratio calculation
+│   └── customRulesEngine.ts    # User-defined pattern rules (.techdebtrc.json)
 ├── analyzers/
-│   ├── baseAnalyzer.ts   # Abstract base class
-│   └── [language]Analyzer.ts # Language-specific analyzers
-└── utils/
-    └── fileUtils.ts      # File system helpers
+│   ├── baseAnalyzer.ts         # Abstract base — shared logic, checkPattern(), applyRuleExclusions()
+│   ├── index.ts                # createAnalyzer() factory
+│   ├── [language]Analyzer.ts   # 14 language-specific analyzers
+│   ├── swiftUiChecks.ts        # SwiftUI Phase 1 checks (companion to swiftAnalyzer)
+│   ├── swiftUiChecksPhase2.ts  # SwiftUI Phase 2 checks (advanced patterns)
+│   └── dependencies/
+│       ├── baseParser.ts       # Abstract dependency parser
+│       ├── index.ts            # createDependencyParser() factory
+│       └── [ecosystem]Parser.ts # npm, pip, cargo, gradle, nuget, go.mod, etc.
+└── utils/fileUtils.ts          # fs helpers (readFile, fileExists, getRelativePath)
 ```
 
 ## How to Contribute
@@ -117,7 +133,7 @@ src/
 
 #### Known Refactoring Targets (Don't make worse)
 1. ~~`src/index.ts` - 883 lines~~ ✅ Resolved in v2.0.0 (split into `src/server/` modules)
-2. `src/analyzers/csharpAnalyzer.ts:267` - Deep nesting (14 levels) — Issue #84
+2. ~~`src/analyzers/csharpAnalyzer.ts:267` - Deep nesting (14 levels)~~ ✅ Resolved in PR #113 (refactored to ≤4 levels)
 3. ~~Non-null assertions at `src/index.ts:804, 809`~~ ✅ Resolved in v2.0.0
 
 #### Configuration Impact

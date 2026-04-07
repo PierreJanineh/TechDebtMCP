@@ -238,7 +238,7 @@ Each language has a dedicated analyzer extending `BaseAnalyzer`.
 ```
 BaseAnalyzer (abstract)
     ↓
-TypeScriptAnalyzer, PythonAnalyzer, JavaAnalyzer, ... (10 languages)
+TypeScriptAnalyzer, PythonAnalyzer, JavaAnalyzer, ... (11 more)
 ```
 
 ### 3. MCP Server (`src/server/`)
@@ -559,9 +559,9 @@ This reduces overhead from O(N × checks) to O(1) for content splitting.
 **Total Repository Tests:** 522 (501 passing + 21 todo across all phases)
 
 **SwiftUI Analyzer Tests:**
-- **Phase 1 Tests:** 13 implemented test cases
-- **Phase 2 Tests:** 13 implemented test cases  
-- **Phase 3 Tests:** 22 todo tests for future enhancements
+- **Phase 1 Tests:** 21 implemented test cases
+- **Phase 2 Tests:** 20 implemented test cases  
+- **Phase 3 Tests:** 13 todo tests for future enhancements
 
 **Test Pattern:**
 ```typescript
@@ -636,7 +636,7 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
 
 #### High Priority (Address when touching these files)
 
-1. ~~**`src/index.ts` (883 lines)** - Split into modules~~ ✅ **DONE** (v2.0.0) — now 16 lines, split into `src/server/` modules
+1. ~~**`src/index.ts` (883 lines)** - Split into modules~~ ✅ **DONE** (v2.0.0) — now 18 lines, split into `src/server/` modules
 
 2. ~~**`src/analyzers/csharpAnalyzer.ts:267`** - Deep nesting (14 levels)~~ ✅ **DONE** (PR #113) — refactored to ≤4 levels via helper methods and early returns
 

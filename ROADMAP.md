@@ -85,13 +85,13 @@ Enhanced Swift analyzer with comprehensive SwiftUI-specific technical debt detec
 
 **Quality Improvements**
 - ✅ 96 tests passing (118 total with 22 todo for Phase 3)
-- ✅ SwiftUI suite: 13 implemented Phase 1 + 13 implemented Phase 2 + 22 todo Phase 3
+- ✅ SwiftUI suite: 21 implemented Phase 1 + 20 implemented Phase 2 + 13 todo Phase 3
 - ✅ All Copilot review suggestions addressed
 - ✅ Performance optimization (content split once)
 - ✅ Contributor: @ophirbucai (execute_custom_rules fix, IDE badges)
 
 #### Deliverables
-- Tests: Repo total 96 passing (SwiftUI tests: 13 Phase 1 + 13 Phase 2 + 22 Phase 3 todo)
+- Tests: Repo total 96 passing (SwiftUI tests: 21 Phase 1 + 20 Phase 2 + 13 Phase 3 todo)
 - Documentation: Updated README with SwiftUI section, GITHUB_PACKAGES.md
 - NPM Package: Published as `tech-debt-mcp@1.1.0` (historical)
 - GitHub Packages: Available on both npm and GitHub Packages registries
@@ -158,7 +158,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 | Phase 1 | v1.0.0 | ✅ Complete | SQALE metrics & rating system (+ get_sqale_metrics tool) |
 | Phase 5 | v1.0.0 | ✅ Complete | Custom rules engine |
 | v1.1.0 | v1.1.0 | ✅ Complete | SwiftUI-specific analysis (14 checks) |
-| Quality & Compliance | Unreleased | ✅ Ready | Code of Conduct, .techdebtrc.json, TECH_DEBT_SCAN.md, documentation |
+| Quality & Compliance | v2.0.0 | ✅ Complete | Code of Conduct, .techdebtrc.json, TECH_DEBT_SCAN.md, documentation |
 | Phase 2 | v2.0.0 | ✅ Complete | Dependency analysis — 10 parsers, 3 MCP tools, index.ts refactor |
 | Phase 6 | v2.0.1 | ✅ Complete | MCP Resources (debt://summary, debt://issues) |
 | Security Patch | v2.0.2 | 🔧 In Progress | Security hardening, refactor merges, CI guardrails (Issues #124-130) |

@@ -147,13 +147,9 @@ These are **legitimate pattern definitions**, not actual code issues:
 }
 ```
 
-### 2. Real Issue: Deep Nesting (1 issue)
+### 2. ~~Real Issue: Deep Nesting (1 issue)~~ ✅ RESOLVED
 
-❌ **src/analyzers/csharpAnalyzer.ts:267** - 14 levels of nesting
-- **Category:** maintainability
-- **Severity:** high
-- **Effort:** large (~2-4 hours)
-- **Action:** Extract nested logic into helper functions
+~~❌ **src/analyzers/csharpAnalyzer.ts:267** - 14 levels of nesting~~ ✅ **DONE** (PR #113) — refactored to ≤4 levels via helper methods and early returns
 
 ## 🟡 Medium Priority Issues (49 total)
 
@@ -206,10 +202,7 @@ These are **legitimate pattern definitions**, not actual code issues:
 
 ### Short-term (Next 2 Sprints)
 
-3. **Refactor C# Analyzer** - Fix deep nesting at line 267
-   - Extract nested logic into helper functions
-   - Use early returns to reduce indentation
-   - Target: Reduce to ≤4 nesting levels
+3. ~~**Refactor C# Analyzer** - Fix deep nesting at line 267~~ ✅ **DONE** (PR #113) — refactored to ≤4 levels
 
 4. ~~**Split src/index.ts**~~ ✅ **DONE** — `src/server/` directory created; handlers in `handlers.ts`, setup in `setup.ts`, `index.ts` is now a minimal ~18-line entry point.
 
@@ -303,7 +296,7 @@ All documentation has been updated to reflect:
 
 **Next Steps:**
 1. Configure `ruleExclusions` in `.techdebtrc.json` to suppress false positives (expected to drop high issues from 12 to 1)
-2. Address C# analyzer deep nesting at line 267 (the only real high issue)
+2. ~~Address C# analyzer deep nesting at line 267~~ ✅ **DONE** (PR #113)
 3. Tackle medium-severity maintainability issues (28 issues, 56h remediation)
 4. Continue addressing code quality issues across the expanded codebase
 

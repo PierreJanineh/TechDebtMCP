@@ -98,7 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `src/server/handlers.ts` — all MCP tool request handlers
   - `src/server/tools.ts` — centralized `TOOL_DEFINITIONS` array
   - `src/server/formatters.ts` — output formatting helpers
-  - `src/index.ts` now a 16-line entry point only
+  - `src/index.ts` now an 18-line entry point only
 - **README.md** - Added Code Quality section with updated SQALE rating
   - Self-scan results (A rating, 2.9% debt ratio, down from 3.4%)
   - Link to TECH_DEBT_SCAN.md with before/after comparison
@@ -266,6 +266,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tests for SQALE engine
 - Tests for custom rules engine
 
+[Unreleased]: https://github.com/PierreJanineh/TechDebtMCP/compare/v2.0.1...HEAD
 [2.0.1]: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v2.0.1
 [2.0.0]: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v2.0.0
 [1.1.0]: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v1.1.0
