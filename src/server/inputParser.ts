@@ -429,6 +429,12 @@ export function parseExecuteCustomRulesInput(
 ): ExecuteCustomRulesInput {
   const a = requireRecord(args);
   const code = optionalString(a, 'code');
+  if (code !== undefined && code.length === 0) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      'Inline code must not be empty',
+    );
+  }
   if (code !== undefined && code.length > MAX_CODE_LENGTH) {
     throw new McpError(
       ErrorCode.InvalidParams,
