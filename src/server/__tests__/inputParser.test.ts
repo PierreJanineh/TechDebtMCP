@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { McpError } from '@modelcontextprotocol/sdk/types.js';
 import {
   parseAnalyzeProjectInput,
@@ -435,13 +436,15 @@ describe('inputParser', () => {
     });
 
     it('normalizes path with .. sequences', () => {
-      const result = parseAnalyzeFileInput({ path: '/foo/../bar/baz.ts' });
-      expect(result.path).toBe('/bar/baz.ts');
+      const raw = '/foo/../bar/baz.ts';
+      const result = parseAnalyzeFileInput({ path: raw });
+      expect(result.path).toBe(path.resolve(raw));
     });
 
     it('returns absolute path unchanged when already clean', () => {
-      const result = parseAnalyzeFileInput({ path: '/foo/bar/baz.ts' });
-      expect(result.path).toBe('/foo/bar/baz.ts');
+      const raw = '/foo/bar/baz.ts';
+      const result = parseAnalyzeFileInput({ path: raw });
+      expect(result.path).toBe(path.resolve(raw));
     });
 
     it('throws McpError for relative path in optional path field (parseExecuteCustomRulesInput)', () => {
@@ -456,8 +459,9 @@ describe('inputParser', () => {
     });
 
     it('accepts and normalizes absolute path in optional path field', () => {
-      const result = parseExecuteCustomRulesInput({ path: '/foo/../bar/file.ts' });
-      expect(result.path).toBe('/bar/file.ts');
+      const raw = '/foo/../bar/file.ts';
+      const result = parseExecuteCustomRulesInput({ path: raw });
+      expect(result.path).toBe(path.resolve(raw));
     });
 
     it('error message mentions "must be an absolute path"', () => {

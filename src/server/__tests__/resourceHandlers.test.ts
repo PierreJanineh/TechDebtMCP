@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { jest } from '@jest/globals';
 
 // Mock AnalysisEngine before imports
@@ -375,28 +376,30 @@ describe('error handling', () => {
   it('should normalize a path with .. sequences in summary resource', async () => {
     const report = makeMockReport();
     mockAnalyzeProject.mockResolvedValue(report);
+    const rawPath = '/test/project/../project';
 
     const callback = getCallback('Tech Debt Summary');
     await callback(
       new URL('debt://summary//test/project/../project'),
-      { projectPath: '/test/project/../project' },
+      { projectPath: rawPath },
       {}
     );
 
-    expect(mockAnalyzeProject).toHaveBeenCalledWith({ path: '/test/project' });
+    expect(mockAnalyzeProject).toHaveBeenCalledWith({ path: path.resolve(rawPath) });
   });
 
   it('should normalize a path with .. sequences in issues resource', async () => {
     const report = makeMockReport();
     mockAnalyzeProject.mockResolvedValue(report);
+    const rawPath = '/test/project/../project';
 
     const callback = getCallback('Tech Debt Issues');
     await callback(
       new URL('debt://issues//test/project/../project'),
-      { projectPath: '/test/project/../project' },
+      { projectPath: rawPath },
       {}
     );
 
-    expect(mockAnalyzeProject).toHaveBeenCalledWith({ path: '/test/project' });
+    expect(mockAnalyzeProject).toHaveBeenCalledWith({ path: path.resolve(rawPath) });
   });
 });
