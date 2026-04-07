@@ -128,6 +128,16 @@ export class CustomRulesEngine {
     pattern: CustomPattern
   ): TechDebtIssue[] {
     try {
+      // Defense-in-depth: reject oversized patterns even if they bypassed validatePattern().
+      if (pattern.pattern.length > MAX_PATTERN_LENGTH) {
+        if (this.onRuleError) {
+          this.onRuleError(
+            pattern.id,
+            new Error(`Pattern exceeds maximum length of ${MAX_PATTERN_LENGTH} characters`)
+          );
+        }
+        return [];
+      }
       const lines = content.split(/\r?\n/);
       const stripped = pattern.flags !== undefined
         ? pattern.flags.replace(/[^gimsuy]/g, '')

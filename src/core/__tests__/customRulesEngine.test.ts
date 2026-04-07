@@ -414,6 +414,46 @@ console.log("test3");`;
     });
   });
 
+  describe('MAX_PATTERN_LENGTH defense-in-depth at execution time', () => {
+    it('returns empty array and calls onRuleError for oversized patterns added directly via addRule', () => {
+      const errors: Array<{ id: string; error: Error }> = [];
+      const engineWithErrCb = new CustomRulesEngine(
+        undefined,
+        (id, error) => errors.push({ id, error })
+      );
+
+      const oversizedPattern: CustomPattern = {
+        id: 'oversized-rule',
+        pattern: 'a'.repeat(1_001),
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Oversized',
+      };
+
+      // Bypass validatePattern by calling addRule directly
+      engineWithErrCb.addRule(oversizedPattern);
+      const issues = engineWithErrCb.executeRules('test.ts', 'aaaa');
+      expect(issues).toHaveLength(0);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].id).toBe('oversized-rule');
+      expect(errors[0].error.message).toMatch(/exceeds maximum length/);
+    });
+
+    it('executes a pattern at exactly MAX_PATTERN_LENGTH without error', () => {
+      const exactPattern: CustomPattern = {
+        id: 'exact-length-rule',
+        pattern: 'a'.repeat(1_000),
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Exact length',
+      };
+
+      engine.addRule(exactPattern);
+      // Should not throw and returns results normally (no match in this content)
+      expect(() => engine.executeRules('test.ts', 'hello')).not.toThrow();
+    });
+  });
+
   describe('Error Handling', () => {
     it('handles invalid regex gracefully', () => {
       const pattern: CustomPattern = {
