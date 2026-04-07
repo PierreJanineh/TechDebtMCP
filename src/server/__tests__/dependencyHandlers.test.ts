@@ -172,6 +172,7 @@ describe('handleCheckDependencies', () => {
     const result = await handleCheckDependencies({ path: '/project' });
     const text = result.content[0].text;
     // The scan-error bullet should use the relative path, not the absolute dir
+    expect(text).toContain('Filesystem scan errors');
     const scanErrorSection = text.substring(text.indexOf('Filesystem scan errors'));
     expect(scanErrorSection).not.toContain('/project');
     expect(scanErrorSection).toContain('EACCES');
@@ -194,6 +195,7 @@ describe('handleCheckDependencies', () => {
 
     const result = await handleCheckDependencies({ path: '/project' });
     const text = result.content[0].text;
+    expect(text).toContain('Filesystem scan errors');
     const scanErrorSection = text.substring(text.indexOf('Filesystem scan errors'));
     // Must not contain any absolute path
     expect(scanErrorSection).not.toContain('/project');
@@ -328,6 +330,7 @@ describe('handleGetVulnerabilityReport', () => {
     const result = await handleGetVulnerabilityReport({ path: '/project' });
     const text = result.content[0].text;
     // The scan-error bullet should use the relative path, not the absolute dir
+    expect(text).toContain('Filesystem scan errors');
     const scanErrorSection = text.substring(text.indexOf('Filesystem scan errors'));
     expect(scanErrorSection).not.toContain('/project');
     expect(scanErrorSection).toContain('EACCES');
@@ -350,6 +353,7 @@ describe('handleGetVulnerabilityReport', () => {
 
     const result = await handleGetVulnerabilityReport({ path: '/project' });
     const text = result.content[0].text;
+    expect(text).toContain('Filesystem scan errors');
     const scanErrorSection = text.substring(text.indexOf('Filesystem scan errors'));
     // Must not contain any absolute path
     expect(scanErrorSection).not.toContain('/project');
