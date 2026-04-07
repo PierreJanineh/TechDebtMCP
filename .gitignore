@@ -11,3 +11,5 @@ coverage/
 .idea/
 .claude/*
 !.claude/agents/
+!.claude/templates/
+*.local.*

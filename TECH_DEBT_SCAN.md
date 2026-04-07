@@ -1,307 +1,92 @@
-# Tech Debt MCP - Self-Scan Results (March 2026)
+# Tech Debt Scan
 
-**Scan Date:** March 20, 2026
-**Configuration:** `.techdebtrc.json` enabled (test files excluded)
+**Tool:** Tech Debt MCP v2.0.1
+**Configuration:** `.techdebtrc.json` (test files excluded)
 
-## 📊 Overall Metrics
+## Current Metrics
 
-### SQALE Rating: A ⭐⭐⭐⭐⭐ (Excellent)
+| Metric | Value |
+|--------|-------|
+| SQALE Rating | A |
+| Health Score | 80.6/100 |
+| Debt Score | 19.4/100 |
+| Total Issues | 55 |
+| Remediation Time | 2d 5h 15m |
 
-| Metric | Value | Status |
-|--------|-------|--------|
-| **Debt Ratio** | 4.6% | ✅ Excellent (Target: <5%) |
-| **Health Score** | 42.4/100 | ⚠️ Moderate |
-| **Debt Score** | 57.6/100 | ⚠️ Moderate |
-| **Total Issues** | 118 | Up from 81 (more files analyzed) |
-| **Remediation Time** | 4d 25m (~96 hours) | Up from 60 hours |
+## Issues Breakdown
 
-### Issues Breakdown
+### By Severity
 
-| Severity | Count | Time to Fix | Change from Previous |
-|----------|-------|-------------|---------------------|
-| 🔴 Critical | 0 | 0m | No change |
-| 🟠 High | 12 | 4h 35m | -2 from Feb scan |
-| 🟡 Medium | 49 | 64h 35m | +11 (more files analyzed) |
-| 🟢 Low | 57 | 27h 15m | +28 (more files analyzed) |
-| **Total** | **118** | **~96h** | **+37 issues** |
+| Severity | Count | Remediation |
+|----------|-------|-------------|
+| 🔴 Critical | 0 | 0m |
+| 🟠 High | 1 | 2h |
+| 🟡 Medium | 18 | 34h 30m |
+| 🟢 Low | 36 | 16h 45m |
 
-### Categories
+### By Category
 
-| Category | Issues | Time |
-|----------|--------|------|
-| Code Quality | 90 | 40h 25m |
-| Maintainability | 28 | 56h |
+| Category | Count | Remediation |
+|----------|-------|-------------|
+| Code Quality | 37 | 17h 15m |
+| Maintainability | 18 | 36h |
 
-### Files Analyzed
+## Detailed Issues
 
-- **Total Files:** 43
-- **Analyzed Files:** 43 (test files excluded via config)
+### 🟠 High (1)
+
+| File | Line | Rule | Title | Effort |
+|------|------|------|-------|--------|
+| `src/analyzers/csharpAnalyzer.ts` | 360 | `nesting-depth` | Deep nesting detected | medium |
+
+### 🟡 Medium (18)
+
+| File | Line | Rule | Title | Effort |
+|------|------|------|-------|--------|
+| `jest.config.js` | 12 | `nesting-depth` | Deep nesting detected | medium |
+| `src/server/handlers.ts` | 265 | `nesting-depth` | Deep nesting detected | medium |
+| `src/server/dependencyHandlers.ts` | 220 | `nesting-depth` | Deep nesting detected | medium |
+| `src/core/analysisEngine.ts` | 257 | `nesting-depth` | Deep nesting detected | medium |
+| `src/analyzers/typescriptAnalyzer.ts` | 145 | `nesting-depth` | Deep nesting detected | medium |
+| `src/analyzers/swiftUiChecksPhase2.ts` | 33 | `nesting-depth` | Deep nesting detected | medium |
+| `src/analyzers/swiftUiChecks.ts` | 132 | `nesting-depth` | Deep nesting detected | medium |
+| `src/analyzers/swiftAnalyzer.ts` | 188 | `nesting-depth` | Deep nesting detected | medium |
+| `src/analyzers/swiftAnalyzer.ts` | 174 | `non-null-assertion` | Non-null assertion operator used | small |
+| `src/analyzers/pythonAnalyzer.ts` | 141 | `nesting-depth` | Deep nesting detected | medium |
+| `src/analyzers/objectivecAnalyzer.ts` | 132 | `nesting-depth` | Deep nesting detected | medium |
+| `src/analyzers/javascriptAnalyzer.ts` | 111 | `nesting-depth` | Deep nesting detected | medium |
+| `src/analyzers/javaAnalyzer.ts` | 148 | `nesting-depth` | Deep nesting detected | medium |
+| `src/analyzers/cppAnalyzer.ts` | 221 | `nesting-depth` | Deep nesting detected | medium |
+| `src/analyzers/cAnalyzer.ts` | 119 | `nesting-depth` | Deep nesting detected | medium |
+| `src/analyzers/baseAnalyzer.ts` | 203 | `nesting-depth` | Deep nesting detected | medium |
+| `src/analyzers/dependencies/pipParser.ts` | 84 | `nesting-depth` | Deep nesting detected | medium |
+| `src/analyzers/dependencies/cppParser.ts` | 134 | `nesting-depth` | Deep nesting detected | medium |
+
+### 🟢 Low (36)
+
+| File | Line | Rule | Title | Effort |
+|------|------|------|-------|--------|
+| `src/index.ts` | 15 | `console-log` | Console statement found | trivial |
+| `src/utils/fileUtils.ts` | 73 | `type-assertion` | Type assertion used | small |
+| `src/types/index.ts` | 277 | `type-assertion` | Type assertion used | small |
+| `src/server/tools.ts` | — | `line-length` | Multiple long lines detected | small |
+| `src/server/tools.ts` | 199 | `type-assertion` | Type assertion used | small |
+| `src/server/setup.ts` | 30 | `console-log` | Console statement found | trivial |
+| `src/server/setup.ts` | 60 | `console-log` | Console statement found | trivial |
+| `src/server/resourceHandlers.ts` | 5 | `type-assertion` | Type assertion used | small |
+| `src/server/resourceHandlers.ts` | 6 | `type-assertion` | Type assertion used | small |
+| `src/server/inputParser.ts` | 98 | `type-assertion` | Type assertion used | small |
+| ... | | | *(26 more — mostly `type-assertion` in `src/server/inputParser.ts` and dependency parsers)* | |
+
+## Scan History
+
+| Commit | Health | Issues | High | Med | Low | Remediation | Notes |
+|--------|--------|--------|------|-----|-----|-------------|-------|
+| `210c50a` | 42.4 | 118 | 12 | 49 | 57 | ~96h | Baseline — before ruleExclusions, nesting refactors |
+| `0b3db51` | 80.6 | 55 | 1 | 18 | 36 | 2d 5h 15m | Post PR #113, #118, #119, #122; ruleExclusions applied |
+
+## Files Analyzed
+
+- **Total Files:** 47
 - **Languages:** TypeScript, JavaScript
 - **Package Managers:** npm
-
-## 🎯 Impact of .techdebtrc.json Configuration
-
-### Two-Scan Comparison
-
-We performed **two complete scans** to measure the impact of configuration:
-
-#### 📊 Scan #1: Before .techdebtrc.json (Baseline)
-
-**Configuration:** No test exclusions, all files analyzed
-
-| Metric | Value |
-|--------|-------|
-| **SQALE Rating** | A ⭐⭐⭐⭐⭐ |
-| **Debt Ratio** | 3.4% |
-| **Health Score** | 41/100 |
-| **Total Issues** | 101 |
-| **Critical Issues** | 0 |
-| **High Issues** | 17 |
-| **Medium Issues** | 46 |
-| **Low Issues** | 38 |
-| **Remediation Time** | 70 hours |
-| **Files Analyzed** | 33 (including test files) |
-
-**Issues by Category (Scan #1):**
-- Code Quality: 84 issues
-- Maintainability: 17 issues
-
-#### 📊 Scan #2: After .techdebtrc.json (Current)
-
-**Configuration:** `.techdebtrc.json` enabled (test files excluded)
-
-| Metric | Value |
-|--------|-------|
-| **SQALE Rating** | A ⭐⭐⭐⭐⭐ |
-| **Debt Ratio** | 2.9% |
-| **Health Score** | 51.8/100 |
-| **Total Issues** | 81 |
-| **Critical Issues** | 0 |
-| **High Issues** | 14 |
-| **Medium Issues** | 38 |
-| **Low Issues** | 29 |
-| **Remediation Time** | 60 hours |
-| **Files Analyzed** | 25 (production code only) |
-
-**Issues by Category (Scan #2):**
-- Code Quality: 66 issues
-- Maintainability: 15 issues
-
-### 📈 Improvement Summary
-
-| Metric | Before | After | Change |
-|--------|--------|-------|--------|
-| **SQALE Rating** | A (3.4%) | A (2.9%) | ✅ -0.5% |
-| **Health Score** | 41/100 | 51.8/100 | ✅ +10.8 points |
-| **Total Issues** | 101 | 81 | ✅ -20 (-19.8%) |
-| **Critical** | 0 | 0 | ✅ No change |
-| **High** | 17 | 14 | ✅ -3 |
-| **Medium** | 46 | 38 | ✅ -8 |
-| **Low** | 38 | 29 | ✅ -9 |
-| **Remediation Time** | 70h | 60h | ✅ -10h (-14.3%) |
-| **Files Analyzed** | 33 | 25 | ✅ -8 test files |
-
-**Key Insight:** Both scans maintained SQALE Rating A, but the configuration improved debt ratio from 3.4% to 2.9% by removing false positives.
-
-### What Changed?
-
-✅ **Test files excluded** - False positives removed:
-- `src/**/__tests__/**/*.test.ts` files no longer scanned
-- Removed 3 high-severity false positives (debugger in tests)
-- Removed 8 medium-severity test-related issues
-- Removed 9 low-severity test file issues
-
-✅ **Focused analysis** - Production code only:
-- Analysis now focuses on production code quality
-- More accurate representation of actual technical debt
-- Better signal-to-noise ratio for actionable items
-
-## 🔴 High Priority Issues (12 total)
-
-### 1. False Positives in Analyzers (11 issues)
-
-These are **legitimate pattern definitions**, not actual code issues:
-
-#### "Debugger" References (9 issues)
-- `src/config/languages.ts:22` - String 'debugger' in config
-- `src/config/languages.ts:51` - String 'debugger' in config
-- `src/core/analysisEngine.ts:251` - String 'Remove debugger statements'
-- `src/analyzers/typescriptAnalyzer.ts:87,89` - Pattern `/\bdebugger\b/g`
-- `src/analyzers/javascriptAnalyzer.ts:36,38` - Pattern `/\bdebugger\b/g`
-- `src/analyzers/rubyAnalyzer.ts:30,34` - Comment about debugger detection
-
-#### "@ts-ignore" References (4 issues)
-- `src/analyzers/typescriptAnalyzer.ts:30,31,34,35` - Pattern `/@ts-ignore/g`
-
-**Resolution:** These need exclusion patterns in `.techdebtrc.json`:
-```json
-{
-  "ignore": [
-    "**/node_modules/**",
-    "**/dist/**",
-    "**/__tests__/**",
-    "**/config/languages.ts",  // Language pattern definitions
-    "**/*Analyzer.ts:*:debugger",  // Analyzer pattern matchers
-    "**/*Analyzer.ts:*:@ts-ignore"  // Analyzer pattern matchers
-  ]
-}
-```
-
-### 2. ~~Real Issue: Deep Nesting (1 issue)~~ ✅ RESOLVED
-
-~~❌ **src/analyzers/csharpAnalyzer.ts:267** - 14 levels of nesting~~ ✅ **DONE** (PR #113) — refactored to ≤4 levels via helper methods and early returns
-
-## 🟡 Medium Priority Issues (49 total)
-
-### File Length Issues
-
-1. ~~**src/index.ts** - 883 lines (max: 500)~~ ✅ **RESOLVED** — Split completed; `src/index.ts` is now ~18 lines. Handlers extracted to `src/server/handlers.ts`, setup to `src/server/setup.ts`.
-
-### Deep Nesting Issues
-
-2. ~~**src/index.ts:63** - 8 levels of nesting~~ ✅ **RESOLVED** — File split completed; nesting no longer exists.
-3. ~~**src/core/customRulesEngine.ts:129** - 7 levels~~ ✅ **DONE** (PR #118)
-4. ~~**src/core/analysisEngine.ts:93** - 5 levels~~ ✅ **DONE** (PR #118)
-
-### Non-null Assertions
-
-5. ~~**src/index.ts:804, 809** - Using `!` operator~~ ✅ **RESOLVED** — File split completed; those lines no longer exist.
-
-### Other Issues
-
-- Type assertions (38 instances across multiple files)
-- TODO comments (various files)
-- Console.log statements (various files)
-
-## 🟢 Low Priority Issues (57 total)
-
-- Style improvements
-- Minor code quality suggestions
-- Optional optimizations
-
-## ✅ Recommended Actions
-
-### Immediate (This Sprint)
-
-1. **Configure `ruleExclusions` in `.techdebtrc.json`** - PR #99 merged `ruleExclusions` support, which allows excluding specific rules from specific files. Configuring this will eliminate the 11 false-positive high issues (analyzer pattern definitions flagged for debugger/ts-ignore regex). Example:
-   ```json
-   {
-     "ruleExclusions": {
-       "src/analyzers/*Analyzer.ts": ["debugger-statement", "ts-ignore-usage"],
-       "src/config/languages.ts": ["debugger-statement"],
-       "src/core/analysisEngine.ts": ["debugger-statement"]
-     }
-   }
-   ```
-
-2. **Document false positives** - Add comment explaining why certain patterns exist
-   ```typescript
-   // Pattern definition for detection - not actual usage
-   const debuggerPattern = /\bdebugger\b/g;
-   ```
-
-### Short-term (Next 2 Sprints)
-
-3. ~~**Refactor C# Analyzer** - Fix deep nesting at line 267~~ ✅ **DONE** (PR #113) — refactored to ≤4 levels
-
-4. ~~**Split src/index.ts**~~ ✅ **DONE** — `src/server/` directory created; handlers in `handlers.ts`, setup in `setup.ts`, `index.ts` is now a minimal ~18-line entry point.
-
-### Medium-term (Ongoing)
-
-5. **Replace non-null assertions** - Use safe alternatives
-   - Replace `value!` with `value ?? defaultValue`
-   - Use optional chaining `value?.property`
-   - Add proper guard clauses
-
-6. ~~**Reduce nesting** - Apply early returns pattern~~  ✅ **DONE** (PR #118)
-   - ~~Target files: `index.ts`, `customRulesEngine.ts`, `analysisEngine.ts`~~
-   - `customRulesEngine.ts` and `analysisEngine.ts` refactored to ≤4 levels
-
-## 📈 Success Metrics
-
-### Current Baseline (March 20, 2026)
-- SQALE Rating: **A** (4.6% debt ratio)
-- High Issues: **12** (11 false positives, 1 real)
-- Medium Issues: **49**
-- Low Issues: **57**
-
-### Target (Next Release — with ruleExclusions configured)
-- SQALE Rating: **A** (<4% debt ratio)
-- High Issues: **1** (only real issue: C# analyzer nesting)
-- Medium Issues: **<45** (after addressing top issues)
-- Low Issues: **<50**
-
-### Long-term Goal (3 months)
-- SQALE Rating: **A** (<2.0% debt ratio)
-- High Issues: **0**
-- Medium Issues: **<20**
-- File Length Violations: **0**
-
-## 🔧 Configuration Updates Needed
-
-### .techdebtrc.json Enhancement
-
-Add more sophisticated exclusion patterns:
-
-```json
-{
-  "ignore": [
-    "**/node_modules/**",
-    "**/dist/**",
-    "**/__tests__/**",
-    "**/*.test.ts"
-  ],
-  "exclude": {
-    "files": {
-      "src/config/languages.ts": ["debugger"],
-      "src/analyzers/*Analyzer.ts": ["debugger", "@ts-ignore", "console.log"],
-      "src/core/analysisEngine.ts": ["debugger:251"]
-    }
-  },
-  "rules": {
-    "maxFileLines": 500,
-    "maxFunctionLines": 50,
-    "maxComplexity": 10,
-    "maxNestingDepth": 4
-  }
-}
-```
-
-## 📚 Documentation Updates
-
-All documentation has been updated to reflect:
-- ✅ Current SQALE rating (A, 2.9%)
-- ✅ File size and complexity limits
-- ✅ Refactoring priorities
-- ✅ Code quality rules
-- ✅ Configuration strategy
-
-### Updated Files:
-- `.github/copilot-instructions.md` - Tech debt refactoring rules
-- `CONTRIBUTING.md` - Tech debt compliance section
-- `ARCHITECTURE.md` - Code quality standards
-- `README.md` - Code quality section with badge
-- `CHANGELOG.md` - Unreleased changes documented
-- `.techdebtrc.json` - Project configuration created
-- `CODE_OF_CONDUCT.md` - Community standards added
-
-## 🎉 Summary
-
-**SQALE Rating A maintained** despite codebase growth (26 to 43 files analyzed).
-- ✅ SQALE Rating A maintained (4.6% debt ratio — still under 5% target)
-- ✅ Test files properly excluded from analysis
-- ✅ PR #99 merged `ruleExclusions` support — will eliminate 11 false-positive high issues on next scan
-- ✅ Clear refactoring priorities identified
-- ✅ Actionable roadmap for continuous improvement
-
-**Next Steps:**
-1. Configure `ruleExclusions` in `.techdebtrc.json` to suppress false positives (expected to drop high issues from 12 to 1)
-2. ~~Address C# analyzer deep nesting at line 267~~ ✅ **DONE** (PR #113)
-3. Tackle medium-severity maintainability issues (28 issues, 56h remediation)
-4. Continue addressing code quality issues across the expanded codebase
-
----
-
-**Generated by:** Tech Debt MCP v2.0.1
-**Self-scan demonstrates:** Project practices what it preaches!
-
