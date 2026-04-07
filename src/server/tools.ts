@@ -3,6 +3,8 @@
  * Centralized tool schemas for better organization and maintainability
  */
 
+import { MAX_CODE_LENGTH } from '../core/customRulesEngine.js';
+
 export const TOOL_DEFINITIONS = [
   {
     name: 'analyze_project',
@@ -141,7 +143,7 @@ export const TOOL_DEFINITIONS = [
       type: 'object',
       properties: {
         path: { type: 'string', description: 'Absolute filesystem path to the file to analyze' },
-        code: { type: 'string', description: 'Source code content to analyze directly (maximum 500,000 characters; alternative to path)' },
+        code: { type: 'string', description: `Source code content to analyze directly (maximum ${MAX_CODE_LENGTH.toLocaleString()} characters; alternative to path)` },
         language: { type: 'string', description: 'Optional: programming language for filtering rules' },
       },
     },

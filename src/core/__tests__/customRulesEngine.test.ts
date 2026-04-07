@@ -235,7 +235,7 @@ console.log("test3");`;
     it('rejects pattern whose length exceeds 1000 characters', () => {
       const pattern: CustomPattern = {
         id: 'long-rule',
-        pattern: 'a'.repeat(1001),
+        pattern: 'a'.repeat(MAX_PATTERN_LENGTH + 1),
         severity: 'low',
         category: 'code-quality',
         message: 'Too long',
@@ -249,7 +249,7 @@ console.log("test3");`;
     it('accepts pattern exactly at the 1000-character limit', () => {
       const pattern: CustomPattern = {
         id: 'boundary-rule',
-        pattern: 'a'.repeat(1000),
+        pattern: 'a'.repeat(MAX_PATTERN_LENGTH),
         severity: 'low',
         category: 'code-quality',
         message: 'At boundary',
