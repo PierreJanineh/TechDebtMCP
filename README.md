@@ -294,11 +294,11 @@ List all active custom rules with their statistics. No parameters.
 
 Run all custom rules against code or a file.
 
-- `path` (optional): Path to the file to analyze
-- `code` (optional): Code content to analyze directly
+- `path` (optional): Absolute path to the file to analyze
+- `code` (optional): Code content to analyze directly (max 500,000 characters)
 - `language` (optional): Programming language for filtering rules
 
-_Either `path` or `code` must be provided._
+_Either `path` or `code` must be provided. If `path` is supplied, it must be an absolute filesystem path._
 
 ### `validate_custom_pattern`
 
@@ -338,8 +338,8 @@ Generate an offline dependency inventory for vulnerability review. Lists all dep
 
 | URI | Description |
 |-----|-------------|
-| `debt://summary/{+projectPath}` | Health score, debt score, issue counts, SQALE metrics (JSON) |
-| `debt://issues/{+projectPath}` | Filterable list of all tech debt issues (JSON) — supports `severity`, `category`, `limit` query params |
+| `debt://summary/{+projectPath}` | Health score, debt score, issue counts, SQALE metrics (JSON) — `projectPath` must be an absolute filesystem path |
+| `debt://issues/{+projectPath}` | Filterable list of all tech debt issues (JSON) — `projectPath` must be an absolute filesystem path; supports `severity`, `category`, `limit` query params |
 
 ## Configuration
 
