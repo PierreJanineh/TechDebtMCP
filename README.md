@@ -254,7 +254,7 @@ Add a custom pattern-based tech debt rule.
 - `category` (required): One of the debt categories
 - `suggestion` (optional): How to fix the issue
 - `languages` (optional): Apply only to specific languages
-- `flags` (optional): Regex flags (g, i, m, s, etc.)
+- `flags` (optional): Regex flags — allowed characters: `g`, `i`, `m`, `s`, `u`, `y` (any other characters are stripped; empty result defaults to `g`)
 
 **Example custom rules:**
 

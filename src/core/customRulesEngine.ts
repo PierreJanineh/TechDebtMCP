@@ -20,8 +20,8 @@ const VALID_CATEGORIES: DebtCategory[] = [
 ];
 
 /**
- * Maximum allowed byte length for a user-supplied regex pattern string.
- * Patterns longer than this are rejected to prevent DoS via large patterns.
+ * Maximum allowed length in UTF-16 code units for a user-supplied regex
+ * pattern string. Patterns longer than this are rejected to prevent DoS via large patterns.
  */
 const MAX_PATTERN_LENGTH = 1_000;
 
@@ -32,8 +32,9 @@ const MAX_PATTERN_LENGTH = 1_000;
 const ALLOWED_FLAGS_RE = /^[gimsuy]*$/;
 
 /**
- * Maximum allowed byte length for the inline `code` parameter passed to
+ * Maximum allowed string length for the inline `code` parameter passed to
  * `execute_custom_rules`. This caps the input fed to regex matching per call.
+ * Enforced using JavaScript string length semantics (`string.length`).
  */
 export const MAX_CODE_LENGTH = 500_000;
 
@@ -128,9 +129,10 @@ export class CustomRulesEngine {
   ): TechDebtIssue[] {
     try {
       const lines = content.split(/\r?\n/);
-      const safeFlags = pattern.flags !== undefined
+      const stripped = pattern.flags !== undefined
         ? pattern.flags.replace(/[^gimsuy]/g, '')
         : 'g';
+      const safeFlags = stripped.length > 0 ? stripped : 'g';
       const regex = new RegExp(pattern.pattern, safeFlags);
       return lines.flatMap((line, index) =>
         this.matchLineIssues(filePath, line, index + 1, regex, pattern)
@@ -232,23 +234,28 @@ export class CustomRulesEngine {
       errors.push('Pattern ID is required');
     }
 
+    // Validate and normalize flags first so the regex compilation uses safe flags.
+    if (pattern.flags !== undefined && !ALLOWED_FLAGS_RE.test(pattern.flags)) {
+      errors.push(`Invalid regex flags: "${pattern.flags}". Only the characters g, i, m, s, u, y are allowed`);
+    }
+
     if (!pattern.pattern) {
       errors.push('Pattern regex is required');
     } else {
       if (pattern.pattern.length > MAX_PATTERN_LENGTH) {
         errors.push(`Pattern exceeds maximum length of ${MAX_PATTERN_LENGTH} characters`);
       } else {
+        // Compile with the same normalized flags used at execution time.
+        const stripped = pattern.flags !== undefined
+          ? pattern.flags.replace(/[^gimsuy]/g, '')
+          : 'g';
+        const normalizedFlags = stripped.length > 0 ? stripped : 'g';
         try {
-          // Test if regex is valid
-          new RegExp(pattern.pattern, pattern.flags || 'g');
+          new RegExp(pattern.pattern, normalizedFlags);
         } catch (error) {
           errors.push(`Invalid regex pattern: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       }
-    }
-
-    if (pattern.flags !== undefined && !ALLOWED_FLAGS_RE.test(pattern.flags)) {
-      errors.push(`Invalid regex flags: "${pattern.flags}". Only the characters g, i, m, s, u, y are allowed`);
     }
 
     if (!pattern.message) {

@@ -110,7 +110,7 @@ export const TOOL_DEFINITIONS = [
         category: { type: 'string', enum: ['dependency', 'code-quality', 'architecture', 'documentation', 'testing', 'security', 'performance', 'maintainability'], description: 'Debt category' },
         suggestion: { type: 'string', description: 'Optional: how to fix the issue' },
         languages: { type: 'array', items: { type: 'string' }, description: 'Optional: apply only to specific languages' },
-        flags: { type: 'string', description: 'Optional: regex flags (g, i, m, s, etc.)' },
+        flags: { type: 'string', description: 'Optional: regex flags — allowed characters: g, i, m, s, u, y (pattern limited to 1 000 characters)' },
       },
       required: ['id', 'pattern', 'message', 'severity', 'category'],
     },
