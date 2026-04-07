@@ -1,3 +1,4 @@
+import { basename } from 'node:path';
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
@@ -436,13 +437,13 @@ async function handleExecuteCustomRules(
   }
   if (!code && path) {
     if (!await fileExists(path)) {
-      throw new McpError(ErrorCode.InvalidParams, `File not found: ${path}`);
+      throw new McpError(ErrorCode.InvalidParams, `File not found: ${basename(path)}`);
     }
     const stats = await getFileStats(path);
     if (!stats) {
       throw new McpError(
         ErrorCode.InvalidParams,
-        `Could not read file stats for: ${path}`
+        `Could not read file stats for: ${basename(path)}`
       );
     }
     if (stats.size > MAX_FILE_SIZE_BYTES) {

@@ -45,7 +45,7 @@ describe('Handlers', () => {
     mockServer = {
       server: {
         setRequestHandler: jest.fn((schema: any, handler: any) => {
-          if (schema?.method === 'tools/call' || typeof handler === 'function') {
+          if (schema?.method === 'tools/call') {
             callToolHandler = handler;
           }
         }),
