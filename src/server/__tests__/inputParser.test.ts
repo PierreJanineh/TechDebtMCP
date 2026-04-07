@@ -347,6 +347,17 @@ describe('inputParser', () => {
     it('throws McpError when code is not a string', () => {
       expect(() => parseExecuteCustomRulesInput({ code: 123 })).toThrow(McpError);
     });
+
+    it('throws McpError when code exceeds 500 000 characters', () => {
+      expect(() =>
+        parseExecuteCustomRulesInput({ code: 'a'.repeat(500_001) }),
+      ).toThrow(McpError);
+    });
+
+    it('accepts code exactly at the 500 000-character limit', () => {
+      const result = parseExecuteCustomRulesInput({ code: 'a'.repeat(500_000) });
+      expect(result.code).toHaveLength(500_000);
+    });
   });
 
   // ---- parseValidateCustomPatternInput ----

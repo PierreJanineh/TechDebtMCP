@@ -6,6 +6,7 @@ import {
 } from '../types/index.js';
 import { LANGUAGE_CONFIGS } from '../config/languages.js';
 import { requireRecord } from './argValidation.js';
+import { MAX_CODE_LENGTH } from '../core/customRulesEngine.js';
 
 /** Typed input for analyze_project tool */
 export interface AnalyzeProjectInput {
@@ -395,9 +396,16 @@ export function parseExecuteCustomRulesInput(
   args: unknown,
 ): ExecuteCustomRulesInput {
   const a = requireRecord(args);
+  const code = optionalString(a, 'code');
+  if (code !== undefined && code.length > MAX_CODE_LENGTH) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      `Inline code exceeds maximum length of ${MAX_CODE_LENGTH} characters`,
+    );
+  }
   return {
     path: optionalString(a, 'path'),
-    code: optionalString(a, 'code'),
+    code,
     language: optionalString(a, 'language'),
   };
 }
