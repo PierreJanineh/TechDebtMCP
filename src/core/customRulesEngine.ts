@@ -27,9 +27,9 @@ export const MAX_PATTERN_LENGTH = 1_000;
 
 /**
  * Allowlisted regex flag characters. Any character outside this set is rejected.
- * See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/flags
+ * Covers all flags supported by Node.js 18+: d, g, i, m, s, u, y.
  */
-const ALLOWED_FLAGS_RE = /^[gimsuy]*$/;
+const ALLOWED_FLAGS_RE = /^[dgimsuy]*$/;
 
 /**
  * Maximum allowed character length for the inline `code` parameter passed to
@@ -141,7 +141,7 @@ export class CustomRulesEngine {
         return [];
       }
       const lines = content.split(/\r?\n/);
-      const sanitizedFlags = (pattern.flags ?? '').replace(/[^gimsuy]/g, '');
+      const sanitizedFlags = (pattern.flags ?? '').replace(/[^dgimsuy]/g, '');
       const safeFlags = sanitizedFlags || 'g';
       const regex = new RegExp(pattern.pattern, safeFlags);
       return lines.flatMap((line, index) =>
@@ -252,7 +252,7 @@ export class CustomRulesEngine {
       } else {
         const flagsValid = pattern.flags === undefined || ALLOWED_FLAGS_RE.test(pattern.flags);
         if (!flagsValid) {
-          errors.push(`Invalid regex flags: "${pattern.flags}". Only the characters g, i, m, s, u, y are allowed`);
+          errors.push(`Invalid regex flags: "${pattern.flags}". Only the characters d, g, i, m, s, u, y are allowed`);
         } else {
           try {
             // Test if regex is valid (flags are already known-good at this point)

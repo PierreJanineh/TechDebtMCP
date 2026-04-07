@@ -278,14 +278,14 @@ console.log("test3");`;
       const pattern: CustomPattern = {
         id: 'good-flags-rule',
         pattern: 'test',
-        flags: 'gimsuy',
+        flags: 'dgimsuy',
         severity: 'low',
         category: 'code-quality',
         message: 'All valid flags',
       };
 
       const validation = CustomRulesEngine.validatePattern(pattern);
-      // All of gimsuy are valid JS regex flags; validation must not reject them as disallowed chars
+      // All of dgimsuy are valid JS regex flags (Node.js 18+); validation must not reject them as disallowed chars
       expect(validation.errors.some(e => e.includes('Invalid regex flags'))).toBe(false);
     });
 
