@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Eliminated analyzer false positives via `ruleExclusions` config mechanism (#78)
 - Replaced non-null assertions with destructured variables in `analysisEngine` (#101)
 - Security: absolute filesystem paths no longer leaked in `scanErrors` returned to MCP clients; `findPackageFiles` now uses `getRelativePath()` for error messages (#129)
+- Security: user-supplied regex patterns in `add_custom_rule` and `validate_custom_pattern` are now validated for length (≤1 000 chars) and flag allowlist (`gimsuy` only); inline `code` for `execute_custom_rules` is capped at 500 000 characters, preventing ReDoS attacks (#127)
 
 ### Added
 - Direct unit tests for `swiftUiChecks` and `swiftUiChecksPhase2` modules
