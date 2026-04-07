@@ -6,6 +6,7 @@
  *   - debt://issues/{+projectPath}   → issues array as JSON
  */
 
+import { resolve, isAbsolute } from 'node:path';
 import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Variables } from '@modelcontextprotocol/sdk/shared/uriTemplate.js';
 import { AnalysisEngine } from '../core/analysisEngine.js';
@@ -40,6 +41,15 @@ function jsonSuccessResponse(uri: URL, data: unknown): ResourceResponse {
 function getStringVariable(variables: Variables, key: string): string | null {
   const value = variables[key];
   return typeof value === 'string' ? value : null;
+}
+
+/**
+ * Validate that a path string is absolute and normalize it with resolve().
+ * Returns the normalized path, or null if the path is not absolute.
+ */
+function validateAbsolutePath(projectPath: string): string | null {
+  if (!isAbsolute(projectPath)) return null;
+  return resolve(projectPath);
 }
 
 /**
@@ -130,9 +140,13 @@ export function attachResources(mcpServer: McpServer): void {
       mimeType: 'application/json',
     },
     async (uri, variables) => {
-      const projectPath = getStringVariable(variables, 'projectPath');
-      if (projectPath === null) {
+      const rawPath = getStringVariable(variables, 'projectPath');
+      if (rawPath === null) {
         return jsonErrorResponse(uri, 'projectPath must be a string');
+      }
+      const projectPath = validateAbsolutePath(rawPath);
+      if (projectPath === null) {
+        return jsonErrorResponse(uri, 'projectPath must be an absolute path');
       }
       return withResourceErrorHandling(uri, () => handleSummaryResource(uri, engine, projectPath));
     }
@@ -147,9 +161,13 @@ export function attachResources(mcpServer: McpServer): void {
       mimeType: 'application/json',
     },
     async (uri, variables) => {
-      const projectPath = getStringVariable(variables, 'projectPath');
-      if (projectPath === null) {
+      const rawPath = getStringVariable(variables, 'projectPath');
+      if (rawPath === null) {
         return jsonErrorResponse(uri, 'projectPath must be a string');
+      }
+      const projectPath = validateAbsolutePath(rawPath);
+      if (projectPath === null) {
+        return jsonErrorResponse(uri, 'projectPath must be an absolute path');
       }
       return withResourceErrorHandling(uri, () => handleIssuesResource(uri, engine, projectPath));
     }

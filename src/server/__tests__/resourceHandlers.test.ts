@@ -343,4 +343,60 @@ describe('error handling', () => {
     expect(parsed.error).toBe('projectPath must be a string');
     expect(mockAnalyzeProject).not.toHaveBeenCalled();
   });
+
+  it('should reject a relative projectPath in summary resource', async () => {
+    const callback = getCallback('Tech Debt Summary');
+    const result = await callback(
+      new URL('debt://summary/relative/path'),
+      { projectPath: 'relative/path' },
+      {}
+    );
+
+    expect(result.contents).toHaveLength(1);
+    const parsed = JSON.parse(result.contents[0].text);
+    expect(parsed.error).toBe('projectPath must be an absolute path');
+    expect(mockAnalyzeProject).not.toHaveBeenCalled();
+  });
+
+  it('should reject a relative projectPath in issues resource', async () => {
+    const callback = getCallback('Tech Debt Issues');
+    const result = await callback(
+      new URL('debt://issues/relative/path'),
+      { projectPath: 'relative/path' },
+      {}
+    );
+
+    expect(result.contents).toHaveLength(1);
+    const parsed = JSON.parse(result.contents[0].text);
+    expect(parsed.error).toBe('projectPath must be an absolute path');
+    expect(mockAnalyzeProject).not.toHaveBeenCalled();
+  });
+
+  it('should normalize a path with .. sequences in summary resource', async () => {
+    const report = makeMockReport();
+    mockAnalyzeProject.mockResolvedValue(report);
+
+    const callback = getCallback('Tech Debt Summary');
+    await callback(
+      new URL('debt://summary//test/project/../project'),
+      { projectPath: '/test/project/../project' },
+      {}
+    );
+
+    expect(mockAnalyzeProject).toHaveBeenCalledWith({ path: '/test/project' });
+  });
+
+  it('should normalize a path with .. sequences in issues resource', async () => {
+    const report = makeMockReport();
+    mockAnalyzeProject.mockResolvedValue(report);
+
+    const callback = getCallback('Tech Debt Issues');
+    await callback(
+      new URL('debt://issues//test/project/../project'),
+      { projectPath: '/test/project/../project' },
+      {}
+    );
+
+    expect(mockAnalyzeProject).toHaveBeenCalledWith({ path: '/test/project' });
+  });
 });
