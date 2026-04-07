@@ -71,7 +71,7 @@ describe('Handlers', () => {
 
     it('rejects a path input whose file size exceeds MAX_FILE_SIZE_BYTES', async () => {
       mockFileExists.mockResolvedValue(true);
-      mockGetFileStats.mockResolvedValue({ size: MAX_FILE_SIZE_BYTES + 1 } as any);
+      mockGetFileStats.mockResolvedValue({ size: MAX_FILE_SIZE_BYTES + 1, isFile: () => true } as any);
 
       await expect(
         callToolHandler({
@@ -83,9 +83,23 @@ describe('Handlers', () => {
       ).rejects.toThrow(McpError);
     });
 
+    it('rejects a path input that is not a regular file', async () => {
+      mockFileExists.mockResolvedValue(true);
+      mockGetFileStats.mockResolvedValue({ size: 0, isFile: () => false } as any);
+
+      await expect(
+        callToolHandler({
+          params: {
+            name: 'execute_custom_rules',
+            arguments: { path: '/some/directory' },
+          },
+        })
+      ).rejects.toThrow(McpError);
+    });
+
     it('accepts a path input whose file size is exactly MAX_FILE_SIZE_BYTES', async () => {
       mockFileExists.mockResolvedValue(true);
-      mockGetFileStats.mockResolvedValue({ size: MAX_FILE_SIZE_BYTES } as any);
+      mockGetFileStats.mockResolvedValue({ size: MAX_FILE_SIZE_BYTES, isFile: () => true } as any);
       mockReadFile.mockResolvedValue('const x = 1;');
 
       await expect(

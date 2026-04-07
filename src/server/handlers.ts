@@ -446,6 +446,12 @@ async function handleExecuteCustomRules(
         `Could not read file stats for: ${basename(path)}`
       );
     }
+    if (!stats.isFile()) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        `Path is not a regular file: ${basename(path)}`
+      );
+    }
     if (stats.size > MAX_FILE_SIZE_BYTES) {
       throw new McpError(
         ErrorCode.InvalidParams,
