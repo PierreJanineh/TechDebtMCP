@@ -132,7 +132,8 @@ export class CustomRulesEngine {
       const stripped = pattern.flags !== undefined
         ? pattern.flags.replace(/[^gimsuy]/g, '')
         : 'g';
-      const safeFlags = stripped.length > 0 ? stripped : 'g';
+      const deduped = Array.from(new Set(stripped.split(''))).join('');
+      const safeFlags = deduped.length > 0 ? deduped : 'g';
       const regex = new RegExp(pattern.pattern, safeFlags);
       return lines.flatMap((line, index) =>
         this.matchLineIssues(filePath, line, index + 1, regex, pattern)
