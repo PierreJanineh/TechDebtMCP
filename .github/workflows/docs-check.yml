@@ -30,7 +30,7 @@ jobs:
           SRC_CHANGED=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" \
             | grep -E '^src/' \
             | grep -Ev '__tests__/' \
-            | head -1)
+            | head -1 || true)
 
           if [ -n "$SRC_CHANGED" ]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
