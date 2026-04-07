@@ -286,7 +286,8 @@ console.log("test3");`;
 
       const validation = CustomRulesEngine.validatePattern(pattern);
       // This verifies the flags contain only valid JavaScript RegExp flag characters.
-      expect(validation.errors.some(e => e.includes('Invalid regex flags'))).toBe(false);
+      expect(validation.valid).toBe(true);
+      expect(validation.errors).toHaveLength(0);
     });
 
     it('strips disallowed flag characters at execution time for rules bypassing validation', () => {

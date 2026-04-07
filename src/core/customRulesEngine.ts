@@ -246,11 +246,12 @@ export class CustomRulesEngine {
       if (pattern.pattern.length > MAX_PATTERN_LENGTH) {
         errors.push(`Pattern exceeds maximum length of ${MAX_PATTERN_LENGTH} characters`);
       } else {
-        // Compile with the same normalized flags used at execution time.
+        // Compile with the same normalized (stripped + deduped) flags used at execution time.
         const stripped = pattern.flags !== undefined
           ? pattern.flags.replace(/[^gimsuy]/g, '')
           : 'g';
-        const normalizedFlags = stripped.length > 0 ? stripped : 'g';
+        const deduped = Array.from(new Set(stripped.split(''))).join('');
+        const normalizedFlags = deduped.length > 0 ? deduped : 'g';
         try {
           new RegExp(pattern.pattern, normalizedFlags);
         } catch (error) {

@@ -254,7 +254,7 @@ Add a custom pattern-based tech debt rule.
 - `category` (required): One of the debt categories
 - `suggestion` (optional): How to fix the issue
 - `languages` (optional): Apply only to specific languages
-- `flags` (optional): Regex flags for MCP tools (`add_custom_rule`, `validate_custom_pattern`) — only `g`, `i`, `m`, `s`, `u`, and `y` are accepted; any other character causes validation to reject the rule outright
+- `flags` (optional): Regex flags for `add_custom_rule` — only `g`, `i`, `m`, `s`, `u`, and `y` are accepted; any other character causes validation to reject the rule outright
 
   > **Note:** At execution time, unsupported flag characters are still stripped as a defense-in-depth safeguard if a rule bypasses normal validation, and duplicate characters are de-duplicated to prevent `RegExp` construction errors. If stripping and deduplication leave no valid flags, execution defaults to `g`.
 
