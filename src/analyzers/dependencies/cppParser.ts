@@ -123,25 +123,20 @@ export class CppParser extends BaseDependencyParser {
   }
 
   private parseVcpkgJson(content: string, filePath: string): ParsedDependency[] {
-    const deps: ParsedDependency[] = [];
-
     try {
-      const json = JSON.parse(content) as { dependencies?: string[] };
-
-      if (json.dependencies && Array.isArray(json.dependencies)) {
-        for (const dep of json.dependencies) {
-          deps.push({
-            name: dep,
-            version: '*',
-            isDev: false,
-            source: filePath,
-          });
-        }
-      }
+      const json = JSON.parse(content) as { dependencies?: unknown };
+      if (!Array.isArray(json.dependencies)) return [];
+      return json.dependencies.map((dep: string) => this.makeVcpkgDep(dep, filePath));
     } catch {
-      // Ignore parse errors for now
+      // Ignore parse errors
+      return [];
     }
+  }
 
-    return deps;
+  /**
+   * Build a ParsedDependency entry for a vcpkg dependency name.
+   */
+  private makeVcpkgDep(name: string, filePath: string): ParsedDependency {
+    return { name, version: '*', isDev: false, source: filePath };
   }
 }
