@@ -166,7 +166,7 @@ describe('handleCheckDependencies', () => {
   it('should use relative paths in filesystem scan error messages', async () => {
     mockFileExists.mockResolvedValue(true);
     mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
-    mockReaddir.mockRejectedValueOnce(new Error('EACCES: permission denied'));
+    mockReaddir.mockRejectedValueOnce(new Error("EACCES: permission denied, scandir '/project'"));
     mockGetRelativePath.mockImplementation((_base, full) => full.replace('/project', '.'));
 
     const result = await handleCheckDependencies({ path: '/project' });
@@ -296,7 +296,7 @@ describe('handleGetVulnerabilityReport', () => {
   it('should use relative paths in filesystem scan error messages', async () => {
     mockFileExists.mockResolvedValue(true);
     mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
-    mockReaddir.mockRejectedValueOnce(new Error('EACCES: permission denied'));
+    mockReaddir.mockRejectedValueOnce(new Error("EACCES: permission denied, scandir '/project'"));
     mockGetRelativePath.mockImplementation((_base, full) => full.replace('/project', '.'));
 
     const result = await handleGetVulnerabilityReport({ path: '/project' });

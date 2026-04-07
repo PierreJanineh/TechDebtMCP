@@ -194,7 +194,10 @@ async function findPackageFiles(
     }
   } catch (error) {
     const relDir = getRelativePath(projectPath, dir);
-    scanErrors.push(`${relDir}: ${error instanceof Error ? error.message : String(error)}`);
+    const displayDir = relDir === '' ? '.' : relDir;
+    const rawMessage = error instanceof Error ? error.message : String(error);
+    const safeMessage = rawMessage.split(projectPath).join(displayDir);
+    scanErrors.push(`${displayDir}: ${safeMessage}`);
   }
 }
 
