@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Eliminated analyzer false positives via `ruleExclusions` config mechanism (#78)
 - Replaced non-null assertions with destructured variables in `analysisEngine` (#101)
 - Security: absolute filesystem paths no longer leaked in `scanErrors` returned to MCP clients; `findPackageFiles` now uses `getRelativePath()` for error messages (#129)
+- Security: `projectPath` extracted from URI template variables in `debt://summary` and `debt://issues` resource handlers is now validated with `isAbsolute()` and normalized with `resolve()`, preventing path traversal attacks (#126)
 
 ### Added
 - Direct unit tests for `swiftUiChecks` and `swiftUiChecksPhase2` modules
