@@ -33,69 +33,33 @@ export class NpmParser extends BaseDependencyParser {
       throw new Error(`NpmParser cannot handle file: ${filePath}`);
     }
 
-    const dependencies: ParsedDependency[] = [];
-
     try {
       const packageJson = JSON.parse(content) as Record<string, unknown>;
 
-      // Parse production dependencies
-      if (packageJson.dependencies && typeof packageJson.dependencies === 'object') {
-        const deps = packageJson.dependencies as Record<string, string>;
-        for (const [name, version] of Object.entries(deps)) {
-          dependencies.push({
-            name,
-            version,
-            isDev: false,
-            source: filePath,
-          });
-        }
-      }
-
-      // Parse development dependencies
-      if (packageJson.devDependencies && typeof packageJson.devDependencies === 'object') {
-        const devDeps = packageJson.devDependencies as Record<string, string>;
-        for (const [name, version] of Object.entries(devDeps)) {
-          dependencies.push({
-            name,
-            version,
-            isDev: true,
-            source: filePath,
-          });
-        }
-      }
-
-      // Parse peer dependencies (optional, not marked as dev)
-      if (packageJson.peerDependencies && typeof packageJson.peerDependencies === 'object') {
-        const peerDeps = packageJson.peerDependencies as Record<string, string>;
-        for (const [name, version] of Object.entries(peerDeps)) {
-          dependencies.push({
-            name,
-            version,
-            isDev: false,
-            source: filePath,
-          });
-        }
-      }
-
-      // Parse optional dependencies (optional, not marked as dev)
-      if (packageJson.optionalDependencies && typeof packageJson.optionalDependencies === 'object') {
-        const optionalDeps = packageJson.optionalDependencies as Record<string, string>;
-        for (const [name, version] of Object.entries(optionalDeps)) {
-          dependencies.push({
-            name,
-            version,
-            isDev: false,
-            source: filePath,
-          });
-        }
-      }
-
-      return dependencies;
+      return [
+        ...this.collectJsonDeps(packageJson.dependencies, false, filePath),
+        ...this.collectJsonDeps(packageJson.devDependencies, true, filePath),
+        ...this.collectJsonDeps(packageJson.peerDependencies, false, filePath),
+        ...this.collectJsonDeps(packageJson.optionalDependencies, false, filePath),
+      ];
     } catch (error) {
       if (error instanceof SyntaxError) {
         throw new Error(`Invalid JSON in ${filePath}: ${error.message}`);
       }
       throw error;
     }
+  }
+
+  /**
+   * Collect dependencies from a JSON object of name→version pairs
+   */
+  private collectJsonDeps(section: unknown, isDev: boolean, filePath: string): ParsedDependency[] {
+    if (!section || typeof section !== 'object') return [];
+
+    const deps: ParsedDependency[] = [];
+    for (const [name, version] of Object.entries(section as Record<string, string>)) {
+      deps.push({ name, version, isDev, source: filePath });
+    }
+    return deps;
   }
 }

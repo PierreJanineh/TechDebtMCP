@@ -34,65 +34,34 @@ export class CargoParser extends BaseDependencyParser {
       throw new Error(`CargoParser cannot handle file: ${filePath}`);
     }
 
-    const dependencies: ParsedDependency[] = [];
-
     try {
       const cargoToml = toml.parse(content) as Record<string, unknown>;
 
-      // Parse production dependencies
-      if (cargoToml.dependencies && typeof cargoToml.dependencies === 'object') {
-        const deps = cargoToml.dependencies as Record<string, unknown>;
-        for (const [name, spec] of Object.entries(deps)) {
-          const version = this.extractVersion(spec);
-          if (version) {
-            dependencies.push({
-              name,
-              version,
-              isDev: false,
-              source: filePath,
-            });
-          }
-        }
-      }
-
-      // Parse dev dependencies
-      if (cargoToml['dev-dependencies'] && typeof cargoToml['dev-dependencies'] === 'object') {
-        const devDeps = cargoToml['dev-dependencies'] as Record<string, unknown>;
-        for (const [name, spec] of Object.entries(devDeps)) {
-          const version = this.extractVersion(spec);
-          if (version) {
-            dependencies.push({
-              name,
-              version,
-              isDev: true,
-              source: filePath,
-            });
-          }
-        }
-      }
-
-      // Parse build dependencies (treated as dev deps)
-      if (cargoToml['build-dependencies'] && typeof cargoToml['build-dependencies'] === 'object') {
-        const buildDeps = cargoToml['build-dependencies'] as Record<string, unknown>;
-        for (const [name, spec] of Object.entries(buildDeps)) {
-          const version = this.extractVersion(spec);
-          if (version) {
-            dependencies.push({
-              name,
-              version,
-              isDev: true,
-              source: filePath,
-            });
-          }
-        }
-      }
-
-      return dependencies;
+      return [
+        ...this.collectCargoSection(cargoToml.dependencies, false, filePath),
+        ...this.collectCargoSection(cargoToml['dev-dependencies'], true, filePath),
+        ...this.collectCargoSection(cargoToml['build-dependencies'], true, filePath),
+      ];
     } catch (error) {
       throw new Error(
         `Failed to parse Cargo.toml: ${error instanceof Error ? error.message : String(error)}`
       );
     }
+  }
+
+  /**
+   * Collect dependencies from a Cargo.toml dependency section
+   */
+  private collectCargoSection(section: unknown, isDev: boolean, filePath: string): ParsedDependency[] {
+    if (!section || typeof section !== 'object') return [];
+
+    const deps: ParsedDependency[] = [];
+    for (const [name, spec] of Object.entries(section as Record<string, unknown>)) {
+      const version = this.extractVersion(spec);
+      if (!version) continue;
+      deps.push({ name, version, isDev, source: filePath });
+    }
+    return deps;
   }
 
   /**

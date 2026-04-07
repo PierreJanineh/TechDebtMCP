@@ -41,48 +41,24 @@ export class NugetParser extends BaseDependencyParser {
   }
 
   private parsePackagesConfig(content: string, filePath: string): ParsedDependency[] {
-    const deps: ParsedDependency[] = [];
-
-    // Match <package id="..." version="..." />
-    const regex = /<package\s+id="([^"]+)"\s+version="([^"]+)"/g;
-    let match;
-
-    while ((match = regex.exec(content)) !== null) {
-      const name = match[1] || '';
-      const version = match[2] || '';
-
-      if (name) {
-        deps.push({
-          name,
-          version,
-          isDev: false,
-          source: filePath,
-        });
-      }
-    }
-
-    return deps;
+    return this.collectXmlDeps(/<package\s+id="([^"]+)"\s+version="([^"]+)"/g, content, filePath);
   }
 
   private parseCsproj(content: string, filePath: string): ParsedDependency[] {
-    const deps: ParsedDependency[] = [];
+    return this.collectXmlDeps(/<PackageReference\s+Include="([^"]+)"\s+Version="([^"]+)"/g, content, filePath);
+  }
 
-    // Match <PackageReference Include="..." Version="..." />
-    const regex = /<PackageReference\s+Include="([^"]+)"\s+Version="([^"]+)"/g;
+  /**
+   * Collect dependencies from XML content using a regex with name (group 1) and version (group 2)
+   */
+  private collectXmlDeps(regex: RegExp, content: string, filePath: string): ParsedDependency[] {
+    const deps: ParsedDependency[] = [];
     let match;
 
     while ((match = regex.exec(content)) !== null) {
       const name = match[1] || '';
-      const version = match[2] || '';
-
-      if (name) {
-        deps.push({
-          name,
-          version,
-          isDev: false,
-          source: filePath,
-        });
-      }
+      if (!name) continue;
+      deps.push({ name, version: match[2] || '', isDev: false, source: filePath });
     }
 
     return deps;

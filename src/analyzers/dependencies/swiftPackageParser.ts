@@ -70,21 +70,31 @@ export class SwiftPackageParser extends BaseDependencyParser {
   private parseCartfile(content: string, filePath: string): ParsedDependency[] {
     const deps: ParsedDependency[] = [];
     const lines = content.split('\n');
+
     for (const line of lines) {
       const trimmed = line.trim();
       if (!trimmed || trimmed.startsWith('#')) continue;
+
       const match = /^(?:github|git|binary)\s+["']([^"']+)["']/.exec(trimmed);
-      if (match) {
-        let name = match[1] || '';
-        if (name.includes('/') && !name.includes('http')) {
-          // GitHub style - keep user/repo
-          name = name.split('/').pop() || name;
-        } else if (name.includes('http')) {
-          name = this.extractRepoNameFromUrl(name);
-        }
-        if (name) deps.push({ name, version: '*', isDev: false, source: filePath });
-      }
+      if (!match) continue;
+
+      const name = this.extractCartfileName(match[1] || '');
+      if (name) deps.push({ name, version: '*', isDev: false, source: filePath });
     }
+
     return deps;
+  }
+
+  /**
+   * Extract a dependency name from a Cartfile source reference
+   */
+  private extractCartfileName(raw: string): string {
+    if (raw.includes('/') && !raw.includes('http')) {
+      return raw.split('/').pop() || raw;
+    }
+    if (raw.includes('http')) {
+      return this.extractRepoNameFromUrl(raw);
+    }
+    return raw;
   }
 }

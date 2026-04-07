@@ -33,43 +33,31 @@ export class ComposerParser extends BaseDependencyParser {
       throw new Error(`ComposerParser cannot handle file: ${filePath}`);
     }
 
-    const dependencies: ParsedDependency[] = [];
-
     try {
       const composerJson = JSON.parse(content) as Record<string, unknown>;
 
-      // Parse production dependencies
-      if (composerJson.require && typeof composerJson.require === 'object') {
-        const deps = composerJson.require as Record<string, string>;
-        for (const [name, version] of Object.entries(deps)) {
-          dependencies.push({
-            name,
-            version,
-            isDev: false,
-            source: filePath,
-          });
-        }
-      }
-
-      // Parse development dependencies
-      if (composerJson['require-dev'] && typeof composerJson['require-dev'] === 'object') {
-        const devDeps = composerJson['require-dev'] as Record<string, string>;
-        for (const [name, version] of Object.entries(devDeps)) {
-          dependencies.push({
-            name,
-            version,
-            isDev: true,
-            source: filePath,
-          });
-        }
-      }
-
-      return dependencies;
+      return [
+        ...this.collectJsonDeps(composerJson.require, false, filePath),
+        ...this.collectJsonDeps(composerJson['require-dev'], true, filePath),
+      ];
     } catch (error) {
       if (error instanceof SyntaxError) {
         throw new Error(`Invalid JSON in ${filePath}: ${error.message}`);
       }
       throw error;
     }
+  }
+
+  /**
+   * Collect dependencies from a JSON object of name→version pairs
+   */
+  private collectJsonDeps(section: unknown, isDev: boolean, filePath: string): ParsedDependency[] {
+    if (!section || typeof section !== 'object') return [];
+
+    const deps: ParsedDependency[] = [];
+    for (const [name, version] of Object.entries(section as Record<string, string>)) {
+      deps.push({ name, version, isDev, source: filePath });
+    }
+    return deps;
   }
 }
