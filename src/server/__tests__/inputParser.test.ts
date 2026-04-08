@@ -464,6 +464,17 @@ describe('inputParser', () => {
       expect(result.path).toBe(path.resolve(raw));
     });
 
+    it('returns undefined for empty string in optional path field', () => {
+      const result = parseExecuteCustomRulesInput({ path: '' });
+      expect(result.path).toBeUndefined();
+    });
+
+    it('treats empty string path identically to omitting the field', () => {
+      const withEmpty = parseExecuteCustomRulesInput({ path: '', code: 'const x = 1;' });
+      const withAbsent = parseExecuteCustomRulesInput({ code: 'const x = 1;' });
+      expect(withEmpty.path).toBe(withAbsent.path);
+    });
+
     it('error message mentions "must be an absolute path"', () => {
       expect(() =>
         parseAnalyzeProjectInput({ path: 'relative' }),

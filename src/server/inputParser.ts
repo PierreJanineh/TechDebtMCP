@@ -124,14 +124,14 @@ export function requireAbsolutePath(args: Record<string, unknown>, key: string):
 
 /**
  * Optionally validate and normalize a path string.
- * Returns undefined if absent; throws McpError if present but not an absolute path.
+ * Returns undefined if absent or empty string; throws McpError if present but not an absolute path.
  */
 function optionalAbsolutePath(
   args: Record<string, unknown>,
   key: string,
 ): string | undefined {
   const value = args[key];
-  if (value === undefined) return undefined;
+  if (value === undefined || value === '') return undefined;
   if (typeof value !== 'string') {
     throw new McpError(ErrorCode.InvalidParams, `${key} must be a string`);
   }
