@@ -333,7 +333,11 @@ console.log("test3");`;
       expect(validation.errors.some(e => e.includes('mutually exclusive'))).toBe(true);
     });
 
-    it('strips disallowed flag characters at execution time but preserves v flag', () => {
+    // The `v` flag is only available on Node.js 20+ (V8 11.0)
+    const nodeVersion = parseInt(process.versions.node.split('.')[0], 10);
+    const itIfNode20 = nodeVersion >= 20 ? it : it.skip;
+
+    itIfNode20('strips disallowed flag characters at execution time but preserves v flag', () => {
       const engine = new CustomRulesEngine();
       const pattern: CustomPattern = {
         id: 'v-flag-exec',
