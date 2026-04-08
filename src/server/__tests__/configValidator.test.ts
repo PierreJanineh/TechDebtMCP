@@ -43,11 +43,15 @@ describe('handleValidateConfig', () => {
   });
 
   it('should throw InvalidParams when path is missing', async () => {
-    await expect(handleValidateConfig({})).rejects.toThrow('Missing or invalid required parameter: path');
+    await expect(handleValidateConfig({})).rejects.toThrow('Missing or invalid parameter: path');
   });
 
   it('should throw InvalidParams when path is not a string', async () => {
-    await expect(handleValidateConfig({ path: 123 })).rejects.toThrow('Missing or invalid required parameter: path');
+    await expect(handleValidateConfig({ path: 123 })).rejects.toThrow('Missing or invalid parameter: path');
+  });
+
+  it('should throw InvalidParams when path is relative', async () => {
+    await expect(handleValidateConfig({ path: 'relative/path' })).rejects.toThrow('path must be an absolute path');
   });
 
   it('should throw when path does not exist', async () => {

@@ -9,6 +9,7 @@ import { readFile as fsReadFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { CustomPattern } from '../types/index.js';
 import { isRecord, requireRecord } from './argValidation.js';
+import { requireAbsolutePath } from './inputParser.js';
 
 /** Type guard: checks that a value satisfies the minimum required shape of a CustomPattern. */
 function isCustomPatternShape(value: unknown): value is CustomPattern {
@@ -138,10 +139,7 @@ function validateCustomPatternsField(value: unknown, errors: string[]): void {
  */
 export async function handleValidateConfig(args: unknown): Promise<{ content: Array<{ type: string; text: string }> }> {
   const a = requireRecord(args);
-  if (typeof a.path !== 'string') {
-    throw new McpError(ErrorCode.InvalidParams, 'Missing or invalid required parameter: path (must be a string)');
-  }
-  const inputPath = a.path;
+  const inputPath = requireAbsolutePath(a, 'path');
   if (!(await fileExists(inputPath))) {
     throw new McpError(ErrorCode.InvalidParams, `Path not found: ${inputPath}`);
   }
