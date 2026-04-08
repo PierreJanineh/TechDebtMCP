@@ -112,7 +112,7 @@ When touching files, check for:
 
 When reviewing PRs that touch MCP tool handlers or file system operations, check for:
 
-- **Path validation:** Verify path arguments use `requireAbsolutePath()` or `optionalAbsolutePath()` from `inputParser.ts` in **all** handler files (`handlers.ts`, `configValidator.ts`, `dependencyHandlers.ts`, and any future domain handler). Flag any use of `requireString` for path parameters, or direct use of `args.path` in `fs` calls.
+- **Path validation:** Verify path arguments use `requireAbsolutePath()` or `optionalAbsolutePath()` from `inputParser.ts` in **all** handler files (`handlers.ts`, `configValidator.ts`, `dependencyHandlers.ts`, and any future domain handler). `optionalAbsolutePath` treats empty strings as `undefined` — flag any manual empty-string checks on optional path parameters. Flag any use of `requireString` for path parameters, or direct use of `args.path` in `fs` calls.
 - **Regex safety:** Flag `new RegExp()` with user-supplied patterns that lack length limits or flag allowlisting. Verify security constants (`MAX_PATTERN_LENGTH`, `MAX_CODE_LENGTH`, `MAX_FILE_SIZE_BYTES` from `customRulesEngine.ts`) are imported — flag hardcoded values.
 - **String interpolation in RegExp:** Verify captured strings are escaped before interpolation into `new RegExp()`.
 - **Error message leakage:** Verify error messages use `getRelativePath()` — flag any absolute filesystem paths in client-facing responses.
