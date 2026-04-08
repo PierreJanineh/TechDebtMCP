@@ -4,6 +4,7 @@ import { McpError } from '@modelcontextprotocol/sdk/types.js';
 import { attachHandlers } from '../handlers.js';
 import { getFileStats, readFile } from '../../utils/fileUtils.js';
 import { MAX_FILE_SIZE_BYTES } from '../../core/customRulesEngine.js';
+import { AnalysisEngine } from '../../core/analysisEngine.js';
 
 // Mock the dependencies
 jest.mock('../../core/analysisEngine.js');
@@ -115,6 +116,100 @@ describe('Handlers', () => {
           },
         })
       ).rejects.toThrow(McpError);
+    });
+  });
+
+  describe('path sanitization — no absolute paths in output', () => {
+    const makeReport = () => ({
+      project: { analyzedFiles: 5, languages: ['typescript'] },
+      summary: {
+        healthScore: 80,
+        totalIssues: 3,
+        debtScore: 20,
+        bySeverity: { critical: 0, high: 1, medium: 1, low: 1 },
+      },
+      sqale: {
+        rating: 'A',
+        formattedTime: '30m',
+        totalRemediationTime: 30,
+        bySeverity: { critical: 0, high: 10, medium: 10, low: 10 },
+        byCategory: {
+          'code-quality': 10,
+          security: 5,
+          maintainability: 5,
+          testing: 5,
+          documentation: 2,
+          architecture: 1,
+          performance: 1,
+          dependency: 1,
+        },
+      },
+      issues: [],
+      recommendations: [],
+    });
+
+    beforeEach(() => {
+      attachHandlers(mockServer);
+      const calls = (mockServer.server.setRequestHandler as jest.MockedFunction<any>).mock.calls;
+      callToolHandler = calls[calls.length - 1][1];
+
+      jest.spyOn(AnalysisEngine.prototype, 'analyzeProject').mockResolvedValue(makeReport() as any);
+    });
+
+    it('get_debt_summary does not leak absolute path in output', async () => {
+      const absolutePath = '/home/user/projects/myapp';
+
+      const result = await callToolHandler({
+        params: {
+          name: 'get_debt_summary',
+          arguments: { path: absolutePath },
+        },
+      });
+
+      const text: string = result.content[0].text;
+      expect(text).not.toContain(absolutePath);
+      expect(text).toContain('myapp');
+    });
+
+    it('get_sqale_metrics does not leak absolute path in output', async () => {
+      const absolutePath = '/home/user/projects/myapp';
+
+      const result = await callToolHandler({
+        params: {
+          name: 'get_sqale_metrics',
+          arguments: { path: absolutePath },
+        },
+      });
+
+      const text: string = result.content[0].text;
+      expect(text).not.toContain(absolutePath);
+      expect(text).toContain('myapp');
+    });
+
+    it('get_debt_summary uses basename of path as display name', async () => {
+      const result = await callToolHandler({
+        params: {
+          name: 'get_debt_summary',
+          arguments: { path: '/a/b/c/project-name' },
+        },
+      });
+
+      const text: string = result.content[0].text;
+      expect(text).toContain('project-name');
+      expect(text).not.toContain('/a/b/c/project-name');
+    });
+
+    it('get_sqale_metrics uses basename of path as display name', async () => {
+      const result = await callToolHandler({
+        params: {
+          name: 'get_sqale_metrics',
+          arguments: { path: '/a/b/c/project-name' },
+        },
+      });
+
+      const text: string = result.content[0].text;
+      expect(text).toContain('project-name');
+      expect(text).not.toContain('/a/b/c/project-name');
     });
   });
 
