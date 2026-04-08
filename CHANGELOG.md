@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CONTRIBUTING.md** — Updated metrics to March 2026 scan, marked resolved refactoring targets
 - **GITHUB_PACKAGES.md** — Clarified npm as primary distribution, removed incorrect `require()` API example
 
+- Reduced nesting in `customRulesEngine.validatePattern` to ≤4 levels via extracted `validatePatternRegex` helper (#146)
 - Reduced nesting in core engines (`analysisEngine`, `customRulesEngine`) to ≤4 levels (#118)
 - Reduced nesting in server modules to ≤4 levels (#119)
 - Reduced nesting depth in 10 dependency parsers (#88)

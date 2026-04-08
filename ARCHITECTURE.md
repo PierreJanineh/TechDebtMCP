@@ -37,7 +37,7 @@ TechDebtMCP/
 │   │   ├── setup.ts             # McpServer instantiation and transport wiring
 │   │   ├── handlers.ts          # Core MCP tool request handlers & dispatch
 │   │   ├── tools.ts             # Centralized TOOL_DEFINITIONS array
-│   │   ├── inputParser.ts       # Tool argument validation (requireString, optionalString, etc.)
+│   │   ├── inputParser.ts       # Tool argument validation (requireString, optionalString, optionalAbsolutePath, etc.)
 │   │   ├── argValidation.ts     # Argument coercion and constraint checks
 │   │   ├── formatters.ts        # Output formatting helpers
 │   │   ├── configValidator.ts   # .techdebtrc.json validation handler

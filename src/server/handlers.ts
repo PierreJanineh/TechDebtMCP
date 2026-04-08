@@ -7,17 +7,21 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { AnalysisEngine } from '../core/analysisEngine.js';
-import { CustomRulesEngine, MAX_FILE_SIZE_BYTES } from '../core/customRulesEngine.js';
+import { CustomRulesEngine } from '../core/customRulesEngine.js';
 import { analyzeFile } from '../analyzers/index.js';
 import { getSupportedLanguages, LANGUAGE_CONFIGS } from '../config/languages.js';
-import { readFile, getFileStats } from '../utils/fileUtils.js';
+import { getFileStats } from '../utils/fileUtils.js';
 import { formatReport, formatMinutes } from './formatters.js';
 import { TOOL_DEFINITIONS } from './tools.js';
 import { handleValidateConfig } from './configValidator.js';
 import { handleCheckDependencies, handleGetVulnerabilityReport } from './dependencyHandlers.js';
 import {
-  CustomPattern,
-} from '../types/index.js';
+  handleAddCustomRule,
+  handleRemoveCustomRule,
+  handleListCustomRules,
+  handleExecuteCustomRules,
+  handleValidateCustomPattern,
+} from './customRulesHandlers.js';
 import {
   parseAnalyzeProjectInput,
   parseAnalyzeFileInput,
@@ -26,10 +30,6 @@ import {
   parseGetRecommendationsInput,
   parseGetIssuesBySeverityInput,
   parseGetIssuesByCategoryInput,
-  parseAddCustomRuleInput,
-  parseRemoveCustomRuleInput,
-  parseExecuteCustomRulesInput,
-  parseValidateCustomPatternInput,
 } from './inputParser.js';
 
 /** MCP tool response shape */
