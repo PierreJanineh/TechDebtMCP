@@ -42,6 +42,7 @@ TechDebtMCP/
 │   │   ├── formatters.ts        # Output formatting helpers
 │   │   ├── configValidator.ts   # .techdebtrc.json validation handler
 │   │   ├── dependencyHandlers.ts # Dependency analysis & vulnerability report handlers
+│   │   ├── customRulesHandlers.ts # Custom rules management handlers (add, remove, list, execute, validate)
 │   │   └── resourceHandlers.ts  # ✅ MCP resource templates (Phase 6 - COMPLETE)
 │   ├── types/
 │   │   └── index.ts             # All TypeScript interfaces (single source of truth)
