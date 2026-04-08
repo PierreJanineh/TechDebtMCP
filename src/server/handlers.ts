@@ -143,11 +143,12 @@ async function handleGetDebtSummary(
   args: unknown,
 ): Promise<ToolResponse> {
   const { path } = parseGetDebtSummaryInput(args);
+  const displayPath = basename(path) || '(root path)';
   const report = await engine.analyzeProject({ path, maxFiles: 100 });
 
   const summary = `# Tech Debt Summary
 
-**Project:** ${path}
+**Project:** ${displayPath}
 **Analyzed Files:** ${report.project.analyzedFiles}
 **Languages Detected:** ${report.project.languages.join(', ')}
 
@@ -171,6 +172,7 @@ async function handleGetSqaleMetrics(
   args: unknown,
 ): Promise<ToolResponse> {
   const { path, developmentTime: developmentTimeHours } = parseGetSqaleMetricsInput(args);
+  const displayPath = basename(path) || '(root path)';
   const report = await engine.analyzeProject({ path, maxFiles: 100 });
   const sqale = report.sqale;
 
@@ -191,7 +193,7 @@ async function handleGetSqaleMetrics(
 
   const sqaleReport = `# SQALE Technical Debt Metrics
 
-**Project:** ${path}
+**Project:** ${displayPath}
 
 ## Overall Rating: ${sqale.rating} ${ratingStars[sqale.rating]}
 
