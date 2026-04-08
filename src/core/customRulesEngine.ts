@@ -144,6 +144,17 @@ export class CustomRulesEngine {
       }
       const lines = content.split(/\r?\n/);
       const sanitizedFlags = (pattern.flags ?? '').replace(/[^dgimsuvy]/g, '');
+
+      if (sanitizedFlags.includes('u') && sanitizedFlags.includes('v')) {
+        if (this.onRuleError) {
+          this.onRuleError(
+            pattern.id,
+            new Error('Pattern flags cannot include both "u" and "v"')
+          );
+        }
+        return [];
+      }
+
       const safeFlags = sanitizedFlags || 'g';
       const regex = new RegExp(pattern.pattern, safeFlags);
       return lines.flatMap((line, index) =>

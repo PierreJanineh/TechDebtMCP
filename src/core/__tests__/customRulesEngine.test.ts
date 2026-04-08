@@ -289,7 +289,11 @@ console.log("test3");`;
       expect(validation.errors.some(e => e.includes('Invalid regex flags'))).toBe(false);
     });
 
-    it('accepts the v (unicodeSets) flag introduced in Node.js 20', () => {
+    // The `v` flag is only available on Node.js 20+ (V8 11.0); on Node 18 the regex compile will fail
+    const nodeVersion = parseInt(process.versions.node.split('.')[0], 10);
+    const itIfNode20 = nodeVersion >= 20 ? it : it.skip;
+
+    itIfNode20('accepts the v (unicodeSets) flag introduced in Node.js 20', () => {
       const pattern: CustomPattern = {
         id: 'v-flag-rule',
         pattern: '[\\p{Script=Greek}&&\\p{Letter}]',
@@ -300,7 +304,8 @@ console.log("test3");`;
       };
 
       const validation = CustomRulesEngine.validatePattern(pattern);
-      expect(validation.errors.some(e => e.includes('Invalid regex flags'))).toBe(false);
+      expect(validation.valid).toBe(true);
+      expect(validation.errors).toHaveLength(0);
     });
 
     it('rejects combined u and v flags (mutually exclusive)', () => {
@@ -333,15 +338,14 @@ console.log("test3");`;
       expect(validation.errors.some(e => e.includes('mutually exclusive'))).toBe(true);
     });
 
-    // The `v` flag is only available on Node.js 20+ (V8 11.0)
-    const nodeVersion = parseInt(process.versions.node.split('.')[0], 10);
-    const itIfNode20 = nodeVersion >= 20 ? it : it.skip;
-
     itIfNode20('strips disallowed flag characters at execution time but preserves v flag', () => {
       const engine = new CustomRulesEngine();
+      // Use a v-flag-only pattern (set intersection) that only works when v is active.
+      // With only `g`, this pattern would throw; the engine catching it would return [].
+      // A non-empty result proves v was preserved in the effective flags.
       const pattern: CustomPattern = {
         id: 'v-flag-exec',
-        pattern: '[abc]',
+        pattern: '[\\p{ASCII}&&\\p{Letter}]',
         flags: 'gv',
         severity: 'low',
         category: 'code-quality',
@@ -349,8 +353,28 @@ console.log("test3");`;
       };
 
       engine.addRule(pattern);
-      const issues = engine.executeRules('test.ts', 'abc def');
+      const issues = engine.executeRules('test.ts', 'abc 123');
       expect(issues.length).toBeGreaterThan(0);
+    });
+
+    it('rejects combined u and v flags at execution time even when bypassing validatePattern', () => {
+      const errors: Array<{ id: string; error: Error }> = [];
+      const engine = new CustomRulesEngine([], (id, error) => errors.push({ id, error }));
+      const pattern: CustomPattern = {
+        id: 'uv-exec-rule',
+        pattern: 'test',
+        flags: 'uv',  // both u and v — mutual exclusion enforced at execution time
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Both u and v flags at exec',
+      };
+
+      engine.addRule(pattern);
+      const issues = engine.executeRules('test.ts', 'test content');
+      expect(issues).toHaveLength(0);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].id).toBe('uv-exec-rule');
+      expect(errors[0].error.message).toContain('"u" and "v"');
     });
 
     it('strips disallowed flag characters at execution time for rules bypassing validation', () => {
