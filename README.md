@@ -516,7 +516,7 @@ publisher
 
 ## Code Quality
 
-Tech Debt MCP practices what it preaches — built with AI-assisted vibe coding, it maintains an A rating by regularly scanning itself.
+Tech Debt MCP practices what it preaches — built with AI-assisted vibe coding, it maintains an A rating by regularly scanning itself. Internal refactors (e.g., nesting reduction in `customRulesEngine.validatePattern` via extracted helper — #146) are driven by self-scan findings.
 
 ### Self-Scan Results (March 2026)
 
