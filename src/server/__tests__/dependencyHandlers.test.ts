@@ -69,11 +69,15 @@ describe('handleCheckDependencies', () => {
   });
 
   it('should throw InvalidParams when path is missing', async () => {
-    await expect(handleCheckDependencies({})).rejects.toThrow('Missing or invalid required parameter: path');
+    await expect(handleCheckDependencies({})).rejects.toThrow('Missing or invalid parameter: path');
   });
 
   it('should throw InvalidParams when path is not a string', async () => {
-    await expect(handleCheckDependencies({ path: 123 })).rejects.toThrow('Missing or invalid required parameter: path');
+    await expect(handleCheckDependencies({ path: 123 })).rejects.toThrow('Missing or invalid parameter: path');
+  });
+
+  it('should throw InvalidParams when path is relative', async () => {
+    await expect(handleCheckDependencies({ path: 'relative/path' })).rejects.toThrow('path must be an absolute path');
   });
 
   it('should throw when project path does not exist', async () => {
@@ -231,11 +235,15 @@ describe('handleGetVulnerabilityReport', () => {
   });
 
   it('should throw InvalidParams when path is missing', async () => {
-    await expect(handleGetVulnerabilityReport({})).rejects.toThrow('Missing or invalid required parameter: path');
+    await expect(handleGetVulnerabilityReport({})).rejects.toThrow('Missing or invalid parameter: path');
   });
 
   it('should throw InvalidParams when path is not a string', async () => {
-    await expect(handleGetVulnerabilityReport({ path: 123 })).rejects.toThrow('Missing or invalid required parameter: path');
+    await expect(handleGetVulnerabilityReport({ path: 123 })).rejects.toThrow('Missing or invalid parameter: path');
+  });
+
+  it('should throw InvalidParams when path is relative', async () => {
+    await expect(handleGetVulnerabilityReport({ path: 'relative/path' })).rejects.toThrow('path must be an absolute path');
   });
 
   it('should throw when project path does not exist', async () => {

@@ -9,16 +9,14 @@ import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ParsedDependency, PackageManager } from '../types/index.js';
 import { requireRecord } from './argValidation.js';
+import { requireAbsolutePath } from './inputParser.js';
 
 /**
  * Handle check_dependencies tool call
  */
 export async function handleCheckDependencies(args: unknown): Promise<{ content: Array<{ type: string; text: string }> }> {
   const a = requireRecord(args);
-  if (typeof a.path !== 'string') {
-    throw new McpError(ErrorCode.InvalidParams, 'Missing or invalid required parameter: path (must be a string)');
-  }
-  const projectPath = a.path;
+  const projectPath = requireAbsolutePath(a, 'path');
   if (a.includeDev !== undefined && typeof a.includeDev !== 'boolean') {
     throw new McpError(ErrorCode.InvalidParams, 'Invalid parameter: includeDev must be a boolean if provided');
   }
@@ -41,10 +39,7 @@ export async function handleCheckDependencies(args: unknown): Promise<{ content:
  */
 export async function handleGetVulnerabilityReport(args: unknown): Promise<{ content: Array<{ type: string; text: string }> }> {
   const a = requireRecord(args);
-  if (typeof a.path !== 'string') {
-    throw new McpError(ErrorCode.InvalidParams, 'Missing or invalid required parameter: path (must be a string)');
-  }
-  const projectPath = a.path;
+  const projectPath = requireAbsolutePath(a, 'path');
   if (a.includeDev !== undefined && typeof a.includeDev !== 'boolean') {
     throw new McpError(ErrorCode.InvalidParams, 'Invalid parameter: includeDev must be a boolean if provided');
   }

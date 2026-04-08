@@ -114,7 +114,7 @@ function requireString(args: Record<string, unknown>, key: string): string {
  * Assert that a value is a non-empty absolute path string, throwing McpError if not.
  * Normalizes the path with resolve() to collapse any `..` sequences.
  */
-function requireAbsolutePath(args: Record<string, unknown>, key: string): string {
+export function requireAbsolutePath(args: Record<string, unknown>, key: string): string {
   const value = requireString(args, key);
   if (!isAbsolute(value)) {
     throw new McpError(ErrorCode.InvalidParams, `${key} must be an absolute path`);
