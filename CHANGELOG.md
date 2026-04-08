@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CONTRIBUTING.md** — Updated metrics to March 2026 scan, marked resolved refactoring targets
 - **GITHUB_PACKAGES.md** — Clarified npm as primary distribution, removed incorrect `require()` API example
 
+- Extracted custom rules handlers from `handlers.ts` into `customRulesHandlers.ts` to restore `handlers.ts` to under 500 lines (#145)
 - Reduced nesting in `customRulesEngine.validatePattern` to ≤4 levels via extracted `validatePatternRegex` helper (#146)
 - Reduced nesting in core engines (`analysisEngine`, `customRulesEngine`) to ≤4 levels (#118)
 - Reduced nesting in server modules to ≤4 levels (#119)
