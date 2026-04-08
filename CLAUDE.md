@@ -179,7 +179,7 @@ See `.claude/rules/testing.md` for test file conventions, TDD workflow, mock pat
 
 When handling user input from MCP tool calls:
 
-- **Path arguments:** Use `requireAbsolutePath(args, 'path')` or `optionalAbsolutePath(args, 'path')` from `inputParser.ts` — these validate with `path.isAbsolute()` and normalize with `path.resolve()`. Never use `requireString` for path parameters. See Issues #125, #126.
+- **Path arguments:** Use `requireAbsolutePath(args, 'path')` or `optionalAbsolutePath(args, 'path')` from `inputParser.ts` — these validate with `path.isAbsolute()` and normalize with `path.resolve()`. Never use `requireString` for path parameters. This applies to **all** handler files (`handlers.ts`, `configValidator.ts`, `dependencyHandlers.ts`, and any future domain handler). See Issues #125, #126, #139.
 - **User-supplied regex:** Never compile user-provided patterns via `new RegExp()` without length limits and flag allowlisting (`dgimsuy` only — the `v` flag for Node.js 20+ is pending Issue #140). See Issue #127.
 - **String interpolation into RegExp:** Captured strings interpolated into `new RegExp()` must be escaped first (Issue #128 — not yet implemented).
 - **Error messages:** Use `getRelativePath()` in error messages returned to clients — never leak absolute filesystem paths. See Issue #129.
