@@ -20,25 +20,25 @@
   },
   "ruleExclusions": {
     "console-log": [
-      "src/index.ts",
-      "src/server/setup.ts"
+      "**/src/index.ts",
+      "**/src/server/setup.ts"
     ],
     "type-assertion": [
-      "src/server/inputParser.ts",
-      "src/server/argValidation.ts",
-      "src/server/formatters.ts",
-      "src/config/languages.ts",
-      "src/analyzers/dependencies/*.ts"
+      "**/src/server/inputParser.ts",
+      "**/src/server/argValidation.ts",
+      "**/src/server/formatters.ts",
+      "**/src/config/languages.ts",
+      "**/src/analyzers/dependencies/*.ts"
     ],
     "line-length": [
-      "src/server/tools.ts"
+      "**/src/server/tools.ts"
     ],
     "nesting-depth": [
-      "src/analyzers/*Analyzer.ts",
-      "src/analyzers/swiftUiChecks.ts",
-      "src/analyzers/swiftUiChecksPhase2.ts",
-      "src/analyzers/dependencies/*.ts",
-      "src/analyzers/baseAnalyzer.ts"
+      "**/src/analyzers/*Analyzer.ts",
+      "**/src/analyzers/swiftUiChecks.ts",
+      "**/src/analyzers/swiftUiChecksPhase2.ts",
+      "**/src/analyzers/dependencies/*.ts",
+      "**/src/analyzers/baseAnalyzer.ts"
     ]
   },
   "customPatterns": [
