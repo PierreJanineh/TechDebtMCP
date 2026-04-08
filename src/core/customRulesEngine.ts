@@ -235,6 +235,30 @@ export class CustomRulesEngine {
   }
 
   /**
+   * Validate the regex pattern string and flags, returning any errors found.
+   * Extracted from validatePattern to keep nesting depth within limits.
+   */
+  private static validatePatternRegex(patternStr: string, flags: string | undefined): string[] {
+    if (patternStr.length > MAX_PATTERN_LENGTH) {
+      return [`Pattern exceeds maximum length of ${MAX_PATTERN_LENGTH} characters`];
+    }
+
+    const flagsValid = flags === undefined || ALLOWED_FLAGS_RE.test(flags);
+    if (!flagsValid) {
+      return [`Invalid regex flags: "${flags}". Only the characters d, g, i, m, s, u, y are allowed`];
+    }
+
+    try {
+      // Test if regex is valid (flags are already known-good at this point)
+      new RegExp(patternStr, flags || 'g');
+    } catch (error) {
+      return [`Invalid regex pattern: ${error instanceof Error ? error.message : 'Unknown error'}`];
+    }
+
+    return [];
+  }
+
+  /**
    * Validate a custom pattern
    */
   static validatePattern(pattern: CustomPattern): { valid: boolean; errors: string[] } {
@@ -247,21 +271,7 @@ export class CustomRulesEngine {
     if (!pattern.pattern) {
       errors.push('Pattern regex is required');
     } else {
-      if (pattern.pattern.length > MAX_PATTERN_LENGTH) {
-        errors.push(`Pattern exceeds maximum length of ${MAX_PATTERN_LENGTH} characters`);
-      } else {
-        const flagsValid = pattern.flags === undefined || ALLOWED_FLAGS_RE.test(pattern.flags);
-        if (!flagsValid) {
-          errors.push(`Invalid regex flags: "${pattern.flags}". Only the characters d, g, i, m, s, u, y are allowed`);
-        } else {
-          try {
-            // Test if regex is valid (flags are already known-good at this point)
-            new RegExp(pattern.pattern, pattern.flags || 'g');
-          } catch (error) {
-            errors.push(`Invalid regex pattern: ${error instanceof Error ? error.message : 'Unknown error'}`);
-          }
-        }
-      }
+      errors.push(...CustomRulesEngine.validatePatternRegex(pattern.pattern, pattern.flags));
     }
 
     if (!pattern.message) {

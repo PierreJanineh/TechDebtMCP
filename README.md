@@ -298,7 +298,7 @@ Run all custom rules against code or a file.
 - `code` (optional): Code content to analyze directly (max 500,000 characters)
 - `language` (optional): Programming language for filtering rules
 
-_Either `path` or `code` must be provided. If `path` is supplied, it must be an absolute filesystem path._
+_Either `path` or `code` must be provided. If `path` is supplied, it must be an absolute filesystem path. An empty string `""` is treated the same as omitting the field._
 
 ### `validate_custom_pattern`
 

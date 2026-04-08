@@ -37,7 +37,7 @@ TechDebtMCP/
 │   │   ├── setup.ts             # McpServer instantiation and transport wiring
 │   │   ├── handlers.ts          # Core MCP tool request handlers & dispatch
 │   │   ├── tools.ts             # Centralized TOOL_DEFINITIONS array
-│   │   ├── inputParser.ts       # Tool argument validation (requireString, optionalString, etc.)
+│   │   ├── inputParser.ts       # Tool argument validation (requireString, optionalString, optionalAbsolutePath, etc.)
 │   │   ├── argValidation.ts     # Argument coercion and constraint checks
 │   │   ├── formatters.ts        # Output formatting helpers
 │   │   ├── configValidator.ts   # .techdebtrc.json validation handler
@@ -646,6 +646,7 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
 
 5. ~~**Deep nesting in multiple files:**~~
    - ~~`src/core/customRulesEngine.ts:129` - 7 levels~~ ✅ **DONE** (PR #118) — refactored to ≤4 levels via helper methods
+   - ~~`src/core/customRulesEngine.ts:validatePattern` - 6 levels~~ ✅ **DONE** (#146) — extracted `validatePatternRegex` private helper
    - ~~`src/core/analysisEngine.ts:93` - 5 levels~~ ✅ **DONE** (PR #118) — refactored to ≤4 levels via early returns
    - ~~`src/analyzers/dependencies/cppParser.ts` - 5 levels in `parseVcpkgJson`~~ ✅ **DONE** (#131) — extracted `makeVcpkgDep()` helper and early-return guard
 
