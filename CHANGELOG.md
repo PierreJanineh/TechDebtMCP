@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **`.techdebtrc.json`** — Added `ruleExclusions` for `console-log` (MCP stdio transport calls in `index.ts`, `setup.ts`), `type-assertion` (idiomatic `as const` / `as Record` patterns in parsers and server modules), `line-length` (`tools.ts` MCP schema strings), and `nesting-depth` (inherent `checkPattern` chains in all language analyzers and dependency parsers); added `jest.config.js` to the `ignore` list to suppress config file nesting noise (#147)
 - **README.md** — Restructured for scannability: added stat line, grouped tools table with collapsible parameter reference, Resources table, collapsed SwiftUI section, merged Custom Rules into Configuration
 - **ARCHITECTURE.md** — Fixed project structure tree (added `inputParser.ts`, `argValidation.ts`, `swiftUiChecks.ts`, `swiftUiChecksPhase2.ts`), removed phantom `src/services/` directory, updated test count (522), fixed file size table, marked resolved debt items
 - **CLAUDE.md** — Deduplicated Git and Code Quality sections (reference `.claude/rules/`), updated resource recipe, added Security section
