@@ -329,7 +329,7 @@ The server is split into focused modules under `src/server/`:
 - `static createSimplePattern()` — Helper to create patterns
 
 **Features:**
-- Regex pattern matching with configurable flags (allowlist: `gimsuy`; patterns capped at 1 000 characters; inline `code` capped at 500 000 characters; `path` inputs capped at 500 000 bytes before reading)
+- Regex pattern matching with configurable flags (allowlist: `dgimsuvy` — includes the `v` unicodeSets flag, but `v` is only usable when the server is running on Node.js 20+; on supported Node.js 18 runtimes, `v` is not supported and patterns using it will fail rather than being treated as valid; `u` and `v` are mutually exclusive; patterns capped at 1 000 characters; inline `code` capped at 500 000 characters; `path` inputs capped at 500 000 bytes before reading)
 - Language-specific rule filtering
 - Multiple matches per line support
 - Cross-platform line ending support (\r\n and \n)
