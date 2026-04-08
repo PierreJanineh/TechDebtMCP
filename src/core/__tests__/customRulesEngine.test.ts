@@ -274,7 +274,7 @@ console.log("test3");`;
       expect(validation.errors.some(e => e.includes('Invalid regex flags'))).toBe(true);
     });
 
-    it('accepts all valid flag characters', () => {
+    it('accepts all valid flag characters (Node.js 18+ flags)', () => {
       const pattern: CustomPattern = {
         id: 'good-flags-rule',
         pattern: 'test',
@@ -287,6 +287,66 @@ console.log("test3");`;
       const validation = CustomRulesEngine.validatePattern(pattern);
       // All of dgimsuy are valid JS regex flags (Node.js 18+); validation must not reject them as disallowed chars
       expect(validation.errors.some(e => e.includes('Invalid regex flags'))).toBe(false);
+    });
+
+    it('accepts the v (unicodeSets) flag introduced in Node.js 20', () => {
+      const pattern: CustomPattern = {
+        id: 'v-flag-rule',
+        pattern: '[\\p{Script=Greek}&&\\p{Letter}]',
+        flags: 'v',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Unicode sets pattern',
+      };
+
+      const validation = CustomRulesEngine.validatePattern(pattern);
+      expect(validation.errors.some(e => e.includes('Invalid regex flags'))).toBe(false);
+    });
+
+    it('rejects combined u and v flags (mutually exclusive)', () => {
+      const pattern: CustomPattern = {
+        id: 'uv-flags-rule',
+        pattern: 'test',
+        flags: 'uv',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Both u and v flags',
+      };
+
+      const validation = CustomRulesEngine.validatePattern(pattern);
+      expect(validation.valid).toBe(false);
+      expect(validation.errors.some(e => e.includes('mutually exclusive'))).toBe(true);
+    });
+
+    it('rejects combined v and u flags regardless of order', () => {
+      const pattern: CustomPattern = {
+        id: 'vu-flags-rule',
+        pattern: 'test',
+        flags: 'vu',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'Both v and u flags',
+      };
+
+      const validation = CustomRulesEngine.validatePattern(pattern);
+      expect(validation.valid).toBe(false);
+      expect(validation.errors.some(e => e.includes('mutually exclusive'))).toBe(true);
+    });
+
+    it('strips disallowed flag characters at execution time but preserves v flag', () => {
+      const engine = new CustomRulesEngine();
+      const pattern: CustomPattern = {
+        id: 'v-flag-exec',
+        pattern: '[abc]',
+        flags: 'gv',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'v flag at exec',
+      };
+
+      engine.addRule(pattern);
+      const issues = engine.executeRules('test.ts', 'abc def');
+      expect(issues.length).toBeGreaterThan(0);
     });
 
     it('strips disallowed flag characters at execution time for rules bypassing validation', () => {

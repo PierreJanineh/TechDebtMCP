@@ -28,8 +28,10 @@ export const MAX_PATTERN_LENGTH = 1_000;
 /**
  * Allowlisted regex flag characters. Any character outside this set is rejected.
  * Covers all flags supported by Node.js 18+: d, g, i, m, s, u, y.
+ * Also includes the `v` (unicodeSets) flag introduced in Node.js 20 (V8 11.0).
+ * Note: `u` and `v` are mutually exclusive — using both is a SyntaxError.
  */
-const ALLOWED_FLAGS_RE = /^[dgimsuy]*$/;
+const ALLOWED_FLAGS_RE = /^[dgimsuvy]*$/;
 
 /**
  * Maximum allowed character length for the inline `code` parameter passed to
@@ -141,7 +143,7 @@ export class CustomRulesEngine {
         return [];
       }
       const lines = content.split(/\r?\n/);
-      const sanitizedFlags = (pattern.flags ?? '').replace(/[^dgimsuy]/g, '');
+      const sanitizedFlags = (pattern.flags ?? '').replace(/[^dgimsuvy]/g, '');
       const safeFlags = sanitizedFlags || 'g';
       const regex = new RegExp(pattern.pattern, safeFlags);
       return lines.flatMap((line, index) =>
@@ -245,7 +247,11 @@ export class CustomRulesEngine {
 
     const flagsValid = flags === undefined || ALLOWED_FLAGS_RE.test(flags);
     if (!flagsValid) {
-      return [`Invalid regex flags: "${flags}". Only the characters d, g, i, m, s, u, y are allowed`];
+      return [`Invalid regex flags: "${flags}". Only the characters d, g, i, m, s, u, v, y are allowed`];
+    }
+
+    if (flags !== undefined && flags.includes('u') && flags.includes('v')) {
+      return [`Invalid regex flags: "${flags}". The "u" and "v" flags are mutually exclusive`];
     }
 
     try {
