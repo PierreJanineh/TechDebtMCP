@@ -116,6 +116,7 @@ When reviewing PRs that touch MCP tool handlers or file system operations, check
 - **Regex safety:** Flag `new RegExp()` with user-supplied patterns that lack length limits or flag allowlisting. Verify security constants (`MAX_PATTERN_LENGTH`, `MAX_CODE_LENGTH`, `MAX_FILE_SIZE_BYTES` from `customRulesEngine.ts`) are imported — flag hardcoded values.
 - **String interpolation in RegExp:** Verify captured strings are escaped before interpolation into `new RegExp()`.
 - **Error message leakage:** Verify error messages use `getRelativePath()` — flag any absolute filesystem paths in client-facing responses.
+- **Handler output leakage:** Verify tool response output (e.g., debt summary, SQALE metrics) uses `basename()` for project paths — flag any raw absolute paths in formatted user-facing output. See Issue #138.
 
 ## Testing Review
 

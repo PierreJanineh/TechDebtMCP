@@ -183,4 +183,5 @@ When handling user input from MCP tool calls:
 - **User-supplied regex:** Never compile user-provided patterns via `new RegExp()` without length limits and flag allowlisting (`dgimsuy` only — the `v` flag for Node.js 20+ is pending Issue #140). See Issue #127.
 - **String interpolation into RegExp:** Captured strings interpolated into `new RegExp()` must be escaped first (Issue #128 — not yet implemented).
 - **Error messages:** Use `getRelativePath()` in error messages returned to clients — never leak absolute filesystem paths. See Issue #129.
+- **Handler output:** Use `basename()` (from `node:path`) to sanitize project paths in user-facing tool responses (e.g., debt summary, SQALE metrics). Never embed raw absolute paths in formatted output. See Issue #138.
 - **Security constants** in `customRulesEngine.ts`: `MAX_PATTERN_LENGTH` (1,000 chars), `MAX_CODE_LENGTH` (500,000 chars), `MAX_FILE_SIZE_BYTES` (500,000 bytes). Import and reference these — never hardcode the values.
