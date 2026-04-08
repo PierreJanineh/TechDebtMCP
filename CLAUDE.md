@@ -18,6 +18,8 @@ npm run lint                # Lint source files
 ## Gotchas
 
 - After checking out a branch or creating a worktree, always run `npm install` before running tests or using node modules.
+- **Pre-commit hook enforces doc updates:** Any branch that changes `src/` files must also modify `CLAUDE.md`, `ARCHITECTURE.md`, `README.md`, `ROADMAP.md`, and `CHANGELOG.md`. For pure bug fixes or refactors, a minimal touch (e.g., updating "Last Updated" date) satisfies the hook.
+- **Worktree agents cannot push with bot tokens** — the repository's "Global Updates" ruleset blocks app installation tokens. Push from the main workspace after the agent finishes, or use the default credentials which have bypass.
 
 ## Architecture
 
@@ -35,6 +37,7 @@ src/
 │   ├── resourceHandlers.ts     # MCP resource templates (debt://summary, debt://issues)
 │   ├── formatters.ts           # Output formatting helpers
 │   ├── configValidator.ts      # .techdebtrc.json validation handler
+│   ├── customRulesHandlers.ts  # Custom rules CRUD & execution handlers
 │   └── dependencyHandlers.ts   # Dependency analysis & vulnerability report handlers
 ├── types/index.ts              # Single source of truth for all TypeScript interfaces
 ├── config/languages.ts         # Per-language config: extensions, package files, patterns
@@ -67,7 +70,7 @@ src/
 - **All types in `src/types/index.ts`** — never define types locally.
 - **Factory pattern** — use `createAnalyzer(language, config)` and `createDependencyParser(filePath)`.
 - **BaseAnalyzer.checkPattern()** — the standard way to match regex patterns and emit `TechDebtIssue` objects.
-- **Domain handler extraction** — when handlers.ts grows, extract domain-specific handlers to dedicated files (e.g., `configValidator.ts`, `dependencyHandlers.ts`, `resourceHandlers.ts`).
+- **Domain handler extraction** — when handlers.ts grows, extract domain-specific handlers to dedicated files (e.g., `configValidator.ts`, `customRulesHandlers.ts`, `dependencyHandlers.ts`, `resourceHandlers.ts`).
 - **No `any`** — use `unknown` if truly needed; no `@ts-ignore` (use `@ts-expect-error` with a comment).
 - **No `console.log`** in production code.
 - **JSDoc on all public functions.**

@@ -19,13 +19,14 @@ src/
 │   └── customRulesEngine.ts # Custom rules engine
 ├── server/
 │   ├── setup.ts          # Server creation, version resolution, stdio transport
-│   ├── handlers.ts       # Tool call dispatch + handler implementations
+│   ├── handlers.ts       # Tool call dispatch (delegates to domain handlers)
 │   ├── tools.ts          # Centralized TOOL_DEFINITIONS array
 │   ├── inputParser.ts    # Tool argument validation (requireString, optionalString, etc.)
 │   ├── argValidation.ts  # Argument coercion and constraint checks
 │   ├── resourceHandlers.ts # MCP resource templates (debt://summary, debt://issues)
 │   ├── formatters.ts     # Report formatting helpers
 │   ├── configValidator.ts # Config validation handler
+│   ├── customRulesHandlers.ts # Custom rules CRUD & execution handlers
 │   └── dependencyHandlers.ts # Dependency analysis handlers
 ├── analyzers/
 │   ├── baseAnalyzer.ts   # Abstract base class (shared logic)
@@ -98,6 +99,8 @@ Copilot **must** check documentation consistency on every PR. **Do not approve**
 - PRs target `develop` (not `master`)
 - Releases: tag on `develop` → GitHub Actions publishes → merge `develop` → `master`
 - **Issues are created on GitHub only** — Linear two-way sync auto-creates corresponding `TEC-N` issues. Verify PR branch names match one of the naming patterns above.
+- **Direct-to-develop commits:** Verify only `.md` files are committed directly to `develop`. Code changes (`src/`, tests, config) must come through a branch and PR.
+- **PR author:** Verify PRs are opened by the bot account (`my-llm-bot[bot]`), not a personal account.
 
 ## Tech Debt Self-Scan
 
