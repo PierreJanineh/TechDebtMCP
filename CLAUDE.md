@@ -15,6 +15,10 @@ npm run lint                # Lint source files
 
 **Before every commit:** run `npm test` then `npm run build`. Both must succeed.
 
+## Gotchas
+
+- After checking out a branch or creating a worktree, always run `npm install` before running tests or using node modules.
+
 ## Architecture
 
 Tech Debt MCP is a Model Context Protocol (MCP) server exposing tools and resources for static tech-debt analysis across 14 languages.
