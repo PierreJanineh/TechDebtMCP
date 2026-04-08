@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replaced type assertions in `resourceHandlers.ts` with type guards (#107)
 
 ### Fixed
+- `optionalAbsolutePath` in `inputParser.ts` now returns `undefined` for empty string `""` instead of throwing a confusing `must be an absolute path` error; empty string is treated the same as an absent field (#137)
 - **npm-shrinkwrap.json** — Removed to stop publishing lockfile to npm (#123)
 - Replaced `console.warn` with `console.error` for MCP stdio compatibility (#100)
 - Eliminated analyzer false positives via `ruleExclusions` config mechanism (#78)
