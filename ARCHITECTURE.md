@@ -259,6 +259,8 @@ The server is split into focused modules under `src/server/`:
 
 **Entry point:** `src/index.ts` (18 lines) creates server, attaches handlers + resources, runs.
 
+**Path sanitization convention (Issue #129):** All handler output that includes file or project paths must use `basename()` (from `node:path`) or `getRelativePath()` (from `fileUtils.ts`) — never embed raw absolute paths in MCP error messages or report fields. This applies to `dependencyHandlers.ts` (McpError messages, project-name fields) and `configValidator.ts` (all user-facing messages).
+
 **16 MCP Tools:**
 - Core: `analyze_project`, `analyze_file`, `get_debt_summary`, `list_supported_languages`, `get_recommendations`, `get_issues_by_severity`, `get_issues_by_category`, `get_sqale_metrics`
 - Custom Rules (Phase 5): `add_custom_rule`, `remove_custom_rule`, `list_custom_rules`, `execute_custom_rules`, `validate_custom_pattern`

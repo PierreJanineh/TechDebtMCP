@@ -6,7 +6,7 @@ import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
 import { CustomRulesEngine } from '../core/customRulesEngine.js';
 import { fileExists } from '../utils/fileUtils.js';
 import { readFile as fsReadFile, stat } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, basename } from 'node:path';
 import { CustomPattern } from '../types/index.js';
 import { isRecord, requireRecord } from './argValidation.js';
 import { requireAbsolutePath } from './inputParser.js';
@@ -141,7 +141,7 @@ export async function handleValidateConfig(args: unknown): Promise<{ content: Ar
   const a = requireRecord(args);
   const inputPath = requireAbsolutePath(a, 'path');
   if (!(await fileExists(inputPath))) {
-    throw new McpError(ErrorCode.InvalidParams, `Path not found: ${inputPath}`);
+    throw new McpError(ErrorCode.InvalidParams, `Path not found: ${basename(inputPath)}`);
   }
 
   const pathStat = await stat(inputPath);
@@ -150,7 +150,7 @@ export async function handleValidateConfig(args: unknown): Promise<{ content: Ar
     : inputPath;
 
   if (!(await fileExists(configPath))) {
-    return { content: [{ type: 'text', text: `⚠️ No .techdebtrc.json found at:\n  ${configPath}\n\nCreate one to customize tech debt analysis for your project.` }] };
+    return { content: [{ type: 'text', text: `⚠️ No .techdebtrc.json found at:\n  ${basename(configPath)}\n\nCreate one to customize tech debt analysis for your project.` }] };
   }
 
   const errors: string[] = [];
@@ -161,11 +161,11 @@ export async function handleValidateConfig(args: unknown): Promise<{ content: Ar
     const raw = await fsReadFile(configPath, 'utf-8');
     const parsed: unknown = JSON.parse(raw);
     if (!isRecord(parsed)) {
-      return { content: [{ type: 'text', text: `❌ Invalid config in ${configPath}:\n  Top-level value must be a JSON object, got ${parsed === null ? 'null' : Array.isArray(parsed) ? 'array' : typeof parsed}.` }] };
+      return { content: [{ type: 'text', text: `❌ Invalid config in ${basename(configPath)}:\n  Top-level value must be a JSON object, got ${parsed === null ? 'null' : Array.isArray(parsed) ? 'array' : typeof parsed}.` }] };
     }
     config = parsed;
   } catch (err) {
-    return { content: [{ type: 'text', text: `❌ Invalid JSON in ${configPath}:\n  ${err instanceof Error ? err.message : String(err)}` }] };
+    return { content: [{ type: 'text', text: `❌ Invalid JSON in ${basename(configPath)}:\n  ${err instanceof Error ? err.message : String(err)}` }] };
   }
 
   for (const key of Object.keys(config)) {
@@ -189,10 +189,10 @@ export async function handleValidateConfig(args: unknown): Promise<{ content: Ar
   }
 
   if (errors.length === 0 && warnings.length === 0) {
-    return { content: [{ type: 'text', text: `✅ ${configPath} is valid.\n\nAll fields pass schema validation.` }] };
+    return { content: [{ type: 'text', text: `✅ ${basename(configPath)} is valid.\n\nAll fields pass schema validation.` }] };
   }
 
-  let report = `# Config Validation: ${configPath}\n\n`;
+  let report = `# Config Validation: ${basename(configPath)}\n\n`;
   if (errors.length > 0) {
     report += `## ❌ Errors (${errors.length})\n${errors.map(e => `- ${e}`).join('\n')}\n\n`;
   }

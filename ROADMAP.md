@@ -183,7 +183,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 | #126 | Resource template projectPath bypasses validation | High | |
 | #127 | ReDoS via user-controlled regex in custom rules engine | High | |
 | #128 | Unescaped string interpolated into RegExp in swiftUiChecks | Medium | ✅ Fixed — `escapeRegExp()` in `src/utils/regexUtils.ts` |
-| #129 | Absolute filesystem paths leaked in error messages | Low | |
+| #129 | Absolute filesystem paths leaked in error messages | Low | ✅ Fixed — `basename()` / `getRelativePath()` in `dependencyHandlers.ts` and `configValidator.ts` |
 | #140 | Regex flag allowlist missing `v` (unicodeSets) flag for Node.js 20+ | Low | |
 | #124 | Add CodeQL security scanning workflow | — | |
 | #130 | Docs freshness CI check + Claude Code hook | — | |

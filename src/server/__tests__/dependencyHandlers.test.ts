@@ -85,10 +85,35 @@ describe('handleCheckDependencies', () => {
     await expect(handleCheckDependencies({ path: '/missing' })).rejects.toThrow('Project path not found');
   });
 
+  it('should not leak absolute path in "project path not found" error', async () => {
+    mockFileExists.mockResolvedValue(false);
+    const err = await handleCheckDependencies({ path: '/secret/server/missing' }).catch(e => e);
+    expect(err.message).not.toContain('/secret/server/missing');
+    expect(err.message).toContain('missing');
+  });
+
   it('should throw when path is not a directory', async () => {
     mockFileExists.mockResolvedValue(true);
     mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
     await expect(handleCheckDependencies({ path: '/project/file.txt' })).rejects.toThrow('Path is not a directory');
+  });
+
+  it('should not leak absolute path in "not a directory" error', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
+    const err = await handleCheckDependencies({ path: '/secret/server/file.txt' }).catch(e => e);
+    expect(err.message).not.toContain('/secret/server');
+    expect(err.message).toContain('file.txt');
+  });
+
+  it('should not leak absolute project path in dependency report', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
+    mockReaddir.mockResolvedValue([] as any);
+
+    const result = await handleCheckDependencies({ path: '/secret/server/project' });
+    expect(result.content[0].text).not.toContain('/secret/server/project');
+    expect(result.content[0].text).toContain('project');
   });
 
   it('should return report with no package files found', async () => {
@@ -251,10 +276,35 @@ describe('handleGetVulnerabilityReport', () => {
     await expect(handleGetVulnerabilityReport({ path: '/missing' })).rejects.toThrow('Project path not found');
   });
 
+  it('should not leak absolute path in "project path not found" error', async () => {
+    mockFileExists.mockResolvedValue(false);
+    const err = await handleGetVulnerabilityReport({ path: '/secret/server/missing' }).catch(e => e);
+    expect(err.message).not.toContain('/secret/server/missing');
+    expect(err.message).toContain('missing');
+  });
+
   it('should throw when path is not a directory', async () => {
     mockFileExists.mockResolvedValue(true);
     mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
     await expect(handleGetVulnerabilityReport({ path: '/project/file.txt' })).rejects.toThrow('Path is not a directory');
+  });
+
+  it('should not leak absolute path in "not a directory" error', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
+    const err = await handleGetVulnerabilityReport({ path: '/secret/server/file.txt' }).catch(e => e);
+    expect(err.message).not.toContain('/secret/server');
+    expect(err.message).toContain('file.txt');
+  });
+
+  it('should not leak absolute project path in vulnerability report', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
+    mockReaddir.mockResolvedValue([] as any);
+
+    const result = await handleGetVulnerabilityReport({ path: '/secret/server/project' });
+    expect(result.content[0].text).not.toContain('/secret/server/project');
+    expect(result.content[0].text).toContain('project');
   });
 
   it('should default includeDev to false', async () => {
