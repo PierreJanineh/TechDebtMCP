@@ -161,7 +161,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 | Quality & Compliance | v2.0.0 | ✅ Complete | Code of Conduct, .techdebtrc.json, TECH_DEBT_SCAN.md, documentation |
 | Phase 2 | v2.0.0 | ✅ Complete | Dependency analysis — 10 parsers, 3 MCP tools, index.ts refactor |
 | Phase 6 | v2.0.1 | ✅ Complete | MCP Resources (debt://summary, debt://issues) |
-| Security Patch | v2.0.2 | 🔧 In Progress | Security hardening, refactor merges, CI guardrails (Issues #124-130) |
+| Security Patch | v2.0.2 | 🔧 In Progress | Security hardening, refactor merges, CI guardrails (Issues #124-131) |
 | Phase 3 | v2.1.0 | 📋 Planned | Snapshot & trend tracking |
 | Phase 4 | v2.2.0 | 📋 Planned | Code complexity analysis |
 
@@ -183,7 +183,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 | #126 | Resource template projectPath bypasses validation | High | |
 | #127 | ReDoS via user-controlled regex in custom rules engine | High | |
 | #128 | Unescaped string interpolated into RegExp in swiftUiChecks | Medium | ✅ Fixed — `escapeRegExp()` in `src/utils/regexUtils.ts` |
-| #129 | Absolute filesystem paths leaked in error messages | Low | ✅ Fixed — `basename()` / `getRelativePath()` in `dependencyHandlers.ts` and `configValidator.ts` |
+| #129 | Absolute filesystem paths leaked in error messages | Low | 🔧 Partial — fixed in `dependencyHandlers.ts`; `configValidator.ts` still needs `basename()` / `getRelativePath()` updates |
 | #140 | Regex flag allowlist missing `v` (unicodeSets) flag for Node.js 20+ | Low | |
 | #124 | Add CodeQL security scanning workflow | — | ✅ Done — `.github/workflows/codeql.yml` |
 | #130 | Docs freshness CI check + Claude Code hook | — | |
