@@ -4,8 +4,8 @@
 
 /**
  * Escapes all regex metacharacters in a string so it can be safely
- * interpolated into `new RegExp(...)` without unintended matching behaviour
- * or ReDoS vectors.
+ * interpolated into `new RegExp(...)` for literal matching without
+ * unintended regex injection or matching behaviour.
  *
  * Escaped characters: . * + ? ^ $ { } ( ) | [ ] \
  *
