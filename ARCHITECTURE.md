@@ -63,7 +63,8 @@ TechDebtMCP/
 │   │       ├── index.ts         # Parser factory (createDependencyParser)
 │   │       └── [ecosystem]Parser.ts # 10 ecosystem parsers
 │   └── utils/
-│       └── fileUtils.ts         # File system utilities
+│       ├── fileUtils.ts         # File system utilities
+│       └── regexUtils.ts        # escapeRegExp() — safe RegExp interpolation helper
 ├── dist/                        # Compiled output
 ├── package.json
 ├── tsconfig.json
@@ -453,7 +454,8 @@ index.ts (Entry point)
   │   ├─ AnalysisEngine
   │   │   ├─ Analyzer (via factory)
   │   │   │   └─ BaseAnalyzer → src/config/languages.ts
-  │   │   └─ fileUtils
+  │   │   ├─ fileUtils
+  │   │   └─ regexUtils (escapeRegExp)
   │   ├─ ✅ SQALEEngine (Phase 1)
   │   ├─ ✅ CustomRulesEngine (Phase 5)
   │   ├─ ✅ configValidator.ts (Phase 2)

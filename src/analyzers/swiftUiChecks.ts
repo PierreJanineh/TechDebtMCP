@@ -7,6 +7,7 @@
  */
 
 import { TechDebtIssue } from '../types/index.js';
+import { escapeRegExp } from '../utils/regexUtils.js';
 
 /**
  * Detects SwiftUI views with excessive @State variables that should be consolidated into a ViewModel.
@@ -115,7 +116,7 @@ export function checkMissingEnvironmentValidation(
 
     const envVarName = match[1];
     // Scan following lines for unsafe force unwrap usage
-    const unsafePattern = new RegExp(`\\b${envVarName}\\s*!`);
+    const unsafePattern = new RegExp(`\\b${escapeRegExp(envVarName)}\\s*!`);
 
     for (let j = i + 1; j < Math.min(lines.length, i + 50); j++) {
       const usageLine = lines[j].split('//')[0]; // strip comments
