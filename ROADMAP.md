@@ -137,7 +137,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 
 ## Current Status
 
-**Latest Release:** v2.0.2 (Security Patch) — on npm
+**Latest Release:** v2.0.2 (Security Patch) — pending npm publish (post-merge tag push)
 
 **Next Up:**
 - **Phase 3 (v2.1.0):** Snapshot & Trend Tracking — Issues #39-44 — Sprint 2-3
@@ -192,7 +192,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 
 #### Acceptance Criteria
 
-- [x] All 5 security issues fixed with tests (>80% coverage)
+- [x] All 5 security issues fixed with tests (>80% statement coverage)
 - [x] CodeQL workflow running on push/PR
 - [x] Docs freshness check warns on PRs missing doc updates
 - [x] `npm test && npm run build` pass
