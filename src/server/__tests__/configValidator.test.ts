@@ -59,6 +59,13 @@ describe('handleValidateConfig', () => {
     await expect(handleValidateConfig({ path: '/no/such/path' })).rejects.toThrow('Path not found');
   });
 
+  it('should not leak absolute path in "path not found" error message', async () => {
+    mockFileExists.mockResolvedValue(false);
+    const err = await handleValidateConfig({ path: '/secret/server/path' }).catch(e => e);
+    expect(err.message).not.toContain('/secret/server/path');
+    expect(err.message).toContain('path');
+  });
+
   it('should report missing config when directory has no .techdebtrc.json', async () => {
     mockFileExists.mockResolvedValueOnce(true);
     mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
@@ -68,6 +75,16 @@ describe('handleValidateConfig', () => {
     expect(result.content[0].text).toContain('No .techdebtrc.json found');
   });
 
+  it('should not leak absolute path in "missing config" message', async () => {
+    mockFileExists.mockResolvedValueOnce(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
+    mockFileExists.mockResolvedValueOnce(false);
+
+    const result = await handleValidateConfig({ path: '/secret/server/project' });
+    expect(result.content[0].text).not.toContain('/secret/server/project');
+    expect(result.content[0].text).toContain('.techdebtrc.json');
+  });
+
   it('should report JSON parse errors', async () => {
     mockFileExists.mockResolvedValue(true);
     mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
@@ -75,6 +92,45 @@ describe('handleValidateConfig', () => {
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('Invalid JSON');
+  });
+
+  it('should not leak absolute path in JSON parse error message', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
+    mockFsReadFile.mockResolvedValueOnce('{ bad' as any);
+
+    const result = await handleValidateConfig({ path: '/secret/server/.techdebtrc.json' });
+    expect(result.content[0].text).not.toContain('/secret/server');
+    expect(result.content[0].text).toContain('.techdebtrc.json');
+  });
+
+  it('should not leak absolute path in valid config message', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
+    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ ignore: ['node_modules/**'] }) as any);
+
+    const result = await handleValidateConfig({ path: '/secret/server/.techdebtrc.json' });
+    expect(result.content[0].text).not.toContain('/secret/server');
+    expect(result.content[0].text).toContain('.techdebtrc.json');
+  });
+
+  it('should not leak absolute path when stat throws EACCES', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockRejectedValueOnce(Object.assign(new Error(`EACCES: permission denied, stat '/secret/server'`), { code: 'EACCES' }));
+
+    const err = await handleValidateConfig({ path: '/secret/server/.techdebtrc.json' }).catch(e => e);
+    expect(err.message).not.toContain('/secret/server');
+    expect(err.message).toContain('.techdebtrc.json');
+  });
+
+  it('should not leak absolute path when fsReadFile fails with EACCES', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
+    mockFsReadFile.mockRejectedValueOnce(Object.assign(new Error(`EACCES: permission denied, open '/secret/server/.techdebtrc.json'`), { code: 'EACCES' }));
+
+    const result = await handleValidateConfig({ path: '/secret/server/.techdebtrc.json' });
+    expect(result.content[0].text).not.toContain('/secret/server');
+    expect(result.content[0].text).toContain('.techdebtrc.json');
   });
 
   it('should reject non-object top-level values (null)', async () => {
