@@ -186,7 +186,7 @@ See `.claude/rules/testing.md` for test file conventions, TDD workflow, mock pat
 
 ## Security
 
-**Automated scanning:** CodeQL SAST runs on every push and PR via `.github/workflows/codeql.yml` (using `security-and-quality` queries). See Issue #124.
+**Automated scanning:** CodeQL SAST runs on every push to `develop`/`main` and every PR targeting `develop`/`main` via `.github/workflows/codeql.yml` (using `security-and-quality` queries). See Issue #124.
 
 When handling user input from MCP tool calls:
 

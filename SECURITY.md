@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-Security fixes are applied to the latest minor release line only. If a vulnerability is found in an older version, please upgrade to the latest `2.x` release before reporting.
+Security fixes are applied to the latest minor release line only. If a vulnerability is found in an older version, please upgrade to the latest `2.0.x` release before reporting.
 
 | Version | Supported          |
 | ------- | ------------------ |
@@ -38,7 +38,7 @@ Tech Debt MCP is a small open-source project maintained on a best-effort basis, 
 In scope:
 
 - MCP tool handlers and resource handlers (`src/server/`)
-- Input validation and path handling (`src/server/inputParser.ts`, `argValidation.ts`)
+- Input validation and path handling (`src/server/inputParser.ts`, `src/server/argValidation.ts`)
 - User-supplied regex compilation in custom rules (`src/core/customRulesEngine.ts`)
 - Dependency parsers that read manifest files (`src/analyzers/dependencies/`)
 - The npm-published package itself (supply-chain issues, malicious publish, etc.)
@@ -53,7 +53,7 @@ Out of scope:
 
 This repository runs the following automated scans:
 
-- **CodeQL** — static analysis on every push to `develop`/`master`, every pull request to `develop`, and weekly on Mondays (see `.github/workflows/codeql.yml`)
+- **CodeQL** — static analysis on every push to `develop`/`main`, every pull request to `develop`/`main`, and weekly on Mondays (see `.github/workflows/codeql.yml`)
 - **Secret scanning** — GitHub-managed, enabled for all pushes
 - **Dependabot alerts** — GitHub-managed, monitors runtime and dev dependencies for known CVEs
 
