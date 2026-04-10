@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-04-10
+
 ### Security
 - **Test coverage trace for v2.0.2 security fixes (TEC-13):** All six TEC-13 checklist items are verified by existing tests shipped alongside the individual security PRs. Coverage as of this entry (all files ≥ 80% statement and branch): `inputParser.ts` 99%/99%, `resourceHandlers.ts` 100%/96%, `configValidator.ts` 94%/92%, `customRulesEngine.ts` 96%/85%, `regexUtils.ts` 100%/100%, `dependencyHandlers.ts` 95%/74%. Bullet-by-bullet trace:
   1. **Path validation rejects relative paths / `../` traversal** — `src/server/__tests__/inputParser.test.ts` lines 396–483 (`path validation` describe block); `src/server/__tests__/configValidator.test.ts` lines 53–59; `src/server/__tests__/dependencyHandlers.test.ts` lines 79–99.
@@ -292,7 +294,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tests for SQALE engine
 - Tests for custom rules engine
 
-[Unreleased]: https://github.com/PierreJanineh/TechDebtMCP/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/PierreJanineh/TechDebtMCP/compare/v2.0.2...HEAD
+[2.0.2]: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v2.0.2
 [2.0.1]: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v2.0.1
 [2.0.0]: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v2.0.0
 [1.1.0]: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v1.1.0

@@ -21,6 +21,7 @@ A Model Context Protocol (MCP) server for analyzing technical debt across multip
 - **Config Validation**: Validate `.techdebtrc.json` configuration files for schema correctness
 - **Actionable recommendations**: Provides prioritized suggestions for addressing technical debt
 - **Flexible filtering**: Filter results by severity, category, or language
+- **Security hardened (v2.0.2)**: Path traversal prevention on all tool and resource path inputs, ReDoS-safe custom-rule regex validation, regex-injection escaping in SwiftUI checks, absolute-path sanitization in all error messages, and CodeQL SAST scanning on every push/PR
 
 ## Supported Languages
 
