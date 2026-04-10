@@ -186,6 +186,8 @@ See `.claude/rules/testing.md` for test file conventions, TDD workflow, mock pat
 
 ## Security
 
+**Automated scanning:** CodeQL SAST runs on every push to `develop`/`main` and every PR targeting `develop`/`main` via `.github/workflows/codeql.yml` (using `security-and-quality` queries). See Issue #124.
+
 When handling user input from MCP tool calls:
 
 - **Path arguments:** Use `requireAbsolutePath(args, 'path')` or `optionalAbsolutePath(args, 'path')` from `inputParser.ts` — these validate with `path.isAbsolute()` and normalize with `path.resolve()`. `optionalAbsolutePath` treats an empty string `""` the same as `undefined` (returns `undefined`). Never use `requireString` for path parameters. This applies to **all** handler files (`handlers.ts`, `configValidator.ts`, `dependencyHandlers.ts`, and any future domain handler). See Issues #125, #126, #137, #139.

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+- Dependency bumps to resolve reachable and unreachable Dependabot alerts ahead of v2.0.2: `glob` `^10.3.10` → `^13.0.6`, `ignore` `^5.3.0` → `^7.0.5`, `toml` `^3.0.0` → `^4.1.1`. All runtime vulnerabilities flagged on the previous lockfile state no longer appear in `npm audit`. Remaining Dependabot alerts (handlebars via `ts-jest`, hono/express/path-to-regexp via `@modelcontextprotocol/sdk` HTTP transport) are dev-only or unreachable code paths — TechDebtMCP uses stdio transport and does not ship dev dependencies to npm consumers.
+- **Dropped Node 18 support** — `toml@4.1.1` (runtime dependency) requires Node >=20; `engines.node` bumped from `>=18.0.0` to `>=20.0.0`. Node 18 reached EOL April 2025. CI matrix updated to `[20.x, 22.x]`.
+
 ### Changed
 - **`.techdebtrc.json`** — Added `ruleExclusions` for `console-log` (MCP stdio transport calls in `index.ts`, `setup.ts`), `type-assertion` (idiomatic `as const` / `as Record` patterns in parsers and server modules), `line-length` (`tools.ts` MCP schema strings), and `nesting-depth` (inherent `checkPattern` chains in all language analyzers and dependency parsers); added `jest.config.js` to the `ignore` list to suppress config file nesting noise (#147)
 - **README.md** — Restructured for scannability: added stat line, grouped tools table with collapsible parameter reference, Resources table, collapsed SwiftUI section, merged Custom Rules into Configuration
@@ -44,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Security: `path` parameters for `analyze_project`, `analyze_file`, `get_debt_summary`, `get_sqale_metrics`, `get_recommendations`, `get_issues_by_severity`, `get_issues_by_category`, and `execute_custom_rules` are now validated with `isAbsolute()` and normalized with `resolve()` in `inputParser.ts`, preventing path traversal and relative-path attacks (#125)
 
 ### Added
+- CodeQL security scanning workflow (`.github/workflows/codeql.yml`) — runs SAST on every push to `develop`/`main`, every PR to `develop`/`main`, and weekly on Mondays at 03:00 UTC; uses `security-and-quality` queries for deeper coverage (#124)
 - CI workflow (`.github/workflows/docs-check.yml`) warns on PRs with `src/` changes when none of the five required docs were touched; non-blocking, posts an actionable comment listing the required files and removes the comment automatically when docs are subsequently updated (#130)
 - Claude Code local hook (`.claude/hooks/pre-pr-docs-check.sh`) warns before `gh pr create` when docs were not updated alongside `src/` changes; the hook lives in `.claude/` which is gitignored and therefore local-only, not distributed with the repo (#130)
 - Direct unit tests for `swiftUiChecks` and `swiftUiChecksPhase2` modules
