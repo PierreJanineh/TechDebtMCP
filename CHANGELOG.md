@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 - Dependency bumps to resolve reachable and unreachable Dependabot alerts ahead of v2.0.2: `glob` `^10.3.10` → `^13.0.6`, `ignore` `^5.3.0` → `^7.0.5`, `toml` `^3.0.0` → `^4.1.1`. All runtime vulnerabilities flagged on the previous lockfile state no longer appear in `npm audit`. Remaining Dependabot alerts (handlebars via `ts-jest`, hono/express/path-to-regexp via `@modelcontextprotocol/sdk` HTTP transport) are dev-only or unreachable code paths — TechDebtMCP uses stdio transport and does not ship dev dependencies to npm consumers.
+- **Dropped Node 18 support** — `toml@4.1.1` (runtime dependency) requires Node >=20; `engines.node` bumped from `>=18.0.0` to `>=20.0.0`. Node 18 reached EOL April 2025. CI matrix updated to `[20.x, 22.x]`.
 
 ### Changed
 - **`.techdebtrc.json`** — Added `ruleExclusions` for `console-log` (MCP stdio transport calls in `index.ts`, `setup.ts`), `type-assertion` (idiomatic `as const` / `as Record` patterns in parsers and server modules), `line-length` (`tools.ts` MCP schema strings), and `nesting-depth` (inherent `checkPattern` chains in all language analyzers and dependency parsers); added `jest.config.js` to the `ignore` list to suppress config file nesting noise (#147)
