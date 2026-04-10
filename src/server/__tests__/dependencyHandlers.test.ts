@@ -106,6 +106,15 @@ describe('handleCheckDependencies', () => {
     expect(err.message).toContain('file.txt');
   });
 
+  it('should not leak absolute path when stat throws EACCES', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockRejectedValueOnce(Object.assign(new Error(`EACCES: permission denied, stat '/secret/server/project'`), { code: 'EACCES' }));
+
+    const err = await handleCheckDependencies({ path: '/secret/server/project' }).catch(e => e);
+    expect(err.message).not.toContain('/secret/server');
+    expect(err.message).toContain('project');
+  });
+
   it('should not leak absolute project path in dependency report', async () => {
     mockFileExists.mockResolvedValue(true);
     mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);

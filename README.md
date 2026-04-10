@@ -557,7 +557,7 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 - **Latest:** [![npm version](https://img.shields.io/npm/v/tech-debt-mcp.svg)](https://www.npmjs.com/package/tech-debt-mcp)
 - **Releases:** [GitHub Releases](https://github.com/PierreJanineh/TechDebtMCP/releases)
 - **Roadmap:** See [ROADMAP.md](ROADMAP.md) for planned features
-- **Security:** `escapeRegExp()` (`src/utils/regexUtils.ts`) must be used when interpolating captured strings into `new RegExp()` — see issue #128; all handler output uses `basename()` / `getRelativePath()` to prevent absolute filesystem path leakage — see issue #129
+- **Security:** `escapeRegExp()` (`src/utils/regexUtils.ts`) must be used when interpolating captured strings into `new RegExp()` — see issue #128; handler output uses `basename()` / `getRelativePath()` to prevent absolute filesystem path leakage in intentional messages, and raw `err.message` strings from filesystem operations are sanitized before being returned to clients — see issue #129
 
 ## License
 

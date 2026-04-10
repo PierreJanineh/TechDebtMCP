@@ -144,7 +144,12 @@ export async function handleValidateConfig(args: unknown): Promise<{ content: Ar
     throw new McpError(ErrorCode.InvalidParams, `Path not found: ${basename(inputPath)}`);
   }
 
-  const pathStat = await stat(inputPath);
+  let pathStat;
+  try {
+    pathStat = await stat(inputPath);
+  } catch {
+    throw new McpError(ErrorCode.InvalidParams, `Cannot access path: ${basename(inputPath)}`);
+  }
   const configPath = pathStat.isDirectory()
     ? join(inputPath, '.techdebtrc.json')
     : inputPath;
@@ -165,7 +170,9 @@ export async function handleValidateConfig(args: unknown): Promise<{ content: Ar
     }
     config = parsed;
   } catch (err) {
-    return { content: [{ type: 'text', text: `❌ Invalid JSON in ${basename(configPath)}:\n  ${err instanceof Error ? err.message : String(err)}` }] };
+    const rawMessage = err instanceof Error ? err.message : String(err);
+    const safeMessage = rawMessage.split(configPath).join(basename(configPath));
+    return { content: [{ type: 'text', text: `❌ Invalid JSON in ${basename(configPath)}:\n  ${safeMessage}` }] };
   }
 
   for (const key of Object.keys(config)) {

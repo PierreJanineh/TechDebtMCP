@@ -114,6 +114,25 @@ describe('handleValidateConfig', () => {
     expect(result.content[0].text).toContain('.techdebtrc.json');
   });
 
+  it('should not leak absolute path when stat throws EACCES', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockRejectedValueOnce(Object.assign(new Error(`EACCES: permission denied, stat '/secret/server'`), { code: 'EACCES' }));
+
+    const err = await handleValidateConfig({ path: '/secret/server/.techdebtrc.json' }).catch(e => e);
+    expect(err.message).not.toContain('/secret/server');
+    expect(err.message).toContain('.techdebtrc.json');
+  });
+
+  it('should not leak absolute path when fsReadFile fails with EACCES', async () => {
+    mockFileExists.mockResolvedValue(true);
+    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
+    mockFsReadFile.mockRejectedValueOnce(Object.assign(new Error(`EACCES: permission denied, open '/secret/server/.techdebtrc.json'`), { code: 'EACCES' }));
+
+    const result = await handleValidateConfig({ path: '/secret/server/.techdebtrc.json' });
+    expect(result.content[0].text).not.toContain('/secret/server');
+    expect(result.content[0].text).toContain('.techdebtrc.json');
+  });
+
   it('should reject non-object top-level values (null)', async () => {
     mockFileExists.mockResolvedValue(true);
     mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);

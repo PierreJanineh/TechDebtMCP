@@ -58,9 +58,10 @@ export async function handleGetVulnerabilityReport(args: unknown): Promise<{ con
   const totalDeps = nonEmptyDeps.reduce((sum, f) => sum + f.dependencies.length, 0);
   const ecosystems = [...new Set(nonEmptyDeps.map(d => d.ecosystem))];
 
+  const projectName = basename(projectPath) || projectPath;
   let report = `# Vulnerability Report (Offline)\n\n`;
   report += `> **Note:** This is an offline dependency inventory. Actual CVE lookups will be available in Phase 2b via the OSV API.\n\n`;
-  report += `**Project:** ${basename(projectPath)}\n`;
+  report += `**Project:** ${projectName}\n`;
   report += `**Package files found:** ${packageFiles.length} across ${ecosystems.length} ecosystem(s)\n`;
   report += `**Total dependencies inventoried:** ${totalDeps}\n`;
   report += `**Dev dependencies included:** ${includeDev ? 'Yes' : 'No'}\n\n`;
@@ -115,7 +116,12 @@ async function validateDirectoryPath(projectPath: string): Promise<void> {
   if (!(await fileExists(projectPath))) {
     throw new McpError(ErrorCode.InvalidParams, `Project path not found: ${basename(projectPath)}`);
   }
-  const stats = await stat(projectPath);
+  let stats;
+  try {
+    stats = await stat(projectPath);
+  } catch {
+    throw new McpError(ErrorCode.InvalidParams, `Cannot access path: ${basename(projectPath)}`);
+  }
   if (!stats.isDirectory()) {
     throw new McpError(ErrorCode.InvalidParams, `Path is not a directory: ${basename(projectPath)}`);
   }
@@ -247,7 +253,8 @@ function generateDependencyReport(
   const totalDeps = nonEmptyDeps.reduce((sum, f) => sum + f.dependencies.length, 0);
   const ecosystems = [...new Set(nonEmptyDeps.map(d => d.ecosystem))];
 
-  let report = `# Dependency Analysis\n\n**Project:** ${basename(projectPath)}\n**Found:** ${packageFiles.length} package file(s) across ${ecosystems.length} ecosystem(s)\n**Total Dependencies:** ${totalDeps}\n**Ecosystems:** ${ecosystems.join(', ')}\n\n`;
+  const projectName = basename(projectPath) || projectPath;
+  let report = `# Dependency Analysis\n\n**Project:** ${projectName}\n**Found:** ${packageFiles.length} package file(s) across ${ecosystems.length} ecosystem(s)\n**Total Dependencies:** ${totalDeps}\n**Ecosystems:** ${ecosystems.join(', ')}\n\n`;
 
   for (const fileInfo of nonEmptyDeps) {
     report += `## ${fileInfo.file} (${fileInfo.ecosystem})\n\n`;
