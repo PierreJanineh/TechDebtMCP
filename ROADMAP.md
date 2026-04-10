@@ -166,7 +166,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 
 ### Security Patch (v2.0.2)
 
-**Status:** ✅ **COMPLETE** (Released as v2.0.2, 2026-04-10)
+**Status:** ✅ **COMPLETE** (Release prep complete; pending git tag and npm publish for v2.0.2)
 
 **Objective:** Fix 5 security vulnerabilities found during audit, merge pending refactors, add CI security guardrails.
 
