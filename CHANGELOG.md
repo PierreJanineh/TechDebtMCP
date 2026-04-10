@@ -31,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replaced type assertions in `resourceHandlers.ts` with type guards (#107)
 
 ### Fixed
-- Security: captured strings interpolated into `new RegExp()` in `swiftUiChecks.ts` are now escaped via `escapeRegExp()` from the new `src/utils/regexUtils.ts` helper, preventing regex injection and ReDoS vectors (#128)
+- Security: captured strings interpolated into `new RegExp()` in `swiftUiChecks.ts` are now escaped via `escapeRegExp()` from the new `src/utils/regexUtils.ts` helper, preventing regex injection and unintended matching (#128)
 - Regex flag allowlist in `customRulesEngine.ts` now includes the `v` (unicodeSets) flag introduced in Node.js 20 (V8 11.0); added mutual-exclusion validation that rejects patterns supplying both `u` and `v` flags simultaneously (#140)
 - `optionalAbsolutePath` in `inputParser.ts` now returns `undefined` for empty string `""` instead of throwing a confusing `must be an absolute path` error; empty string is treated the same as an absent field (#137)
 - **npm-shrinkwrap.json** — Removed to stop publishing lockfile to npm (#123)

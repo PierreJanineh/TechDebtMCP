@@ -152,7 +152,7 @@ describe('checkMissingEnvironmentValidation', () => {
     expect(issues).toHaveLength(0);
   });
 
-  it('does not throw when @Environment variable name contains regex metacharacters', () => {
+  it('still detects env force-unwrap without throwing during normal parsing', () => {
     // Capture group is (\w+) so this cannot happen via normal Swift, but escapeRegExp
     // must make the downstream new RegExp() call safe regardless.
     // We test the helper at unit level; here we verify no SyntaxError is thrown
