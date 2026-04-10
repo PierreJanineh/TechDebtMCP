@@ -318,7 +318,7 @@ Scan a project for package manifests and return a structured dependency report.
 - `path` (required): Absolute path to the project root
 - `includeDev` (optional): boolean (default: true) — include dev/test dependencies
 
-Detects manifests for npm, pip, Maven/Gradle, Cargo, Go Modules, Composer, Bundler, NuGet, C/C++, and Swift Package Manager. Separates production vs development dependencies and reports files that failed to parse.
+Detects manifests for npm, pip, Maven/Gradle, Cargo, Go Modules, Composer, Bundler, NuGet, C/C++ (CMakeLists.txt, conanfile.txt/py, vcpkg.json), and Swift Package Manager. Separates production vs development dependencies and reports files that failed to parse.
 
 ### `validate_config`
 
