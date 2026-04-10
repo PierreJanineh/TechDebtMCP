@@ -44,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Security: `path` parameters for `analyze_project`, `analyze_file`, `get_debt_summary`, `get_sqale_metrics`, `get_recommendations`, `get_issues_by_severity`, `get_issues_by_category`, and `execute_custom_rules` are now validated with `isAbsolute()` and normalized with `resolve()` in `inputParser.ts`, preventing path traversal and relative-path attacks (#125)
 
 ### Added
+- CodeQL security scanning workflow (`.github/workflows/codeql.yml`) — runs SAST on every push to `develop`/`master`, every PR to `develop`, and weekly on Mondays at 03:00 UTC; uses `security-and-quality` queries for deeper coverage (#124)
 - CI workflow (`.github/workflows/docs-check.yml`) warns on PRs with `src/` changes when none of the five required docs were touched; non-blocking, posts an actionable comment listing the required files and removes the comment automatically when docs are subsequently updated (#130)
 - Claude Code local hook (`.claude/hooks/pre-pr-docs-check.sh`) warns before `gh pr create` when docs were not updated alongside `src/` changes; the hook lives in `.claude/` which is gitignored and therefore local-only, not distributed with the repo (#130)
 - Direct unit tests for `swiftUiChecks` and `swiftUiChecksPhase2` modules

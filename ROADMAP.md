@@ -185,7 +185,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 | #128 | Unescaped string interpolated into RegExp in swiftUiChecks | Medium | ✅ Fixed — `escapeRegExp()` in `src/utils/regexUtils.ts` |
 | #129 | Absolute filesystem paths leaked in error messages | Low | |
 | #140 | Regex flag allowlist missing `v` (unicodeSets) flag for Node.js 20+ | Low | |
-| #124 | Add CodeQL security scanning workflow | — | |
+| #124 | Add CodeQL security scanning workflow | — | ✅ Done — `.github/workflows/codeql.yml` |
 | #130 | Docs freshness CI check + Claude Code hook | — | |
 
 #### Also included
