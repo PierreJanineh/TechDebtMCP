@@ -49,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - CodeQL security scanning workflow (`.github/workflows/codeql.yml`) — runs SAST on every push to `develop`/`main`, every PR to `develop`/`main`, and weekly on Mondays at 03:00 UTC; uses `security-and-quality` queries for deeper coverage (#124)
+- `cppParser` vcpkg.json tests for empty dependencies array, missing `dependencies` key, and malformed JSON — completing coverage for all `parseVcpkgJson` edge cases (#131)
 - CI workflow (`.github/workflows/docs-check.yml`) warns on PRs with `src/` changes when none of the five required docs were touched; non-blocking, posts an actionable comment listing the required files and removes the comment automatically when docs are subsequently updated (#130)
 - Claude Code local hook (`.claude/hooks/pre-pr-docs-check.sh`) warns before `gh pr create` when docs were not updated alongside `src/` changes; the hook lives in `.claude/` which is gitignored and therefore local-only, not distributed with the repo (#130)
 - Direct unit tests for `swiftUiChecks` and `swiftUiChecksPhase2` modules

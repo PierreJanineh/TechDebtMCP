@@ -161,6 +161,30 @@ zlib/1.2.13`;
       expect(deps.length).toBe(2);
       expect(deps[0]?.name).toBe('boost');
     });
+
+    it('should return empty array for vcpkg.json with empty dependencies', async () => {
+      const content = JSON.stringify({ name: 'myapp', dependencies: [] });
+
+      const deps = await parser.parse('vcpkg.json', content);
+
+      expect(deps).toEqual([]);
+    });
+
+    it('should return empty array for vcpkg.json with no dependencies key', async () => {
+      const content = JSON.stringify({ name: 'myapp', version: '1.0' });
+
+      const deps = await parser.parse('vcpkg.json', content);
+
+      expect(deps).toEqual([]);
+    });
+
+    it('should return empty array for malformed JSON in vcpkg.json', async () => {
+      const content = '{ not valid json ';
+
+      const deps = await parser.parse('vcpkg.json', content);
+
+      expect(deps).toEqual([]);
+    });
   });
 
   describe('error handling', () => {

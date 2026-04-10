@@ -142,7 +142,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 **In Progress:** v2.0.2 Security Patch — Sprint 1 (Apr 13-27)
 
 **Next Up:**
-- **v2.0.2:** Security hardening + refactor merges — Issues #124-130 — Sprint 1
+- **v2.0.2:** Security hardening + refactor merges — Issues #124-131 — Sprint 1
 - **Phase 3 (v2.1.0):** Snapshot & Trend Tracking — Issues #39-44 — Sprint 2-3
 - **Phase 4 (v2.2.0):** Complexity Metrics — Issues #45-49 — Sprint 4-5
 
@@ -536,5 +536,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
 
 ---
 
-**Last Updated:** 2026-04-08
+**Last Updated:** 2026-04-09
 
