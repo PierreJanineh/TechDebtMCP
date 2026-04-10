@@ -557,6 +557,7 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 - **Latest:** [![npm version](https://img.shields.io/npm/v/tech-debt-mcp.svg)](https://www.npmjs.com/package/tech-debt-mcp)
 - **Releases:** [GitHub Releases](https://github.com/PierreJanineh/TechDebtMCP/releases)
 - **Roadmap:** See [ROADMAP.md](ROADMAP.md) for planned features
+- **Security:** `escapeRegExp()` (`src/utils/regexUtils.ts`) must be used when interpolating captured strings into `new RegExp()` — see issue #128
 
 ## License
 

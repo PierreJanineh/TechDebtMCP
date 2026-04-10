@@ -55,7 +55,9 @@ src/
 │       ├── baseParser.ts       # Abstract dependency parser
 │       ├── index.ts            # createDependencyParser() factory
 │       └── [ecosystem]Parser.ts # npm, pip, cargo, gradle, nuget, go.mod, etc.
-└── utils/fileUtils.ts          # fs helpers (readFile, fileExists, getRelativePath)
+└── utils/
+    ├── fileUtils.ts            # fs helpers (readFile, fileExists, getRelativePath)
+    └── regexUtils.ts           # escapeRegExp() — safe RegExp construction helper
 ```
 
 ### Request flow
@@ -188,7 +190,7 @@ When handling user input from MCP tool calls:
 
 - **Path arguments:** Use `requireAbsolutePath(args, 'path')` or `optionalAbsolutePath(args, 'path')` from `inputParser.ts` — these validate with `path.isAbsolute()` and normalize with `path.resolve()`. `optionalAbsolutePath` treats an empty string `""` the same as `undefined` (returns `undefined`). Never use `requireString` for path parameters. This applies to **all** handler files (`handlers.ts`, `configValidator.ts`, `dependencyHandlers.ts`, and any future domain handler). See Issues #125, #126, #137, #139.
 - **User-supplied regex:** Never compile user-provided patterns via `new RegExp()` without length limits and flag allowlisting. For all supported runtimes, allow only `dgimsuy`; allow `v` only when running on Node.js 20+ (`u` and `v` are mutually exclusive and are validated as such). See Issues #127, #140.
-- **String interpolation into RegExp:** Captured strings interpolated into `new RegExp()` must be escaped first (Issue #128 — not yet implemented).
+- **String interpolation into RegExp:** Captured strings interpolated into `new RegExp()` must be escaped first using `escapeRegExp()` from `src/utils/regexUtils.ts`. See Issue #128.
 - **Error messages:** Use `getRelativePath()` in error messages returned to clients — never leak absolute filesystem paths. See Issue #129.
 - **Handler output:** Use `basename()` (from `node:path`) to sanitize project paths in user-facing tool responses (e.g., debt summary, SQALE metrics). Never embed raw absolute paths in formatted output. See Issue #138.
 - **Security constants** in `customRulesEngine.ts`: `MAX_PATTERN_LENGTH` (1,000 chars), `MAX_CODE_LENGTH` (500,000 chars), `MAX_FILE_SIZE_BYTES` (500,000 bytes). Import and reference these — never hardcode the values.
