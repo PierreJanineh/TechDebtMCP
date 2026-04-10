@@ -116,7 +116,7 @@ async function validateDirectoryPath(projectPath: string): Promise<void> {
   if (!(await fileExists(projectPath))) {
     throw new McpError(ErrorCode.InvalidParams, `Project path not found: ${basename(projectPath)}`);
   }
-  let stats;
+  let stats: Awaited<ReturnType<typeof stat>>;
   try {
     stats = await stat(projectPath);
   } catch {
@@ -231,7 +231,8 @@ async function parseAllDependencies(
         });
       } catch (error) {
         const rel = getRelativePath(projectPath, filePath);
-        failedParses.push({ file: rel, error: error instanceof Error ? error.message : String(error) });
+        const rawError = error instanceof Error ? error.message : String(error);
+        failedParses.push({ file: rel, error: rawError.split(filePath).join(rel) });
       }
     }
   }

@@ -144,15 +144,15 @@ export async function handleValidateConfig(args: unknown): Promise<{ content: Ar
     throw new McpError(ErrorCode.InvalidParams, `Path not found: ${basename(inputPath)}`);
   }
 
-  let pathStat;
+  let configPath: string;
   try {
-    pathStat = await stat(inputPath);
+    const pathStat = await stat(inputPath);
+    configPath = pathStat.isDirectory()
+      ? join(inputPath, '.techdebtrc.json')
+      : inputPath;
   } catch {
     throw new McpError(ErrorCode.InvalidParams, `Cannot access path: ${basename(inputPath)}`);
   }
-  const configPath = pathStat.isDirectory()
-    ? join(inputPath, '.techdebtrc.json')
-    : inputPath;
 
   if (!(await fileExists(configPath))) {
     return { content: [{ type: 'text', text: `⚠️ No .techdebtrc.json found at:\n  ${basename(configPath)}\n\nCreate one to customize tech debt analysis for your project.` }] };
