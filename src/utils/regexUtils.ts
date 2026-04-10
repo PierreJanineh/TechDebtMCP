@@ -5,7 +5,7 @@
 /**
  * Escapes all regex metacharacters in a string so it can be safely
  * interpolated into `new RegExp(...)` for literal matching without
- * unintended regex injection or matching behaviour.
+ * unintended regex injection or matching behavior.
  *
  * Escaped characters: . * + ? ^ $ { } ( ) | [ ] \
  *
