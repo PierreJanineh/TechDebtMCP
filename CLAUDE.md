@@ -2,15 +2,33 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Commands
+## Build & Test Commands
+
+For agents and contributors — run these from the repo root. The agent
+that processes PR review threads (pr-automation/pr-reviewer) consults
+this section before pushing, so keep it accurate.
+
+| Stage     | Command            |
+|-----------|--------------------|
+| Install   | `npm ci`           |
+| Typecheck | N/A                |
+| Lint      | `npm run lint`     |
+| Test      | `npm test`         |
+| Build     | `npm run build`    |
+
+**Rules for agents:**
+- These commands are the source of truth. If a stage is **N/A**, skip it entirely — do not search for alternatives, do not run binaries directly (`npx tsc`, `node_modules/.bin/jest`), do not install missing tools, do not modify `package.json` to add scripts.
+- If a listed command fails, fix the underlying issue or report it. Do not "work around" by switching to a different command.
+- If you believe a stage *should* exist but doesn't, surface that as a finding in your PR summary — do not silently add it.
+
+**Known issue:** `npm run lint` currently fails with `eslint: command not found` — the script is declared in `package.json` but `eslint` is not in `devDependencies`. Tracked separately; do not silently remove the Lint row above or patch `package.json` from an agent.
+
+**Dev loop helpers (humans):**
 
 ```bash
-npm test                    # Run all tests
-npm test -- --testPathPatterns=src/analyzers  # Run a specific test suite
-npm run build               # Compile TypeScript
-npm run dev                 # Run with ts-node (no build needed)
-npm run watch               # Compile in watch mode
-npm run lint                # Lint source files
+npm run dev     # ts-node src/index.ts (no build needed)
+npm run watch   # tsc --watch
+npm test -- --testPathPatterns=src/analyzers  # run a single suite
 ```
 
 **Before every commit:** run `npm test` then `npm run build`. Both must succeed.
