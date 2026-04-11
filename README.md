@@ -256,7 +256,7 @@ Add a custom pattern-based tech debt rule.
 - `category` (required): One of the debt categories
 - `suggestion` (optional): How to fix the issue
 - `languages` (optional): Apply only to specific languages
-- `flags` (optional): Regex flags (d, g, i, m, s, u, v, y); `u` and `v` are mutually exclusive. Note: `v` requires Node.js 20+ and is not available on Node.js 18.
+- `flags` (optional): Regex flags (d, g, i, m, s, u, v, y); `u` and `v` are mutually exclusive.
 
 **Example custom rules:**
 

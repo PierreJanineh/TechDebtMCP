@@ -28,7 +28,7 @@ Please be respectful and constructive in all interactions. We aim to maintain a 
 
 ### Prerequisites
 
-- Node.js 18+ and npm
+- Node.js 20+ and npm
 - Git
 
 ### Installation
@@ -61,6 +61,7 @@ src/
 │   ├── resourceHandlers.ts     # MCP resource templates (debt://summary, debt://issues)
 │   ├── formatters.ts           # Output formatting helpers
 │   ├── configValidator.ts      # .techdebtrc.json validation handler
+│   ├── customRulesHandlers.ts  # Custom rules CRUD & execution handlers
 │   └── dependencyHandlers.ts   # Dependency analysis & vulnerability report handlers
 ├── types/index.ts              # Single source of truth for all TypeScript interfaces
 ├── config/languages.ts         # Per-language config: extensions, package files, patterns
@@ -78,7 +79,9 @@ src/
 │       ├── baseParser.ts       # Abstract dependency parser
 │       ├── index.ts            # createDependencyParser() factory
 │       └── [ecosystem]Parser.ts # npm, pip, cargo, gradle, nuget, go.mod, etc.
-└── utils/fileUtils.ts          # fs helpers (readFile, fileExists, getRelativePath)
+└── utils/
+    ├── fileUtils.ts            # fs helpers (readFile, fileExists, getRelativePath)
+    └── regexUtils.ts           # escapeRegExp() — safe RegExp construction helper
 ```
 
 ## How to Contribute
