@@ -97,10 +97,10 @@ Copilot **must** check documentation consistency on every PR. **Do not approve**
 
 ## Git Workflow
 
-- **Branch from `develop`**, never commit to `master` directly
+- **`develop` is the default branch and the single long-lived trunk.** There is no `master` branch — the repo was migrated to a develop-only trunk model. Flag any PR that attempts to (re)introduce `master`.
 - Branch naming: `feature/issue-{N}-short-description` or `fix/issue-{N}-...` (where `{N}` is the GitHub issue number). Internal maintainer branches may also use `feature/tec-{N}-...` or `fix/tec-{N}-...`; both patterns are acceptable.
-- PRs target `develop` for ongoing work, or the active `release/vX.X.X` branch during a release cycle. Flag PRs that target `master` directly.
-- Releases: `release/vX.X.X` is cut from `develop`, fixes merge into it, tag `vX.X.X` is cut on the release branch, GitHub Actions publishes to npm, then `release/vX.X.X` back-merges to `develop` and `master`. Verify the branch structure matches this flow.
+- PRs target `develop` for ongoing work, or the active `release/vX.X.X` branch during a release cycle.
+- Releases: `release/vX.X.X` is cut from `develop`, fixes merge into it, tag `vX.X.X` is cut on the release branch, GitHub Actions publishes to npm, then `release/vX.X.X` back-merges to `develop`. Verify the branch structure matches this flow.
 - **Issues are created on GitHub only.** Verify PR branch names match one of the naming patterns above.
 - **Direct-to-develop commits:** Verify only `.md` files are committed directly to `develop`. Code changes (`src/`, tests, config) must come through a branch and PR.
 - **PR author:** Verify PRs are opened by the bot account (`my-llm-bot[bot]`), not a personal account.
