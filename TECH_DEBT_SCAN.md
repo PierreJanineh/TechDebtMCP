@@ -1,6 +1,6 @@
 # Tech Debt Scan
 
-**Tool:** Tech Debt MCP v2.0.1
+**Tool:** Tech Debt MCP v2.0.2
 **Configuration:** `.techdebtrc.json` (test files excluded)
 
 ## Current Metrics
@@ -8,10 +8,10 @@
 | Metric | Value |
 |--------|-------|
 | SQALE Rating | A |
-| Health Score | 79.2/100 |
-| Debt Score | 20.8/100 |
-| Total Issues | 58 |
-| Remediation Time | 2d 9h 45m |
+| Health Score | 95.6/100 |
+| Debt Score | 4.4/100 |
+| Total Issues | 12 |
+| Remediation Time | 12h |
 
 ## Issues Breakdown
 
@@ -20,76 +20,50 @@
 | Severity | Count | Remediation |
 |----------|-------|-------------|
 | 🔴 Critical | 0 | 0m |
-| 🟠 High | 1 | 2h |
-| 🟡 Medium | 20 | 38h 30m |
-| 🟢 Low | 37 | 17h 15m |
+| 🟠 High | 0 | 0m |
+| 🟡 Medium | 5 | 8h 30m |
+| 🟢 Low | 7 | 3h 30m |
 
 ### By Category
 
 | Category | Count | Remediation |
 |----------|-------|-------------|
-| Code Quality | 38 | 17h 45m |
-| Maintainability | 20 | 40h |
+| Code Quality | 8 | 4h |
+| Maintainability | 4 | 8h |
 
 ## Detailed Issues
 
-### 🟠 High (1)
+### 🟡 Medium (5)
 
 | File | Line | Rule | Title | Effort |
 |------|------|------|-------|--------|
-| `src/analyzers/csharpAnalyzer.ts` | 360 | `nesting-depth` | Deep nesting detected | medium |
-
-### 🟡 Medium (20)
-
-| File | Line | Rule | Title | Effort |
-|------|------|------|-------|--------|
-| `jest.config.js` | 12 | `nesting-depth` | Deep nesting detected | medium |
-| `src/server/handlers.ts` | — | `file-length` | File is too long (519 lines) | medium |
-| `src/server/handlers.ts` | 271 | `nesting-depth` | Deep nesting detected | medium |
-| `src/server/dependencyHandlers.ts` | 227 | `nesting-depth` | Deep nesting detected | medium |
-| `src/core/customRulesEngine.ts` | 258 | `nesting-depth` | Deep nesting detected | medium |
+| `src/server/handlers.ts` | 273 | `nesting-depth` | Deep nesting detected | medium |
+| `src/server/dependencyHandlers.ts` | 228 | `nesting-depth` | Deep nesting detected | medium |
+| `src/core/customRulesEngine.ts` | 156 | `nesting-depth` | Deep nesting detected (depth 6) | medium |
 | `src/core/analysisEngine.ts` | 257 | `nesting-depth` | Deep nesting detected | medium |
-| `src/analyzers/typescriptAnalyzer.ts` | 145 | `nesting-depth` | Deep nesting detected | medium |
-| `src/analyzers/swiftUiChecksPhase2.ts` | 33 | `nesting-depth` | Deep nesting detected | medium |
-| `src/analyzers/swiftUiChecks.ts` | 132 | `nesting-depth` | Deep nesting detected | medium |
-| `src/analyzers/swiftAnalyzer.ts` | 188 | `nesting-depth` | Deep nesting detected | medium |
 | `src/analyzers/swiftAnalyzer.ts` | 174 | `non-null-assertion` | Non-null assertion operator used | small |
-| `src/analyzers/pythonAnalyzer.ts` | 141 | `nesting-depth` | Deep nesting detected | medium |
-| `src/analyzers/objectivecAnalyzer.ts` | 132 | `nesting-depth` | Deep nesting detected | medium |
-| `src/analyzers/javascriptAnalyzer.ts` | 111 | `nesting-depth` | Deep nesting detected | medium |
-| `src/analyzers/javaAnalyzer.ts` | 148 | `nesting-depth` | Deep nesting detected | medium |
-| `src/analyzers/cppAnalyzer.ts` | 221 | `nesting-depth` | Deep nesting detected | medium |
-| `src/analyzers/cAnalyzer.ts` | 119 | `nesting-depth` | Deep nesting detected | medium |
-| `src/analyzers/baseAnalyzer.ts` | 203 | `nesting-depth` | Deep nesting detected | medium |
-| `src/analyzers/dependencies/pipParser.ts` | 84 | `nesting-depth` | Deep nesting detected | medium |
-| `src/analyzers/dependencies/cppParser.ts` | 61 | `nesting-depth` | Deep nesting detected | medium |
 
-### 🟢 Low (37)
+### 🟢 Low (7)
 
 | File | Line | Rule | Title | Effort |
 |------|------|------|-------|--------|
-| `src/index.ts` | 15 | `console-log` | Console statement found | trivial |
 | `src/utils/fileUtils.ts` | 73 | `type-assertion` | Type assertion used | small |
 | `src/types/index.ts` | 277 | `type-assertion` | Type assertion used | small |
-| `src/server/tools.ts` | — | `line-length` | Multiple long lines detected (14) | small |
 | `src/server/tools.ts` | 201 | `type-assertion` | Type assertion used | small |
-| `src/server/setup.ts` | 30 | `console-log` | Console statement found | trivial |
-| `src/server/setup.ts` | 60 | `console-log` | Console statement found | trivial |
 | `src/server/resourceHandlers.ts` | 5 | `type-assertion` | Type assertion used | small |
 | `src/server/resourceHandlers.ts` | 6 | `type-assertion` | Type assertion used | small |
-| `src/server/inputParser.ts` | 100 | `type-assertion` | Type assertion used | small |
-| ... | | | *(27 more — mostly `type-assertion` in `src/server/inputParser.ts` and dependency parsers)* | |
+| `src/server/configValidator.ts` | 8 | `type-assertion` | Type assertion used | small |
+| `src/core/customRulesEngine.ts` | 123 | `type-assertion` | Type assertion used | small |
 
 ## Scan History
 
 | Commit | Health | Issues | High | Med | Low | Remediation | Notes |
 |--------|--------|--------|------|-----|-----|-------------|-------|
 | `210c50a` | 42.4 | 118 | 12 | 49 | 57 | ~96h | Baseline — before ruleExclusions, nesting refactors |
-| `0b3db51` | 80.6 | 55 | 1 | 18 | 36 | 2d 5h 15m | Post PR #113, #118, #119, #122; ruleExclusions applied |
-| `c3a7036` | 79.2 | 58 | 1 | 20 | 37 | 2d 9h 45m | Post PRs #134, #135, #136; security hardening added nesting in customRulesEngine + handlers file-length |
+| `8c4be30` | 95.6 | 12 | 0 | 5 | 7 | 12h | v2.0.2 release prep; remaining debt is 4 nesting hotspots + type assertions + one non-null assertion |
 
 ## Files Analyzed
 
-- **Total Files:** 47
-- **Languages:** TypeScript, JavaScript
+- **Total Files:** 48
+- **Languages:** TypeScript
 - **Package Managers:** npm
