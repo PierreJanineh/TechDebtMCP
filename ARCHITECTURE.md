@@ -617,7 +617,7 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
 
 **Current Status (v2.0.2, April 2026):**
 - **SQALE Rating:** A ⭐⭐⭐⭐⭐ (Excellent)
-- **Debt Score:** 5/100 (Target: <5%)
+- **Debt Score:** 5/100 (Target: <5/100)
 - **Health Score:** 95/100
 - **Total Issues:** 13 (0 critical, 0 high, 6 medium, 7 low)
 - **Remediation Time:** 14 hours
@@ -631,7 +631,7 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
 | Metric | Limit | Current Max | Status |
 |--------|-------|-------------|--------|
 | File length | 500 lines | 346 (`src/server/handlers.ts`) | ✅ Good (further reduced in v2.0.2 after custom-rules handler extraction) |
-| Nesting depth | 4 levels | ≤4 (all files) | ✅ Good (csharpAnalyzer fixed in PR #113, engines in PR #118, cppParser fixed in #131) |
+| Nesting depth | 4 levels | 6 (5 hotspots) | ⚠️ Known — 5 remaining hotspots (max depth 6 in `customRulesEngine.ts`); tracked in [TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md) |
 | Function length | 50 lines | Compliant | ✅ Good |
 | Cyclomatic complexity | 10 | Compliant | ✅ Good |
 
@@ -654,6 +654,8 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
    - ~~`src/core/customRulesEngine.ts:validatePattern` - 6 levels~~ ✅ **DONE** (#146) — extracted `validatePatternRegex` private helper
    - ~~`src/core/analysisEngine.ts:93` - 5 levels~~ ✅ **DONE** (PR #118) — refactored to ≤4 levels via early returns
    - ~~`src/analyzers/dependencies/cppParser.ts` - 5 levels in `parseVcpkgJson`~~ ✅ **DONE** (#131) — extracted `makeVcpkgDep()` helper and early-return guard
+
+   **Remaining (v2.0.2):** 5 active nesting hotspots — `customRulesEngine.ts:156` (depth 6), `handlers.ts:273`, `dependencyHandlers.ts:228`, `analysisEngine.ts:257`, `eslint.config.mjs:25` (all depth 5). See [TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md).
 
 6. **Test file organization** - Previously had 9-level deep nesting
    - Now excluded from production analysis via `.techdebtrc.json`

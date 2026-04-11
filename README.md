@@ -498,7 +498,7 @@ Tech Debt MCP practices what it preaches — built with AI-assisted vibe coding,
 ### Self-Scan Results (v2.0.2, April 2026)
 
 - **SQALE Rating:** A (Excellent)
-- **Debt Score:** 5/100 (Target: <5%)
+- **Debt Score:** 5/100 (Target: <5/100)
 - **Total Issues:** 13 (0 critical, 0 high, 6 medium, 7 low)
 - **Remediation Time:** 14 hours
 - **Health Score:** 95/100
