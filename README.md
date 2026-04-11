@@ -508,11 +508,13 @@ Tech Debt MCP practices what it preaches — built with AI-assisted vibe coding,
 ## Development
 
 ```bash
-npm install       # Install dependencies
-npm run build     # Compile TypeScript
-npm run dev       # Run with ts-node
-npm run watch     # Watch mode
-npm test          # Run tests
+npm install --include=dev --ignore-scripts  # Install dependencies (incl. devDependencies)
+npm run typecheck  # Type-check without emitting output
+npm run lint       # Lint source files
+npm run build      # Compile TypeScript
+npm run dev        # Run with ts-node
+npm run watch      # Watch mode
+npm test           # Run tests
 ```
 
 ## Documentation
