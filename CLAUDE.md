@@ -91,7 +91,7 @@ src/
 - **Factory pattern** — use `createAnalyzer(language, config)` and `createDependencyParser(filePath)`.
 - **BaseAnalyzer.checkPattern()** — the standard way to match regex patterns and emit `TechDebtIssue` objects.
 - **Domain handler extraction** — when handlers.ts grows, extract domain-specific handlers to dedicated files (e.g., `configValidator.ts`, `customRulesHandlers.ts`, `dependencyHandlers.ts`, `resourceHandlers.ts`).
-- **No `any`** — use `unknown` if truly needed; no `@ts-ignore` (use `@ts-expect-error` with a comment).
+- **Prefer `unknown` over `any`** — the ESLint rule is set to `warn` (not error) so narrowly-scoped boundary uses surface without blocking CI; new code should use `unknown`. No `@ts-ignore` (use `@ts-expect-error` with a comment).
 - **No `console.log`** in production code.
 - **JSDoc on all public functions.**
 

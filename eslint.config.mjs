@@ -11,10 +11,10 @@ export default tseslint.config(
   {
     files: ['src/**/*.ts'],
     rules: {
-      // Project conventions intentionally use `any` for Jest mock shapes
-      // and for genuinely-unknown values at system boundaries. Prefer
-      // `unknown`, but do not fail the build on existing call sites.
-      '@typescript-eslint/no-explicit-any': 'off',
+      // Prefer `unknown` over `any`. Test files are lint-excluded; the
+      // narrow production uses at system boundaries are surfaced as warnings
+      // without blocking CI, so they can be addressed incrementally.
+      '@typescript-eslint/no-explicit-any': 'warn',
       // The analyzer uses non-null assertions in controlled places after
       // length checks / regex matches; these are ergonomic, not risky.
       '@typescript-eslint/no-non-null-assertion': 'off',

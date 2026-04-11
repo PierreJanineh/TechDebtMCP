@@ -11,7 +11,12 @@ import {
   DebtCategory,
 } from '../types/index.js';
 import { analyzeFile } from '../analyzers/index.js';
-import { LANGUAGE_CONFIGS } from '../config/languages.js';
+import {
+  LANGUAGE_CONFIGS,
+  detectLanguageFromExtension,
+  getAllExtensions,
+  getSupportedLanguages,
+} from '../config/languages.js';
 import { SQALEEngine } from './sqaleEngine.js';
 import {
   getProjectFiles,
@@ -19,11 +24,6 @@ import {
   findPackageFiles,
   getRelativePath,
 } from '../utils/fileUtils.js';
-import {
-  detectLanguageFromExtension,
-  getAllExtensions,
-  getSupportedLanguages,
-} from '../config/languages.js';
 
 /**
  * Main analysis engine
