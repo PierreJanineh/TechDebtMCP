@@ -2,22 +2,42 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Commands
+## Build & Test Commands
+
+For agents and contributors — run these from the repo root. The agent
+that processes PR review threads (pr-automation/pr-reviewer) consults
+this section before pushing, so keep it accurate.
+
+| Stage         | Command                                       |
+|---------------|-----------------------------------------------|
+| Install (CI)  | `npm ci --ignore-scripts`                     |
+| Install (dev) | `npm install --include=dev --ignore-scripts`  |
+| Typecheck     | `npm run typecheck`                           |
+| Lint          | `npm run lint`                                |
+| Test          | `npm test`                                    |
+| Build         | `npm run build`                               |
+
+**Rules for agents:**
+- These commands are the source of truth. If a stage is **N/A**, skip it entirely — do not search for alternatives, do not run binaries directly (`node_modules/.bin/jest`), do not install missing tools, do not modify `package.json` to add scripts.
+- If a listed command fails, fix the underlying issue or report it. Do not "work around" by switching to a different command.
+- If you believe a stage *should* exist but doesn't, surface that as a finding in your PR summary — do not silently add it.
+- **Install context matters.** Both install commands pass `--ignore-scripts` because `package.json` declares `"prepare": "npm run build"` — leaving the hook enabled causes every install to run `tsc`, which duplicates the later Build step and wastes CI minutes. In CI, `npm ci --ignore-scripts` fails fast on lockfile drift while skipping the double-compile. Locally, `npm install --include=dev --ignore-scripts` additionally pulls the devDependencies that an agent needs for `npm run lint` / `npm test`.
+
+Lint config lives in `eslint.config.mjs` (flat config, ESLint 10 + typescript-eslint 8). Tests and build scripts are ignored by lint; only `src/**/*.ts` is checked.
+
+**Dev loop helpers (humans):**
 
 ```bash
-npm test                    # Run all tests
-npm test -- --testPathPatterns=src/analyzers  # Run a specific test suite
-npm run build               # Compile TypeScript
-npm run dev                 # Run with ts-node (no build needed)
-npm run watch               # Compile in watch mode
-npm run lint                # Lint source files
+npm run dev     # ts-node src/index.ts (no build needed)
+npm run watch   # tsc --watch
+npm test -- --testPathPatterns=src/analyzers  # run a single suite
 ```
 
 **Before every commit:** run `npm test` then `npm run build`. Both must succeed.
 
 ## Gotchas
 
-- After checking out a branch or creating a worktree, always run `npm install` before running tests or using node modules.
+- After checking out a branch or creating a worktree, always run `npm install --include=dev --ignore-scripts` before running tests or using node modules. This is the canonical dev install — see the Install row of the Build & Test Commands table for the reasoning.
 - **Pre-commit hook enforces doc updates** for any branch that changes `src/` files — see `.claude/rules/docs-maintenance.md` for the file list. For pure bug fixes or refactors, a minimal touch (e.g., bumping "Last Updated") satisfies the hook.
 - **Worktree agents cannot push with bot tokens** — the repository's "Global Updates" ruleset blocks app installation tokens. Push from the main workspace after the agent finishes, or use the default credentials which have bypass.
 
@@ -73,7 +93,7 @@ src/
 - **Factory pattern** — use `createAnalyzer(language, config)` and `createDependencyParser(filePath)`.
 - **BaseAnalyzer.checkPattern()** — the standard way to match regex patterns and emit `TechDebtIssue` objects.
 - **Domain handler extraction** — when handlers.ts grows, extract domain-specific handlers to dedicated files (e.g., `configValidator.ts`, `customRulesHandlers.ts`, `dependencyHandlers.ts`, `resourceHandlers.ts`).
-- **No `any`** — use `unknown` if truly needed; no `@ts-ignore` (use `@ts-expect-error` with a comment).
+- **Prefer `unknown` over `any`** — the ESLint rule is set to `warn` (not error) so narrowly-scoped boundary uses surface without blocking CI; new code should use `unknown`. No `@ts-ignore` (use `@ts-expect-error` with a comment).
 - **No `console.log`** in production code.
 - **JSDoc on all public functions.**
 

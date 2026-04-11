@@ -2,8 +2,6 @@ name: Docs Freshness Check
 
 on:
   pull_request:
-    branches:
-      - develop
 
 jobs:
   docs-check:

@@ -5,10 +5,8 @@ on:
     branches:
       - main
       - develop
+      - 'release/**'
   pull_request:
-    branches:
-      - main
-      - develop
 
 jobs:
   test:
@@ -29,11 +27,10 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run linter
-        run: npm run lint --if-present
-        continue-on-error: true
+        run: npm run lint
 
       - name: Run tests
         run: npm test
@@ -51,8 +48,8 @@ jobs:
           echo "Contents:"
           ls -la dist/
 
-      - name: Check for TypeScript errors
-        run: npx tsc --noEmit
+      - name: Typecheck
+        run: npm run typecheck
 
       - name: Test Summary
         if: always()
@@ -80,7 +77,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run tests with coverage
         run: npm test -- --coverage --coverageReporters=text --coverageReporters=lcov
