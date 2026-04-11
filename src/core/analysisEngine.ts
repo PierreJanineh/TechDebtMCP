@@ -11,6 +11,7 @@ import {
   DebtCategory,
 } from '../types/index.js';
 import { analyzeFile } from '../analyzers/index.js';
+import { LANGUAGE_CONFIGS } from '../config/languages.js';
 import { SQALEEngine } from './sqaleEngine.js';
 import {
   getProjectFiles,
@@ -38,7 +39,6 @@ export class AnalysisEngine {
    * Analyze an entire project
    */
   async analyzeProject(options: AnalysisOptions): Promise<TechDebtReport> {
-    const startTime = Date.now();
     const { path: projectPath } = options;
 
     // Load project config if exists
@@ -378,7 +378,6 @@ export function getLanguageDetails(): Array<{
   extensions: string[];
 }> {
   const languages = getSupportedLanguages();
-  const { LANGUAGE_CONFIGS } = require('../config/languages.js');
 
   return languages.map(lang => ({
     id: lang,

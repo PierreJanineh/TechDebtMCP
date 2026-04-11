@@ -21,7 +21,7 @@ this section before pushing, so keep it accurate.
 - If a listed command fails, fix the underlying issue or report it. Do not "work around" by switching to a different command.
 - If you believe a stage *should* exist but doesn't, surface that as a finding in your PR summary — do not silently add it.
 
-**Known issue:** `npm run lint` currently fails with `eslint: command not found` — the script is declared in `package.json` but `eslint` is not in `devDependencies`. Tracked separately; do not silently remove the Lint row above or patch `package.json` from an agent.
+Lint config lives in `eslint.config.mjs` (flat config, ESLint 10 + typescript-eslint 8). Tests and build scripts are ignored by lint; only `src/**/*.ts` is checked.
 
 **Dev loop helpers (humans):**
 
