@@ -615,14 +615,14 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
 
 ### Project Health Metrics (Self-Scan)
 
-**Current Status (March 20, 2026):**
+**Current Status (v2.0.2, April 2026):**
 - **SQALE Rating:** A ⭐⭐⭐⭐⭐ (Excellent)
-- **Debt Ratio:** 4.6% (Target: <5%)
-- **Health Score:** 42.4/100
-- **Total Issues:** 118 (0 critical, 12 high, 49 medium, 57 low)
-- **Remediation Time:** ~96 hours
+- **Debt Score:** 5/100 (Target: <5%)
+- **Health Score:** 95/100
+- **Total Issues:** 13 (0 critical, 0 high, 6 medium, 7 low)
+- **Remediation Time:** 14 hours
 
-**Note:** Issue count increased from 81 → 118 due to more files analyzed (wider scan scope in v2.0.1), not regression.
+**Note:** Down from 118 issues / 42.4 health in the v2.0.1 baseline after v2.0.2 security hardening, `ruleExclusions` config, nesting refactors (PRs #113, #118, #131, #146), and custom-rules handler extraction (#145). Remaining debt is 5 nesting hotspots (4 in server / core modules + 1 in `eslint.config.mjs`), 7 type-assertion usages at system boundaries, and 1 non-null assertion.
 
 > See [TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md) for complete analysis including before/after comparison.
 
@@ -635,7 +635,7 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
 | Function length | 50 lines | Compliant | ✅ Good |
 | Cyclomatic complexity | 10 | Compliant | ✅ Good |
 
-**Note:** File count increased from 25 to 43 between Feb and March scans due to wider analysis scope (more analyzers, dependency parsers added in v2.0.0/v2.0.1).
+**Note:** File count grew from 25 → 43 → 49 across Feb 2026 → March 2026 → April 2026 scans as more analyzers, dependency parsers, server modules, and the ESLint flat config were added across v2.0.0, v2.0.1, and v2.0.2.
 
 ### Known Technical Debt Items
 
@@ -681,11 +681,16 @@ These rules are enforced via `.techdebtrc.json` and CI checks:
 - Analyzer files may reference keywords (e.g., "debugger" in pattern definitions)
 - Configuration in `.techdebtrc.json` excludes test directories
 
-**Configuration Impact (Measured, March 2026):**
+**Configuration Impact (Measured, v2.0.2 April 2026):**
 ```bash
-# With .techdebtrc.json:
+# v2.0.2 (April 2026, post security hardening + nesting refactors):
+- 13 issues, 14 hours remediation
+- 49 files analyzed (TypeScript + the eslint flat config)
+- 0 high-severity issues
+
+# v2.0.1 baseline (March 2026, wider scan scope):
 - 118 issues, ~96 hours remediation
-- 43 files analyzed (wider scope in v2.0.1)
+- 43 files analyzed
 - 12 high-severity issues
 
 # Original baseline (Feb 2026, pre-.techdebtrc.json):
