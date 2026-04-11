@@ -503,7 +503,7 @@ Tech Debt MCP practices what it preaches — built with AI-assisted vibe coding,
 - **Remediation Time:** 14 hours
 - **Health Score:** 95/100
 
-> Down from 118 issues / 42.4 health in the v2.0.1 baseline after the v2.0.2 security hardening, `ruleExclusions` config, nesting refactors (PRs #113, #118, #131, #146), and custom-rules handler extraction (#145). Remaining debt: 5 nesting hotspots (4 in server / core modules + 1 in `eslint.config.mjs`), 7 type-assertion usages at system boundaries, and 1 non-null assertion. See [TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md) for per-issue detail.
+> Down from 118 issues / 42.4 health in the v2.0.1 baseline after the v2.0.2 security hardening, `ruleExclusions` config, nesting refactors (#113, #118, #131, #146), and custom-rules handler extraction (#145). Remaining debt: 5 nesting hotspots (4 in server / core modules + 1 in `eslint.config.mjs`), 7 type-assertion usages at system boundaries, and 1 non-null assertion. See [TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md) for per-issue detail.
 
 ## Development
 
