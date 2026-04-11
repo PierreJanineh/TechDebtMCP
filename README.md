@@ -186,162 +186,111 @@ For development: `npm run dev`
 | | `get_vulnerability_report` | Offline dependency inventory for CVE review |
 | | `validate_config` | Validate `.techdebtrc.json` schema |
 
+**Debt categories used throughout:** `dependency` · `code-quality` · `architecture` · `documentation` · `testing` · `security` · `performance` · `maintainability`
+
 <details>
-<summary><strong>Full parameter reference</strong></summary>
+<summary><strong>Analysis — parameter reference</strong></summary>
 
-### `analyze_project`
+| Tool | Parameter | Type | Required | Constraints / default | Description |
+|------|-----------|------|:--------:|----------------------|-------------|
+| `analyze_project` | `path` | string | ✓ | absolute filesystem path | Project root directory |
+| | `languages` | string[] | | | Filter to specific languages |
+| | `categories` | string[] | | see categories above | Filter by debt categories |
+| | `severity` | enum | | `low` / `medium` / `high` / `critical` | Minimum severity level |
+| | `maxFiles` | integer | | min: 1 | Cap on files analyzed |
+| `analyze_file` | `path` | string | ✓ | absolute filesystem path | File to analyze |
+| `get_debt_summary` | `path` | string | ✓ | absolute filesystem path | Project root directory |
+| `get_sqale_metrics` | `path` | string | ✓ | absolute filesystem path | Project root directory |
+| | `developmentTime` | number | | hours | Estimated dev time for debt-ratio calc |
 
-Analyze an entire project for technical debt.
+`get_sqale_metrics` returns a SQALE rating (A-E) with star visualization, total remediation time, debt ratio, and breakdowns by severity and category.
 
-- `path` (required): Absolute path to the project root
-- `languages` (optional): Array of languages to analyze
-- `categories` (optional): Filter by debt categories
-- `severity` (optional): Minimum severity level (low, medium, high, critical)
-- `maxFiles` (optional): Maximum files to analyze
+</details>
 
-### `analyze_file`
+<details>
+<summary><strong>Filtering — parameter reference</strong></summary>
 
-Analyze a single file for technical debt.
+| Tool | Parameter | Type | Required | Constraints / default | Description |
+|------|-----------|------|:--------:|----------------------|-------------|
+| `get_recommendations` | `path` | string | ✓ | absolute filesystem path | Project root directory |
+| | `limit` | integer | | default: 5, min: 1 | Max recommendations to return |
+| `get_issues_by_severity` | `path` | string | ✓ | absolute filesystem path | Project root directory |
+| | `severity` | enum | ✓ | `low` / `medium` / `high` / `critical` | Severity to filter by |
+| `get_issues_by_category` | `path` | string | ✓ | absolute filesystem path | Project root directory |
+| | `category` | enum | ✓ | see categories above | Debt category to filter by |
+| `list_supported_languages` | — | — | — | — | No parameters |
 
-- `path` (required): Absolute path to the file
+</details>
 
-### `get_debt_summary`
+<details>
+<summary><strong>Custom Rules — parameter reference</strong></summary>
 
-Get a quick summary of technical debt in a project.
+| Tool | Parameter | Type | Required | Constraints / default | Description |
+|------|-----------|------|:--------:|----------------------|-------------|
+| `add_custom_rule` | `id` | string | ✓ | | Unique rule identifier |
+| | `pattern` | string | ✓ | max 1,000 chars | Regex pattern to match |
+| | `message` | string | ✓ | | Issue title/message |
+| | `severity` | enum | ✓ | `low` / `medium` / `high` / `critical` | Severity level |
+| | `category` | enum | ✓ | see categories above | Debt category |
+| | `suggestion` | string | | | How to fix the issue |
+| | `languages` | string[] | | | Restrict to specific languages |
+| | `flags` | string | | allowed: `d g i m s u v y`; `u` / `v` mutually exclusive | Regex flags |
+| `remove_custom_rule` | `id` | string | ✓ | | Rule ID to remove |
+| `list_custom_rules` | — | — | — | — | No parameters |
+| `execute_custom_rules` | `path` | string | ◐ | absolute path, max 500,000 bytes | File to analyze |
+| | `code` | string | ◐ | 1-500,000 chars | Source code to analyze directly |
+| | `language` | string | | | Filter rules by language |
+| `validate_custom_pattern` | `id` | string | ✓ | | Unique rule identifier |
+| | `pattern` | string | ✓ | max 1,000 chars | Regex to validate |
+| | `message` | string | ✓ | | Issue title/message |
+| | `severity` | enum | ✓ | `low` / `medium` / `high` / `critical` | Severity level |
+| | `category` | enum | ✓ | see categories above | Debt category |
 
-- `path` (required): Absolute path to the project root
+◐ `execute_custom_rules` requires **either** `path` **or** `code`, not both required. An empty string `""` for `path` is treated the same as omitting the field.
 
-### `get_sqale_metrics`
+</details>
 
-Get SQALE technical debt metrics including remediation time, debt ratio, and rating.
+<details>
+<summary><strong>Dependencies — parameter reference</strong></summary>
 
-- `path` (required): Absolute path to the project root
-- `developmentTime` (optional): Estimated development time in hours (for debt ratio calculation)
+| Tool | Parameter | Type | Required | Constraints / default | Description |
+|------|-----------|------|:--------:|----------------------|-------------|
+| `check_dependencies` | `path` | string | ✓ | absolute filesystem path | Project root directory |
+| | `includeDev` | boolean | | default: `true` | Include dev/test dependencies |
+| `get_vulnerability_report` | `path` | string | ✓ | absolute filesystem path | Project root directory |
+| | `includeDev` | boolean | | default: `false` | Include dev dependencies |
+| `validate_config` | `path` | string | ✓ | absolute filesystem path | Project root directory **or** direct path to `.techdebtrc.json` |
 
-Output includes SQALE rating (A-E) with star visualization, total remediation time, debt ratio, and breakdowns by severity and category.
-
-### `get_recommendations`
-
-Get prioritized recommendations for addressing technical debt.
-
-- `path` (required): Absolute path to the project root
-- `limit` (optional): Maximum recommendations to return
-
-### `get_issues_by_severity`
-
-Get all issues of a specific severity level.
-
-- `path` (required): Absolute path to the project root
-- `severity` (required): low, medium, high, or critical
-
-### `get_issues_by_category`
-
-Get all issues of a specific category.
-
-- `path` (required): Absolute path to the project root
-- `category` (required): dependency, code-quality, architecture, documentation, testing, security, performance, or maintainability
-
-### `list_supported_languages`
-
-List all supported programming languages with their checks. No parameters.
-
-### `add_custom_rule`
-
-Add a custom pattern-based tech debt rule.
-
-- `id` (required): Unique identifier for the rule
-- `pattern` (required): Regex pattern to match
-- `message` (required): Issue title/message
-- `severity` (required): low, medium, high, or critical
-- `category` (required): One of the debt categories
-- `suggestion` (optional): How to fix the issue
-- `languages` (optional): Apply only to specific languages
-- `flags` (optional): Regex flags (d, g, i, m, s, u, v, y); `u` and `v` are mutually exclusive.
-
-**Example custom rules:**
-
-```json
-[
-  {
-    "id": "no-magic-numbers",
-    "pattern": "=\\s*\\d{3,}",
-    "severity": "medium",
-    "category": "maintainability",
-    "message": "Magic number detected",
-    "suggestion": "Extract to named constant"
-  },
-  {
-    "id": "forbidden-library",
-    "pattern": "import.*moment.*from",
-    "severity": "medium",
-    "category": "dependency",
-    "message": "moment.js is deprecated",
-    "suggestion": "Use native Date or date-fns instead",
-    "languages": ["javascript", "typescript"]
-  }
-]
-```
-
-### `remove_custom_rule`
-
-Remove a custom rule by ID.
-
-- `id` (required): ID of the rule to remove
-
-### `list_custom_rules`
-
-List all active custom rules with their statistics. No parameters.
-
-### `execute_custom_rules`
-
-Run all custom rules against code or a file.
-
-- `path` (optional): Absolute path to the file to analyze (maximum 500,000 bytes)
-- `code` (optional): Code content to analyze directly (max 500,000 characters)
-- `language` (optional): Programming language for filtering rules
-
-_Either `path` or `code` must be provided. If `path` is supplied, it must be an absolute filesystem path. An empty string `""` is treated the same as omitting the field._
-
-### `validate_custom_pattern`
-
-Validate a custom pattern before adding it as a rule.
-
-- `id` (required): Unique identifier for the rule
-- `pattern` (required): Regex pattern to validate
-- `message` (required): Issue title/message
-- `severity` (required): low, medium, high, or critical
-- `category` (required): One of the debt categories
-
-### `check_dependencies`
-
-Scan a project for package manifests and return a structured dependency report.
-
-- `path` (required): Absolute path to the project root
-- `includeDev` (optional): boolean (default: true) — include dev/test dependencies
-
-Detects manifests for npm, pip, Maven/Gradle, Cargo, Go Modules, Composer, Bundler, NuGet, C/C++ (CMakeLists.txt, conanfile.txt/py, vcpkg.json), and Swift Package Manager. Separates production vs development dependencies and reports files that failed to parse.
-
-### `validate_config`
-
-Validate a `.techdebtrc.json` configuration file for schema correctness.
-
-- `path` (required): Absolute path to the project root directory or directly to a `.techdebtrc.json` file
-
-### `get_vulnerability_report`
-
-Generate an offline dependency inventory for vulnerability review. Lists all dependencies by ecosystem in a tabular format. See [ROADMAP.md](ROADMAP.md) for planned online CVE lookup.
-
-- `path` (required): Absolute path to the project root
-- `includeDev` (optional): boolean (default: false) — include dev dependencies in the report
+`check_dependencies` detects manifests for npm, pip, Maven/Gradle, Cargo, Go Modules, Composer, Bundler, NuGet, C/C++ (CMakeLists.txt, conanfile.txt/py, vcpkg.json), and Swift Package Manager. `get_vulnerability_report` produces an offline dependency inventory — see [ROADMAP.md](ROADMAP.md) for planned online CVE lookup.
 
 </details>
 
 ## Resources
 
-| URI | Description |
-|-----|-------------|
-| `debt://summary/{+projectPath}` | Health score, debt score, issue counts, SQALE metrics (JSON) — `projectPath` must be an absolute filesystem path |
-| `debt://issues/{+projectPath}` | Filterable list of all tech debt issues (JSON) — `projectPath` must be an absolute filesystem path; supports `severity`, `category`, `limit` query params |
+Two MCP resources expose read-only tech debt data as JSON. Both use [RFC 6570 URI templates](https://datatracker.ietf.org/doc/html/rfc6570): the `{+projectPath}` syntax is *reserved expansion*, which allows the variable to contain the `/` characters of an absolute filesystem path without percent-encoding.
+
+| URI template | Description |
+|--------------|-------------|
+| `debt://summary/{+projectPath}` | Health score, debt score, issue counts, and SQALE metrics |
+| `debt://issues/{+projectPath}` | Filterable list of all tech debt issues; supports `severity`, `category`, and `limit` query params |
+
+**Concrete examples** — substitute `{+projectPath}` with an absolute path. Note the double slash: the template's trailing `/` plus the path's leading `/` produce `//`, which is valid URI syntax.
+
+```
+debt://summary//Users/you/projects/myapp
+debt://issues//Users/you/projects/myapp
+debt://issues//Users/you/projects/myapp?severity=high&limit=50
+debt://issues//Users/you/projects/myapp?category=security
+```
+
+**Testing interactively** — the easiest way to exercise tools and resources is the [MCP Inspector](https://github.com/modelcontextprotocol/inspector):
+
+```bash
+npm run build
+npx @modelcontextprotocol/inspector node dist/index.js
+```
+
+Open the URL it prints, switch to the **Resources** tab, and read a template URI with your absolute project path.
 
 ## Configuration
 
@@ -407,6 +356,32 @@ issues.push(...this.checkPattern(filePath, content, /@ts-ignore/g, { ... }));
 ```
 
 Without a rule name, all rules are suppressed. Blocks can be nested. Suppression comments must appear on their own line.
+
+### Example Custom Rules
+
+Define patterns in `.techdebtrc.json` under `customPatterns`, or register them at runtime via the `add_custom_rule` MCP tool:
+
+```json
+[
+  {
+    "id": "no-magic-numbers",
+    "pattern": "=\\s*\\d{3,}",
+    "severity": "medium",
+    "category": "maintainability",
+    "message": "Magic number detected",
+    "suggestion": "Extract to named constant"
+  },
+  {
+    "id": "forbidden-library",
+    "pattern": "import.*moment.*from",
+    "severity": "medium",
+    "category": "dependency",
+    "message": "moment.js is deprecated",
+    "suggestion": "Use native Date or date-fns instead",
+    "languages": ["javascript", "typescript"]
+  }
+]
+```
 
 ## SQALE Metrics
 
