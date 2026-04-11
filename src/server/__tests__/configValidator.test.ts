@@ -7,15 +7,42 @@ jest.mock('../../utils/fileUtils.js', () => ({
 }));
 
 jest.mock('node:fs/promises', () => ({
-  readFile: jest.fn(),
+  open: jest.fn(),
 }));
 
 import { handleValidateConfig } from '../configValidator.js';
 import { getFileStats } from '../../utils/fileUtils.js';
-import { readFile as fsReadFile } from 'node:fs/promises';
+import { open } from 'node:fs/promises';
 
 const mockGetFileStats = getFileStats as jest.MockedFunction<typeof getFileStats>;
-const mockFsReadFile = fsReadFile as jest.MockedFunction<typeof fsReadFile>;
+const mockOpen = open as jest.MockedFunction<typeof open>;
+
+/** Creates a mock FileHandle that reads content successfully. */
+function makeHandle(content: string) {
+  return {
+    stat: jest.fn().mockImplementation(() => Promise.resolve({ isFile: () => true, isDirectory: () => false })),
+    readFile: jest.fn().mockImplementation(() => Promise.resolve(content)),
+    close: jest.fn().mockImplementation(() => Promise.resolve()),
+  };
+}
+
+/** Creates a mock FileHandle that fails with an error on readFile(). */
+function makeHandleWithReadError(error: Error) {
+  return {
+    stat: jest.fn().mockImplementation(() => Promise.resolve({ isFile: () => true, isDirectory: () => false })),
+    readFile: jest.fn().mockImplementation(() => Promise.reject(error)),
+    close: jest.fn().mockImplementation(() => Promise.resolve()),
+  };
+}
+
+/** Creates a mock FileHandle for a non-regular file (FIFO/device/socket). */
+function makeHandleNonRegular() {
+  return {
+    stat: jest.fn().mockImplementation(() => Promise.resolve({ isFile: () => false, isDirectory: () => false })),
+    readFile: jest.fn(),
+    close: jest.fn().mockImplementation(() => Promise.resolve()),
+  };
+}
 
 /** Helper: stub getFileStats to return a regular-file Stats object. */
 function stubStatsFile() {
@@ -25,6 +52,21 @@ function stubStatsFile() {
 /** Helper: stub getFileStats to return a directory Stats object. */
 function stubStatsDir() {
   mockGetFileStats.mockResolvedValueOnce({ isDirectory: () => true, isFile: () => false } as any);
+}
+
+/** Helper: stub open() to succeed with the given file content. */
+function stubOpenSuccess(content: string) {
+  mockOpen.mockResolvedValueOnce(makeHandle(content) as any);
+}
+
+/** Helper: stub open() to reject with the given error. */
+function stubOpenError(error: Error) {
+  mockOpen.mockRejectedValueOnce(error);
+}
+
+/** Helper: stub open() to succeed but readFile() to reject. */
+function stubOpenReadError(error: Error) {
+  mockOpen.mockResolvedValueOnce(makeHandleWithReadError(error) as any);
 }
 
 describe('handleValidateConfig', () => {
@@ -76,7 +118,7 @@ describe('handleValidateConfig', () => {
 
   it('should report missing config when directory has no .techdebtrc.json', async () => {
     stubStatsDir();
-    mockFsReadFile.mockRejectedValueOnce(
+    stubOpenError(
       Object.assign(new Error("ENOENT: no such file or directory, open '/project/.techdebtrc.json'"), { code: 'ENOENT' }),
     );
 
@@ -86,7 +128,7 @@ describe('handleValidateConfig', () => {
 
   it('should not leak absolute path in "missing config" message', async () => {
     stubStatsDir();
-    mockFsReadFile.mockRejectedValueOnce(
+    stubOpenError(
       Object.assign(new Error("ENOENT: no such file or directory, open '/secret/server/project/.techdebtrc.json'"), { code: 'ENOENT' }),
     );
 
@@ -97,7 +139,7 @@ describe('handleValidateConfig', () => {
 
   it('should report JSON parse errors', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce('{ invalid json' as any);
+    stubOpenSuccess('{ invalid json');
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('Invalid JSON');
@@ -105,7 +147,7 @@ describe('handleValidateConfig', () => {
 
   it('should not leak absolute path in JSON parse error message', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce('{ bad' as any);
+    stubOpenSuccess('{ bad');
 
     const result = await handleValidateConfig({ path: '/secret/server/.techdebtrc.json' });
     expect(result.content[0].text).not.toContain('/secret/server');
@@ -114,7 +156,7 @@ describe('handleValidateConfig', () => {
 
   it('should not leak absolute path in valid config message', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ ignore: ['node_modules/**'] }) as any);
+    stubOpenSuccess(JSON.stringify({ ignore: ['node_modules/**'] }));
 
     const result = await handleValidateConfig({ path: '/secret/server/.techdebtrc.json' });
     expect(result.content[0].text).not.toContain('/secret/server');
@@ -133,18 +175,18 @@ describe('handleValidateConfig', () => {
     expect(err.message).toContain('.techdebtrc.json');
   });
 
-  it('should not leak absolute path when fsReadFile fails with EACCES', async () => {
+  it('should not leak absolute path when open() fails with EACCES', async () => {
     stubStatsFile();
-    mockFsReadFile.mockRejectedValueOnce(Object.assign(new Error(`EACCES: permission denied, open '/secret/server/.techdebtrc.json'`), { code: 'EACCES' }));
+    stubOpenError(Object.assign(new Error(`EACCES: permission denied, open '/secret/server/.techdebtrc.json'`), { code: 'EACCES' }));
 
     const result = await handleValidateConfig({ path: '/secret/server/.techdebtrc.json' });
     expect(result.content[0].text).not.toContain('/secret/server');
     expect(result.content[0].text).toContain('.techdebtrc.json');
   });
 
-  it('should report "Cannot access" (not "Invalid JSON") when fsReadFile fails with a fs error code', async () => {
+  it('should report "Cannot access" (not "Invalid JSON") when open() fails with a fs error code', async () => {
     stubStatsFile();
-    mockFsReadFile.mockRejectedValueOnce(Object.assign(new Error(`EACCES: permission denied, open '/project/.techdebtrc.json'`), { code: 'EACCES' }));
+    stubOpenError(Object.assign(new Error(`EACCES: permission denied, open '/project/.techdebtrc.json'`), { code: 'EACCES' }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('Cannot access');
@@ -153,7 +195,7 @@ describe('handleValidateConfig', () => {
 
   it('should report "not found or not accessible" (not "No .techdebtrc.json found") for ENOENT on a direct file path', async () => {
     stubStatsFile();
-    mockFsReadFile.mockRejectedValueOnce(
+    stubOpenError(
       Object.assign(new Error("ENOENT: no such file or directory, open '/project/myconfig.json'"), { code: 'ENOENT' }),
     );
 
@@ -162,9 +204,16 @@ describe('handleValidateConfig', () => {
     expect(result.content[0].text).toContain('not found or not accessible');
   });
 
+  it('should throw InvalidParams when the opened path is a non-regular file (FIFO/device)', async () => {
+    stubStatsFile();
+    mockOpen.mockResolvedValueOnce(makeHandleNonRegular() as any);
+
+    await expect(handleValidateConfig({ path: '/dev/null' })).rejects.toThrow('Path is not a regular file');
+  });
+
   it('should reject non-object top-level values (null)', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce('null' as any);
+    stubOpenSuccess('null');
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('Top-level value must be a JSON object');
@@ -173,7 +222,7 @@ describe('handleValidateConfig', () => {
 
   it('should reject array top-level values', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce('[]' as any);
+    stubOpenSuccess('[]');
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('array');
@@ -181,12 +230,12 @@ describe('handleValidateConfig', () => {
 
   it('should accept a valid config', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({
+    stubOpenSuccess(JSON.stringify({
       ignore: ['node_modules/**'],
       include: ['src/**'],
       rules: { maxFileLines: 500, maxComplexity: 10 },
       severity: { 'todo-comment': 'low' },
-    }) as any);
+    }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('is valid');
@@ -194,7 +243,7 @@ describe('handleValidateConfig', () => {
 
   it('should warn on unknown top-level keys', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ unknownKey: true }) as any);
+    stubOpenSuccess(JSON.stringify({ unknownKey: true }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('Unknown top-level key');
@@ -203,7 +252,7 @@ describe('handleValidateConfig', () => {
 
   it('should error when ignore is not an array', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ ignore: 'not-an-array' }) as any);
+    stubOpenSuccess(JSON.stringify({ ignore: 'not-an-array' }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('"ignore" must be an array');
@@ -211,7 +260,7 @@ describe('handleValidateConfig', () => {
 
   it('should error when ignore contains non-strings', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ ignore: ['valid', 42] }) as any);
+    stubOpenSuccess(JSON.stringify({ ignore: ['valid', 42] }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('must contain only strings');
@@ -219,7 +268,7 @@ describe('handleValidateConfig', () => {
 
   it('should error when include is not an array', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ include: {} }) as any);
+    stubOpenSuccess(JSON.stringify({ include: {} }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('"include" must be an array');
@@ -227,7 +276,7 @@ describe('handleValidateConfig', () => {
 
   it('should error when rules is not an object', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ rules: 'bad' }) as any);
+    stubOpenSuccess(JSON.stringify({ rules: 'bad' }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('"rules" must be an object');
@@ -235,7 +284,7 @@ describe('handleValidateConfig', () => {
 
   it('should error when rule values are not numbers', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ rules: { maxFileLines: 'many' } }) as any);
+    stubOpenSuccess(JSON.stringify({ rules: { maxFileLines: 'many' } }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('"rules.maxFileLines" must be a number');
@@ -243,7 +292,7 @@ describe('handleValidateConfig', () => {
 
   it('should warn on unknown rule keys', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ rules: { badKey: 5 } }) as any);
+    stubOpenSuccess(JSON.stringify({ rules: { badKey: 5 } }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('Unknown rule key');
@@ -252,7 +301,7 @@ describe('handleValidateConfig', () => {
 
   it('should error when severity is not an object', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ severity: 'bad' }) as any);
+    stubOpenSuccess(JSON.stringify({ severity: 'bad' }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('"severity" must be an object');
@@ -260,7 +309,7 @@ describe('handleValidateConfig', () => {
 
   it('should error on invalid severity values', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ severity: { 'my-rule': 'extreme' } }) as any);
+    stubOpenSuccess(JSON.stringify({ severity: { 'my-rule': 'extreme' } }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('invalid value');
@@ -269,7 +318,7 @@ describe('handleValidateConfig', () => {
 
   it('should error when languageOverrides is not an object', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ languageOverrides: [] }) as any);
+    stubOpenSuccess(JSON.stringify({ languageOverrides: [] }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('"languageOverrides" must be an object');
@@ -277,9 +326,9 @@ describe('handleValidateConfig', () => {
 
   it('should accept valid languageOverrides with nested objects', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({
+    stubOpenSuccess(JSON.stringify({
       languageOverrides: { typescript: { rules: { maxFileLines: 600 } } },
-    }) as any);
+    }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('valid');
@@ -287,9 +336,9 @@ describe('handleValidateConfig', () => {
 
   it('should validate customPatterns entries', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({
+    stubOpenSuccess(JSON.stringify({
       customPatterns: [{ id: 'test', pattern: 'TODO', severity: 'low', category: 'code-quality', message: 'found TODO' }],
-    }) as any);
+    }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('valid');
@@ -297,7 +346,7 @@ describe('handleValidateConfig', () => {
 
   it('should error when customPatterns is not an array', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ customPatterns: 'bad' }) as any);
+    stubOpenSuccess(JSON.stringify({ customPatterns: 'bad' }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('"customPatterns" must be an array');
@@ -305,9 +354,9 @@ describe('handleValidateConfig', () => {
 
   it('should accept valid ruleExclusions', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({
+    stubOpenSuccess(JSON.stringify({
       ruleExclusions: { debugger: ['**/src/analyzers/**'], 'ts-ignore': ['**/src/analyzers/**'] },
-    }) as any);
+    }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('valid');
@@ -315,7 +364,7 @@ describe('handleValidateConfig', () => {
 
   it('should error when ruleExclusions is not an object', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ ruleExclusions: 'bad' }) as any);
+    stubOpenSuccess(JSON.stringify({ ruleExclusions: 'bad' }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('"ruleExclusions" must be an object');
@@ -323,7 +372,7 @@ describe('handleValidateConfig', () => {
 
   it('should error when ruleExclusions values are not arrays', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ ruleExclusions: { debugger: 'bad' } }) as any);
+    stubOpenSuccess(JSON.stringify({ ruleExclusions: { debugger: 'bad' } }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('"ruleExclusions.debugger" must be an array');
@@ -331,7 +380,7 @@ describe('handleValidateConfig', () => {
 
   it('should error when ruleExclusions arrays contain non-strings', async () => {
     stubStatsFile();
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ ruleExclusions: { debugger: ['valid', 42] } }) as any);
+    stubOpenSuccess(JSON.stringify({ ruleExclusions: { debugger: ['valid', 42] } }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('"ruleExclusions.debugger" array must contain only strings');

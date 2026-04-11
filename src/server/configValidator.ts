@@ -5,7 +5,7 @@
 import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
 import { CustomRulesEngine } from '../core/customRulesEngine.js';
 import { getFileStats } from '../utils/fileUtils.js';
-import { readFile as fsReadFile } from 'node:fs/promises';
+import { open, type FileHandle } from 'node:fs/promises';
 import { join, basename } from 'node:path';
 import { CustomPattern } from '../types/index.js';
 import { isRecord, requireRecord } from './argValidation.js';
@@ -141,10 +141,9 @@ export async function handleValidateConfig(args: unknown): Promise<{ content: Ar
   const a = requireRecord(args);
   const inputPath = requireAbsolutePath(a, 'path');
 
-  // Single stat() call — no pre-existence check. Eliminates the
-  // `fileExists` → `stat` → `readFile` TOCTOU window that allowed
-  // a symlink swap between the check and the use. See issue #164
-  // and the v2.0.2 hardening applied to handlers.ts / customRulesHandlers.ts.
+  // stat() the user-provided path only to determine whether it is a
+  // directory. This does not gate the file read, so no TOCTOU window exists
+  // at this step. See issue #164.
   const inputStats = await getFileStats(inputPath);
   if (inputStats === null) {
     throw new McpError(ErrorCode.InvalidParams, `Path not found or not accessible: ${basename(inputPath)}`);
@@ -154,26 +153,28 @@ export async function handleValidateConfig(args: unknown): Promise<{ content: Ar
     ? join(inputPath, '.techdebtrc.json')
     : inputPath;
 
-  // When inputPath points directly at a file, reject non-regular files
-  // (devices, FIFOs, sockets) before reading. For directory inputs we
-  // cannot pre-stat the resolved configPath without reopening the TOCTOU
-  // window, so we let readFile surface the error.
-  if (!inputStats.isDirectory() && !inputStats.isFile()) {
-    throw new McpError(ErrorCode.InvalidParams, `Path is not a regular file: ${basename(inputPath)}`);
-  }
-
+  // open() acquires a file descriptor, then fileHandle.stat() and
+  // fileHandle.readFile() operate on that same descriptor — eliminating the
+  // TOCTOU window between the regular-file guard and the read. See issue #164.
   const errors: string[] = [];
   const warnings: string[] = [];
   let config: Record<string, unknown>;
 
+  let fileHandle: FileHandle | undefined;
   try {
-    const raw = await fsReadFile(configPath, 'utf-8');
+    fileHandle = await open(configPath, 'r');
+    const fileStats = await fileHandle.stat();
+    if (!fileStats.isFile()) {
+      throw new McpError(ErrorCode.InvalidParams, `Path is not a regular file: ${basename(configPath)}`);
+    }
+    const raw = await fileHandle.readFile('utf-8');
     const parsed: unknown = JSON.parse(raw);
     if (!isRecord(parsed)) {
       return { content: [{ type: 'text', text: `❌ Invalid config in ${basename(configPath)}:\n  Top-level value must be a JSON object, got ${parsed === null ? 'null' : Array.isArray(parsed) ? 'array' : typeof parsed}.` }] };
     }
     config = parsed;
   } catch (err) {
+    if (err instanceof McpError) throw err;
     const errnoError = err as NodeJS.ErrnoException;
     if (errnoError.code === 'ENOENT') {
       if (inputStats.isDirectory()) {
@@ -187,6 +188,8 @@ export async function handleValidateConfig(args: unknown): Promise<{ content: Ar
       return { content: [{ type: 'text', text: `❌ Cannot access ${basename(configPath)}:\n  ${safeMessage}` }] };
     }
     return { content: [{ type: 'text', text: `❌ Invalid JSON in ${basename(configPath)}:\n  ${safeMessage}` }] };
+  } finally {
+    await fileHandle?.close();
   }
 
   for (const key of Object.keys(config)) {
