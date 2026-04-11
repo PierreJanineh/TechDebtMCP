@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/tech-debt-mcp)](https://www.npmjs.com/package/tech-debt-mcp)
 [![Add to MCP](https://img.shields.io/badge/MCP-Install_Server-6f42c1)](#installation)
-[![SQALE Rating](https://img.shields.io/badge/SQALE-A_(4.6%25)-brightgreen)](#code-quality)
+[![SQALE Rating](https://img.shields.io/badge/SQALE-A_(0.7%25)-brightgreen)](#code-quality)
 [![CodeQL](https://github.com/PierreJanineh/TechDebtMCP/actions/workflows/codeql.yml/badge.svg)](https://github.com/PierreJanineh/TechDebtMCP/actions/workflows/codeql.yml)
 
 **16 Tools** · **2 Resources** · **14 Languages** · **10 Dependency Ecosystems**
