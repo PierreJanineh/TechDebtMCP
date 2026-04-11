@@ -362,25 +362,27 @@ Without a rule name, all rules are suppressed. Blocks can be nested. Suppression
 Define patterns in `.techdebtrc.json` under `customPatterns`, or register them at runtime via the `add_custom_rule` MCP tool:
 
 ```json
-[
-  {
-    "id": "no-magic-numbers",
-    "pattern": "=\\s*\\d{3,}",
-    "severity": "medium",
-    "category": "maintainability",
-    "message": "Magic number detected",
-    "suggestion": "Extract to named constant"
-  },
-  {
-    "id": "forbidden-library",
-    "pattern": "import.*moment.*from",
-    "severity": "medium",
-    "category": "dependency",
-    "message": "moment.js is deprecated",
-    "suggestion": "Use native Date or date-fns instead",
-    "languages": ["javascript", "typescript"]
-  }
-]
+{
+  "customPatterns": [
+    {
+      "id": "no-magic-numbers",
+      "pattern": "=\\s*\\d{3,}",
+      "severity": "medium",
+      "category": "maintainability",
+      "message": "Magic number detected",
+      "suggestion": "Extract to named constant"
+    },
+    {
+      "id": "forbidden-library",
+      "pattern": "import.*moment.*from",
+      "severity": "medium",
+      "category": "dependency",
+      "message": "moment.js is deprecated",
+      "suggestion": "Use native Date or date-fns instead",
+      "languages": ["javascript", "typescript"]
+    }
+  ]
+}
 ```
 
 ## SQALE Metrics
