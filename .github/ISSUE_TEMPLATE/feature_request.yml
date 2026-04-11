@@ -1,0 +1,42 @@
+name: Feature request
+description: Suggest a new feature or enhancement for TechDebtMCP
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem does this feature solve? Who is affected, and what is the current workaround?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What would the ideal solution look like? Be as specific as you can about the desired behavior and interface.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any other approaches you considered and why you ruled them out.
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      description: Which area of TechDebtMCP does this touch?
+      options:
+        - New language analyzer
+        - New dependency parser
+        - New MCP tool
+        - New MCP resource
+        - Custom rules engine
+        - Configuration / ruleset
+        - Documentation
+        - Other
+    validations:
+      required: true

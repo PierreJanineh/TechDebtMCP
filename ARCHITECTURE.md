@@ -332,7 +332,7 @@ The server is split into focused modules under `src/server/`:
 - `static createSimplePattern()` — Helper to create patterns
 
 **Features:**
-- Regex pattern matching with configurable flags (allowlist: `dgimsuvy` — includes the `v` unicodeSets flag, but `v` is only usable when the server is running on Node.js 20+; on supported Node.js 18 runtimes, `v` is not supported and patterns using it will fail rather than being treated as valid; `u` and `v` are mutually exclusive; patterns capped at 1 000 characters; inline `code` capped at 500 000 characters; `path` inputs capped at 500 000 bytes before reading)
+- Regex pattern matching with configurable flags (allowlist: `dgimsuvy` — includes the `v` unicodeSets flag; `u` and `v` are mutually exclusive; patterns capped at 1,000 characters; inline `code` capped at 500,000 characters; `path` inputs capped at 500,000 bytes before reading). Node.js 20+ required as of v2.0.2.
 - Language-specific rule filtering
 - Multiple matches per line support
 - Cross-platform line ending support (\r\n and \n)
@@ -561,7 +561,7 @@ This reduces overhead from O(N × checks) to O(1) for content splitting.
 
 ### Test Coverage
 
-**Total Repository Tests:** 584 (563 passing + 21 todo across all phases)
+**Total Repository Tests:** 597 (576 passing + 21 todo across 29 suites)
 
 **SwiftUI Analyzer Tests:**
 - **Phase 1 Tests:** 21 implemented test cases
@@ -630,7 +630,7 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
 
 | Metric | Limit | Current Max | Status |
 |--------|-------|-------------|--------|
-| File length | 500 lines | 495 (`src/server/handlers.ts`) | ⚠️ Near limit (index.ts split in v2.0.0) |
+| File length | 500 lines | 346 (`src/server/handlers.ts`) | ✅ Good (further reduced in v2.0.2 after custom-rules handler extraction) |
 | Nesting depth | 4 levels | ≤4 (all files) | ✅ Good (csharpAnalyzer fixed in PR #113, engines in PR #118, cppParser fixed in #131) |
 | Function length | 50 lines | Compliant | ✅ Good |
 | Cyclomatic complexity | 10 | Compliant | ✅ Good |

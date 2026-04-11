@@ -137,18 +137,15 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 
 ## Current Status
 
-**Latest Release:** v2.0.1 (MCP Resources) — on npm
-
-**In Progress:** v2.0.2 Security Patch — Sprint 1 (Apr 13-27)
+**Latest Release:** v2.0.2 (Security Patch) — pending npm publish (post-merge tag push)
 
 **Next Up:**
-- **v2.0.2:** Security hardening + refactor merges — Issues #124-131 — Sprint 1
 - **Phase 3 (v2.1.0):** Snapshot & Trend Tracking — Issues #39-44 — Sprint 2-3
 - **Phase 4 (v2.2.0):** Complexity Metrics — Issues #45-49 — Sprint 4-5
 
 **Design Spec:** See `docs/superpowers/specs/2026-03-19-phases-3-4-6-design.md` for Phases 3 & 4 implementation details.
 
-**Project Management:** Linear — two-way sync with GitHub.
+**Project Management:** GitHub Issues — see [issues and milestones](https://github.com/PierreJanineh/TechDebtMCP/issues).
 
 ## Phase Overview
 
@@ -161,7 +158,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 | Quality & Compliance | v2.0.0 | ✅ Complete | Code of Conduct, .techdebtrc.json, TECH_DEBT_SCAN.md, documentation |
 | Phase 2 | v2.0.0 | ✅ Complete | Dependency analysis — 10 parsers, 3 MCP tools, index.ts refactor |
 | Phase 6 | v2.0.1 | ✅ Complete | MCP Resources (debt://summary, debt://issues) |
-| Security Patch | v2.0.2 | 🔧 In Progress | Security hardening, refactor merges, CI guardrails (Issues #124-131) |
+| Security Patch | v2.0.2 | ✅ Complete | Security hardening, refactor merges, CI guardrails (Issues #124-131) |
 | Phase 3 | v2.1.0 | 📋 Planned | Snapshot & trend tracking |
 | Phase 4 | v2.2.0 | 📋 Planned | Code complexity analysis |
 
@@ -169,24 +166,22 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 
 ### Security Patch (v2.0.2)
 
-**Status:** 🔧 **IN PROGRESS** — Sprint 1 (Apr 13-27)
+**Status:** ✅ **COMPLETE** (Release prep complete; pending git tag and npm publish for v2.0.2)
 
 **Objective:** Fix 5 security vulnerabilities found during audit, merge pending refactors, add CI security guardrails.
-
-**Linear:** TEC project — v2.0.2 Security Patch
 
 #### Issues
 
 | Issue | Title | Severity | Status |
 |-------|-------|----------|--------|
-| #125 | Path traversal on tool path parameters | High | |
-| #126 | Resource template projectPath bypasses validation | High | |
-| #127 | ReDoS via user-controlled regex in custom rules engine | High | |
+| #125 | Path traversal on tool path parameters | High | ✅ Fixed |
+| #126 | Resource template projectPath bypasses validation | High | ✅ Fixed |
+| #127 | ReDoS via user-controlled regex in custom rules engine | High | ✅ Fixed |
 | #128 | Unescaped string interpolated into RegExp in swiftUiChecks | Medium | ✅ Fixed — `escapeRegExp()` in `src/utils/regexUtils.ts` |
-| #129 | Absolute filesystem paths leaked in error messages | Low | 🔧 Partial — fixed in `dependencyHandlers.ts`; `configValidator.ts` still needs `basename()` / `getRelativePath()` updates |
-| #140 | Regex flag allowlist missing `v` (unicodeSets) flag for Node.js 20+ | Low | |
+| #129 | Absolute filesystem paths leaked in error messages | Low | ✅ Fixed |
+| #140 | Regex flag allowlist missing `v` (unicodeSets) flag for Node.js 20+ | Low | ✅ Fixed |
 | #124 | Add CodeQL security scanning workflow | — | ✅ Done — `.github/workflows/codeql.yml` |
-| #130 | Docs freshness CI check + Claude Code hook | — | |
+| #130 | Docs freshness CI check + Claude Code hook | — | ✅ Done |
 
 #### Also included
 
@@ -195,12 +190,12 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 
 #### Acceptance Criteria
 
-- [ ] All 5 security issues fixed with tests (>80% coverage)
-- [ ] CodeQL workflow running on push/PR
-- [ ] Docs freshness check warns on PRs missing doc updates
-- [ ] `npm test && npm run build` pass
-- [ ] All existing tests still pass
-- [ ] CLAUDE.md, ARCHITECTURE.md, README.md, ROADMAP.md, CHANGELOG.md updated
+- [x] All 5 security issues fixed with tests (>80% statement coverage)
+- [x] CodeQL workflow running on push/PR
+- [x] Docs freshness check warns on PRs missing doc updates
+- [x] `npm test && npm run build` pass
+- [x] All existing tests still pass
+- [x] CLAUDE.md, ARCHITECTURE.md, README.md, ROADMAP.md, CHANGELOG.md updated
 - [ ] Tagged and published to npm as v2.0.2
 
 ---
@@ -536,5 +531,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
 
 ---
 
-**Last Updated:** 2026-04-09
+**Last Updated:** 2026-04-11
 
