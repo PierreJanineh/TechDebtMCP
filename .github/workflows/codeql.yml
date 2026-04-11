@@ -5,10 +5,8 @@ on:
     branches:
       - develop
       - main
+      - 'release/**'
   pull_request:
-    branches:
-      - develop
-      - main
   schedule:
     - cron: '0 3 * * 1'
 
