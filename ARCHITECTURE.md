@@ -687,7 +687,7 @@ These rules are enforced via `.techdebtrc.json` and CI checks:
 ```bash
 # v2.0.2 (April 2026, post security hardening + nesting refactors):
 - 13 issues, 14 hours remediation
-- 49 files analyzed (TypeScript + the eslint flat config)
+- 49 files analyzed (TypeScript + JavaScript, including the eslint flat config)
 - 0 high-severity issues
 
 # v2.0.1 baseline (March 2026, wider scan scope):
