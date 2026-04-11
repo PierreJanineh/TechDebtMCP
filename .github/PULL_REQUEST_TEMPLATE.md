@@ -18,7 +18,7 @@
 ## Checklist
 
 - [ ] Branch is from `develop` (not `master`)
-- [ ] Branch name follows `feature/issue-{N}-short-description` or `fix/issue-{N}-...`
+- [ ] Branch name follows `feature/tec-{N}-short-description` / `fix/tec-{N}-...` or `feature/issue-{N}-short-description` / `fix/issue-{N}-...`
 - [ ] `npm test` passes
 - [ ] `npm run build` succeeds
 - [ ] Docs updated where relevant (CLAUDE.md, ARCHITECTURE.md, README.md, ROADMAP.md, CHANGELOG.md)

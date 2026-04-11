@@ -28,7 +28,7 @@ Please be respectful and constructive in all interactions. We aim to maintain a 
 
 ### Prerequisites
 
-- Node.js 20+ and npm
+- Node.js >=20.19.0 and npm
 - Git
 
 ### Installation
