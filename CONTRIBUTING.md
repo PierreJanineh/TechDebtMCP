@@ -117,7 +117,7 @@ src/
 
 **Project maintains A SQALE rating (0.7% debt ratio · Debt Score 5/100) — follow these rules to keep it excellent:**
 
-> **📊 See [TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md)** for complete self-scan results showing how `.techdebtrc.json` reduced false positives by 20 issues (-19.8%).
+> **📊 See [TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md)** for the complete self-scan history, including the documented `210c50a` baseline (118 issues) and later scans showing 12/13 issues.
 
 #### File Size & Complexity Limits
 - **Max file length:** 500 lines (split larger files into modules)
