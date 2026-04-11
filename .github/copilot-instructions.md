@@ -69,11 +69,13 @@ Copilot **must** check documentation consistency on every PR. **Do not approve**
 
 | File | What to verify |
 |------|----------------|
-| `README.md` | Features list, tool/resource docs, usage examples |
-| `ARCHITECTURE.md` | Project structure, component descriptions, data flow diagrams |
+| `README.md` | Features list, tool/resource docs, usage examples, Self-Scan Results block |
+| `ARCHITECTURE.md` | Project structure, component descriptions, data flow diagrams, Current Status metrics block |
 | `ROADMAP.md` | Phase status, current status section |
 | `CHANGELOG.md` | Version entries when `package.json` version is bumped or a `vX.X.X` tag is present |
 | `CLAUDE.md` | Architecture tree, request flow, recipes, conventions |
+| `CONTRIBUTING.md` | Configuration Impact block tracks the same self-scan metrics as `TECH_DEBT_SCAN.md` |
+| `TECH_DEBT_SCAN.md` | Canonical self-scan metrics (Health / Debt Score / Issues / Remediation) — must match the derivative blocks in README / ARCHITECTURE / CONTRIBUTING |
 | `.github/copilot-instructions.md` | Architecture diagram if high-level structure changed |
 
 ### Inconsistency Triggers (Block Approval)
@@ -84,6 +86,7 @@ Copilot **must** check documentation consistency on every PR. **Do not approve**
 - A phase issue is closed but `ROADMAP.md` still shows it as pending
 - A public API signature changes but JSDoc or README examples are stale
 - `CHANGELOG.md` is missing an entry when `package.json` version is bumped (the only detectable release signal in a PR diff; Git tags are not part of the changeset and cannot be checked here)
+- Self-scan metrics in `README.md` (Self-Scan Results), `ARCHITECTURE.md` (Current Status), or `CONTRIBUTING.md` (Configuration Impact) are edited without a corresponding update to `TECH_DEBT_SCAN.md` — the latter is the canonical source for Health / Debt Score / Issue count / Remediation time, and the three derivative blocks must always agree with it
 
 ### Review Steps
 
@@ -96,8 +99,8 @@ Copilot **must** check documentation consistency on every PR. **Do not approve**
 
 - **Branch from `develop`**, never commit to `master` directly
 - Branch naming: `feature/issue-{N}-short-description` or `fix/issue-{N}-...` (where `{N}` is the GitHub issue number). Internal maintainer branches may also use `feature/tec-{N}-...` or `fix/tec-{N}-...`; both patterns are acceptable.
-- PRs target `develop` (not `master`)
-- Releases: tag on `develop` → GitHub Actions publishes → merge `develop` → `master`
+- PRs target `develop` for ongoing work, or the active `release/vX.X.X` branch during a release cycle. Flag PRs that target `master` directly.
+- Releases: `release/vX.X.X` is cut from `develop`, fixes merge into it, tag `vX.X.X` is cut on the release branch, GitHub Actions publishes to npm, then `release/vX.X.X` back-merges to `develop` and `master`. Verify the branch structure matches this flow.
 - **Issues are created on GitHub only.** Verify PR branch names match one of the naming patterns above.
 - **Direct-to-develop commits:** Verify only `.md` files are committed directly to `develop`. Code changes (`src/`, tests, config) must come through a branch and PR.
 - **PR author:** Verify PRs are opened by the bot account (`my-llm-bot[bot]`), not a personal account.
@@ -122,6 +125,7 @@ When reviewing PRs that touch MCP tool handlers or file system operations, check
 - **String interpolation in RegExp:** Verify captured strings are escaped before interpolation into `new RegExp()`.
 - **Error message leakage:** Verify error messages use `getRelativePath()` — flag any absolute filesystem paths in client-facing responses.
 - **Handler output leakage:** Verify tool response output (e.g., debt summary, SQALE metrics) uses `basename()` for project paths — flag any raw absolute paths in formatted user-facing output. See Issue #138.
+- **Nesting extractions preserved:** Flag any PR that inlines `validatePatternRegex` back into `validatePattern` (`src/core/customRulesEngine.ts`) or `makeVcpkgDep` back into `parseVcpkgJson` (`src/analyzers/dependencies/cppParser.ts`). Both helpers exist specifically to hold those functions within the 4-level nesting limit (#131, #146); re-inlining would re-introduce the nesting-depth violations.
 
 ## Testing Review
 
@@ -130,4 +134,17 @@ When reviewing PRs that add or modify tests:
 - Verify all imports include `.js` extension (required by NodeNext resolution)
 - Check that `jest.mock(...)` calls are at the top of the file
 - Verify mocked references use `as jest.MockedFunction<typeof X>` typing
-- Flag new features without corresponding test files in `__tests__/` directories
+- Flag any new public function in `src/` that does not have at least one test case in its `__tests__/` neighbor (function-level, not just feature-level)
+
+## Workflow Review
+
+When reviewing PRs that touch `.github/workflows/*.yml`, check for:
+
+- **Broad triggers:** `test.yml`, `codeql.yml`, and `docs-check.yml` must not reintroduce a `pull_request: branches: [...]` filter. All three should trigger on every `pull_request` regardless of base branch and on `push` to `develop`, `main`, and `release/**` (PR #168 broadened this so release-branch PRs aren't stuck "expected" on required status checks).
+- **CI install:** The `test` and `coverage` jobs in `test.yml` must install via `npm ci --ignore-scripts`. `package.json` declares `"prepare": "npm run build"`, and omitting `--ignore-scripts` triggers a full `tsc` compile during install that duplicates the later Build step. The only exception is `publish.yml`, which intentionally allows scripts so `dist/` gets built for packing.
+- **Typecheck via npm script:** The CI typecheck step must call `npm run typecheck` (aliases `tsc --noEmit`) rather than `npx tsc --noEmit` directly. The pinned npm script is the source of truth per the Build & Test Commands table in `CLAUDE.md`.
+- **Lint as a blocking check:** The `npm run lint` step must not carry `--if-present` or `continue-on-error: true`. ESLint is now wired up (PR #168) and lint failures must fail CI.
+- **Workflow injection hardening:** Flag any `run:` step that interpolates `${{ github.event.issue.title }}`, `github.event.issue.body`, `github.event.pull_request.title`, `github.event.pull_request.body`, `github.event.comment.body`, `github.event.review.body`, `github.event.head_commit.message`, `github.event.head_commit.author.email`, `github.event.head_commit.author.name`, `github.event.pull_request.head.ref`, `github.head_ref`, or any other attacker-controllable context value directly into a shell command. Safe pattern: bind to an `env:` variable and reference `"$VAR"` from the shell.
+- **Publish flow guards:** In `publish.yml`, the tag-vs-`package.json` version check must be present before `npm publish`, and the publish step must use OIDC (`id-token: write` + `--provenance`). Flag PRs that remove the version check or add a classic `NPM_TOKEN` secret.
+- **Node matrix forward-compat:** `test.yml` matrix must not regress to Node 18. `engines.node` is `>=20.19.0`; the matrix should track `[20.x, 22.x]` (or newer as the engines floor moves).
+- **Required status check contexts:** New blocking checks must be added to the `Global Updates` ruleset (where `pr-automation` lives), not dropped into the workflow without ruleset registration — otherwise PRs hang "expected" forever.

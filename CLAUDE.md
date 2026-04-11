@@ -76,7 +76,7 @@ src/
 │       ├── index.ts            # createDependencyParser() factory
 │       └── [ecosystem]Parser.ts # npm, pip, cargo, gradle, nuget, go.mod, etc.
 └── utils/
-    ├── fileUtils.ts            # fs helpers (readFile, fileExists, getRelativePath)
+    ├── fileUtils.ts            # fs helpers (readFile, fileExists, getFileStats, getRelativePath)
     └── regexUtils.ts           # escapeRegExp() — safe RegExp construction helper
 ```
 
@@ -85,6 +85,17 @@ src/
 **Tools:** `MCP client` → `handlers.ts` (`CallToolRequestSchema` switch) → `AnalysisEngine` → `createAnalyzer()` (per file language) → `[Language]Analyzer.performLanguageSpecificChecks()` → issues array (inline suppression applied per-line in `checkPattern`/`checkTodoComments`) → `applyRuleExclusions()` (filter by config globs) → `formatters.ts` → response.
 
 **Resources:** `MCP client` → `resourceHandlers.ts` (via `McpServer.registerResource()`) → `AnalysisEngine.analyzeProject()` → JSON response.
+
+### Testing tools and resources interactively
+
+For manual exercise of any tool or resource, use the MCP Inspector:
+
+```bash
+npm run build
+npx @modelcontextprotocol/inspector node dist/index.js
+```
+
+Opens a web UI where you can call tools and read resources directly, including the RFC-6570 templated ones like `debt://summary/{+projectPath}` (note the `//` when substituting an absolute path — template trailing `/` + path leading `/`).
 
 ### Key conventions
 
@@ -194,6 +205,8 @@ Implementation details for planned phases are in `docs/superpowers/specs/2026-03
 
 See `.claude/rules/docs-maintenance.md` for the canonical list of files to update after every implementation PR. Do not defer docs to a separate PR — include them in the implementation PR.
 
+**Self-scan metric source of truth:** `TECH_DEBT_SCAN.md` is the canonical source for Health / Debt Score / Issue count / Remediation time. Any occurrence of these metrics elsewhere (`README.md` Self-Scan Results, `ARCHITECTURE.md` Current Status, `CONTRIBUTING.md` Configuration Impact) must agree with `TECH_DEBT_SCAN.md`. When a fresh scan changes the numbers, update `TECH_DEBT_SCAN.md` first, then refresh the three derivative docs in the same commit.
+
 ## Git & PR Workflow
 
 See `.claude/rules/git-workflow.md` for branching, PR, and commit conventions.
@@ -208,14 +221,14 @@ See `.claude/rules/testing.md` for test file conventions, TDD workflow, mock pat
 
 ## Security
 
-**Automated scanning:** CodeQL SAST runs on every push to `develop`/`main` and every PR targeting `develop`/`main` via `.github/workflows/codeql.yml` (using `security-and-quality` queries). See Issue #124.
+**Automated scanning:** CodeQL SAST runs on every push to `develop`/`main`/`release/**` and every PR regardless of base branch via `.github/workflows/codeql.yml` (using `security-and-quality` queries). The sibling workflows `test.yml` and `docs-check.yml` use the same broadened triggers. See Issue #124 and PR #168.
 
 When handling user input from MCP tool calls:
 
 - **Path arguments:** Use `requireAbsolutePath(args, 'path')` or `optionalAbsolutePath(args, 'path')` from `inputParser.ts` — these validate with `path.isAbsolute()` and normalize with `path.resolve()`. `optionalAbsolutePath` treats an empty string `""` the same as `undefined` (returns `undefined`). Never use `requireString` for path parameters. This applies to **all** handler files (`handlers.ts`, `configValidator.ts`, `dependencyHandlers.ts`, and any future domain handler). See Issues #125, #126, #137, #139.
-- **User-supplied regex:** Never compile user-provided patterns via `new RegExp()` without length limits and flag allowlisting. For all supported runtimes, allow only `dgimsuy`; allow `v` only when running on Node.js 20+ (`u` and `v` are mutually exclusive and are validated as such). See Issues #127, #140.
+- **User-supplied regex:** Never compile user-provided patterns via `new RegExp()` without length limits and flag allowlisting. Allow `dgimsuvy`; `u` and `v` are mutually exclusive and must be validated as such. The older "`v` only on Node 20+" caveat is no longer relevant — `package.json` pins `engines.node >=20.19.0`. See Issues #127, #140.
 - **String interpolation into RegExp:** Captured strings interpolated into `new RegExp()` must be escaped first using `escapeRegExp()` from `src/utils/regexUtils.ts`. See Issue #128.
-- **Error messages:** Use `getRelativePath()` or `basename()` in error messages and reports returned to clients — never leak absolute filesystem paths. Applies to all handler files: `dependencyHandlers.ts` (scan errors, McpError messages, project name in reports) and `configValidator.ts` (path in all output messages). Do not echo raw `err.message` from filesystem operations (e.g., `stat()`, `readFile()`) — these typically include absolute paths. Either sanitize by replacing the absolute path with its `basename()`, or rethrow as an `McpError` with a safe message. Implemented in Issue #129.
+- **Error messages:** Use `getRelativePath()` or `basename()` in error messages and reports returned to clients — never leak absolute filesystem paths. Applies to all handler files: `dependencyHandlers.ts`, `configValidator.ts`, `customRulesHandlers.ts`, `handlers.ts`. Do not echo raw `err.message` from filesystem operations (`readFile()`, `getFileStats()`, etc.) — these typically include absolute paths. Either sanitize by replacing the absolute path with its `basename()`, or rethrow as an `McpError` with a safe message. Implemented in Issue #129 and extended by the #148 / #149 / #164 TOCTOU hardening.
 - **Handler output:** Use `basename()` (from `node:path`) to sanitize project paths in user-facing tool responses (e.g., debt summary, SQALE metrics). Never embed raw absolute paths in formatted output. See Issue #138.
 - **Security constants** in `customRulesEngine.ts`: `MAX_PATTERN_LENGTH` (1,000 chars), `MAX_CODE_LENGTH` (500,000 chars), `MAX_FILE_SIZE_BYTES` (500,000 bytes). Import and reference these — never hardcode the values.
 - **`validatePattern` nesting:** The nested flag + regex validation logic lives in `validatePatternRegex` (private static helper) to stay within the 4-level nesting limit. Keep that extraction in place when extending validation (#146).

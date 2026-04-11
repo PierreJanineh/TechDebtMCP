@@ -5,9 +5,9 @@ description: Git branching, PR, and commit conventions
 - **Branch from `develop`**, never commit to `master` directly.
 - **Only docs changes may be committed directly to `develop`.** All code changes (`src/`, tests, config) must go through a feature/fix branch and PR. Docs-only commits (`.md` files, `CHANGELOG.md`, `ROADMAP.md`, etc.) are allowed directly on `develop`.
 - Branch naming: `feature/tec-{N}-short-description` or `fix/tec-{N}-...` (where `TEC-N` is the Linear issue). This triggers Linear's two-way sync on PR merge. For issues without a Linear ticket, fall back to `feature/issue-{number}-...`.
-- PRs target `develop` (not `master`).
+- PRs target `develop` for ongoing work, or the active `release/vX.X.X` branch during a release cycle. Never target `master` directly.
 - **PRs must be opened with the bot token** (`ghs_` prefix), not a personal token. A hookify rule (`.claude/hookify.require-bot-token-for-pr.local.md`) enforces this. Generate the token first, then use it inline or via variable: `GH_TOKEN=$BOT_TOKEN gh pr create ...`.
-- Releases: tag `vX.X.X` on `develop` -> GitHub Actions validates tag matches `package.json` version -> publishes to npm via OIDC -> merge `develop` -> `master`. Tag and `package.json` version must match exactly.
+- Releases: cut `release/vX.X.X` from `develop` → merge fix/doc PRs into the release branch → tag `vX.X.X` on the release branch → GitHub Actions validates tag matches `package.json` version → publishes to npm via OIDC → back-merge `release/vX.X.X` → `develop` → `master`. Tag and `package.json` version must match exactly.
 - Use conventional commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`.
 - **Issues: create on GitHub only.** Linear two-way sync auto-creates a corresponding `TEC-N` issue. To assign cycle, project, labels, or priority, update the synced Linear issue — never create issues directly in Linear, as it produces duplicates that cascade back to GitHub.
 - **Update Linear issue status as you go:** Move issues to "In Progress" when starting work (dispatching an agent or creating a branch). Move to "Done" after the PR is merged. Don't batch status updates — the two-way sync only auto-closes on PR merge if the branch name matches; it does NOT update in-progress states.
