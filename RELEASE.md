@@ -155,26 +155,51 @@ git push origin develop
 
 ### Step 6: Back-merge the release branch
 
-After the workflow completes successfully and the release is published, back-merge `release/vX.X.X` into **both** `develop` and `main`. `develop` carries the tagged state forward for continued integration work; `main` is the stable production pointer that only moves at release time.
+After the workflow completes successfully and the release is published, back-merge `release/vX.X.X` into **both** `develop` and `main`. `develop` absorbs the release-branch commits so ongoing integration work builds on top of the shipped state; `main` is the stable production pointer that only moves at release time.
+
+#### Back-merge into develop
+
+The default branch ruleset permits direct pushes to develop for release back-merges from a maintainer account, so this half can run as a plain local merge:
 
 ```bash
-# Back-merge into develop
 git checkout develop
 git pull origin develop
 git merge --no-ff release/v$VERSION -m "release: back-merge v$VERSION to develop"
 git push origin develop
-
-# Back-merge into main (direct pushes blocked by the Main ruleset;
-# use a PR or admin bypass as per the repo's release policy)
-git checkout main
-git pull origin main
-git merge --no-ff release/v$VERSION -m "release: back-merge v$VERSION to main"
-git push origin main
 ```
 
-**Why this step?** According to the two-trunk model in `.claude/rules/git-workflow.md`:
+#### Back-merge into main — two paths
 
-- `develop` is the active integration trunk — it must absorb the release commits so ongoing work builds on top of the shipped state.
+The `Main` repository ruleset (id `14953993`) gates direct pushes to `main` with codeowner review, last-push approval, thread resolution, CodeQL `high_or_higher` / `errors`, code-quality warnings, **and squash-only merge**. That means a `git push origin main` of a `--no-ff` merge commit will be rejected twice over: once by the direct-push restriction and once by the squash-only constraint. Pick Path A unless you have an explicit reason to bypass the ruleset.
+
+**Path A — PR-based back-merge (default, always correct):**
+
+```bash
+# Create a back-merge branch off main, not off develop.
+git fetch origin main
+git checkout -b release-backmerge-v$VERSION origin/main
+git merge --no-ff release/v$VERSION -m "release: back-merge v$VERSION to main"
+git push -u origin release-backmerge-v$VERSION
+
+# Open the PR with the bot token per .claude/rules/git-workflow.md.
+GH_TOKEN=$BOT_TOKEN gh pr create \
+  --base main \
+  --head release-backmerge-v$VERSION \
+  --title "release: back-merge v$VERSION to main" \
+  --body "Advances main to the v$VERSION tagged state per the two-trunk model."
+```
+
+The PR will satisfy the ruleset's codeowner / review / CodeQL / code-quality / thread-resolution gates normally, and the merge must be performed via the squash button (not a merge commit) because the ruleset only allows `squash` as the merge method. Squashing on the Main side is acceptable — the release-branch history is already preserved on the `release/v$VERSION` branch and on the develop back-merge.
+
+**Path B — admin-bypass direct push (only if explicitly authorized):**
+
+Requires an admin token with bypass entries for every rule listed above, including the squash-only rule. In practice this means `git push` rejects `--no-ff` merge commits even with admin bypass; you would need to squash locally via `git merge --squash` and then push, or reset main to a tagged commit. Path B is strictly more work than Path A and is documented here only for completeness — prefer Path A.
+
+#### Why this step?
+
+Per the two-trunk model in `.claude/rules/git-workflow.md`:
+
+- `develop` is the active integration trunk — it must absorb the release-branch commits (which contain the tagged commit) so ongoing work builds on top of the shipped state.
 - `main` is the stable production trunk — it only ever points at released/tagged commits. Every `vX.X.X` tag on the release branch must propagate to `main` so external readers can trust `main` as the source of truth for "what's currently released".
 
 ### Step 7: Workflow Success
