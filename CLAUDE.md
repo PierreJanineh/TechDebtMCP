@@ -35,7 +35,7 @@ npm test -- --testPathPatterns=src/analyzers  # run a single suite
 
 ## Gotchas
 
-- After checking out a branch or creating a worktree, always run `npm install` before running tests or using node modules.
+- After checking out a branch or creating a worktree, always run `npm ci` before running tests or using node modules.
 - **Pre-commit hook enforces doc updates:** Any branch that changes `src/` files must also modify `CLAUDE.md`, `ARCHITECTURE.md`, `README.md`, `ROADMAP.md`, and `CHANGELOG.md`. For pure bug fixes or refactors, a minimal touch (e.g., updating "Last Updated" date) satisfies the hook.
 - **Worktree agents cannot push with bot tokens** — the repository's "Global Updates" ruleset blocks app installation tokens. Push from the main workspace after the agent finishes, or use the default credentials which have bypass.
 
