@@ -153,7 +153,31 @@ git push origin develop
 
 **Expected Duration:** 2-3 minutes
 
-### Step 6: Workflow Success
+### Step 6: Back-merge the release branch
+
+After the workflow completes successfully and the release is published, back-merge `release/vX.X.X` into **both** `develop` and `main`. `develop` carries the tagged state forward for continued integration work; `main` is the stable production pointer that only moves at release time.
+
+```bash
+# Back-merge into develop
+git checkout develop
+git pull origin develop
+git merge --no-ff release/v$VERSION -m "release: back-merge v$VERSION to develop"
+git push origin develop
+
+# Back-merge into main (direct pushes blocked by the Main ruleset;
+# use a PR or admin bypass as per the repo's release policy)
+git checkout main
+git pull origin main
+git merge --no-ff release/v$VERSION -m "release: back-merge v$VERSION to main"
+git push origin main
+```
+
+**Why this step?** According to the two-trunk model in `.claude/rules/git-workflow.md`:
+
+- `develop` is the active integration trunk — it must absorb the release commits so ongoing work builds on top of the shipped state.
+- `main` is the stable production trunk — it only ever points at released/tagged commits. Every `vX.X.X` tag on the release branch must propagate to `main` so external readers can trust `main` as the source of truth for "what's currently released".
+
+### Step 7: Workflow Success
 
 Once the workflow completes successfully, you'll see:
 

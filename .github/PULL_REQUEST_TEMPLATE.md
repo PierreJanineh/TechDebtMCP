@@ -17,7 +17,7 @@
 
 ## Checklist
 
-- [ ] Branch is from `develop` (not `master`)
+- [ ] Branch is from `develop` (not `main` — `main` only receives release back-merges)
 - [ ] Branch name follows `feature/tec-{N}-short-description` / `fix/tec-{N}-...` or `feature/issue-{N}-short-description` / `fix/issue-{N}-...`
 - [ ] `npm test` passes
 - [ ] `npm run build` succeeds
