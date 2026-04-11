@@ -8,18 +8,20 @@ For agents and contributors — run these from the repo root. The agent
 that processes PR review threads (pr-automation/pr-reviewer) consults
 this section before pushing, so keep it accurate.
 
-| Stage     | Command            |
-|-----------|--------------------|
-| Install   | `npm ci`           |
-| Typecheck | `npm run typecheck` |
-| Lint      | `npm run lint`     |
-| Test      | `npm test`         |
-| Build     | `npm run build`    |
+| Stage         | Command                                       |
+|---------------|-----------------------------------------------|
+| Install (CI)  | `npm ci`                                      |
+| Install (dev) | `npm install --include=dev --ignore-scripts`  |
+| Typecheck     | `npm run typecheck`                           |
+| Lint          | `npm run lint`                                |
+| Test          | `npm test`                                    |
+| Build         | `npm run build`                               |
 
 **Rules for agents:**
 - These commands are the source of truth. If a stage is **N/A**, skip it entirely — do not search for alternatives, do not run binaries directly (`node_modules/.bin/jest`), do not install missing tools, do not modify `package.json` to add scripts.
 - If a listed command fails, fix the underlying issue or report it. Do not "work around" by switching to a different command.
 - If you believe a stage *should* exist but doesn't, surface that as a finding in your PR summary — do not silently add it.
+- **Install context matters.** Use `npm ci` in CI and any reproducible environment (fails fast on lockfile drift). Use `npm install --include=dev --ignore-scripts` locally after checkout or worktree creation — `--include=dev` pulls the devDependencies that an agent needs for `npm run lint` / `npm test`, and `--ignore-scripts` skips the `prepare` lifecycle hook so installing does not trigger a full `tsc` build.
 
 Lint config lives in `eslint.config.mjs` (flat config, ESLint 10 + typescript-eslint 8). Tests and build scripts are ignored by lint; only `src/**/*.ts` is checked.
 
@@ -35,7 +37,7 @@ npm test -- --testPathPatterns=src/analyzers  # run a single suite
 
 ## Gotchas
 
-- After checking out a branch or creating a worktree, always run `npm ci` before running tests or using node modules.
+- After checking out a branch or creating a worktree, always run `npm install --include=dev --ignore-scripts` before running tests or using node modules. This is the canonical dev install — see the Install row of the Build & Test Commands table for the reasoning.
 - **Pre-commit hook enforces doc updates** for any branch that changes `src/` files — see `.claude/rules/docs-maintenance.md` for the file list. For pure bug fixes or refactors, a minimal touch (e.g., bumping "Last Updated") satisfies the hook.
 - **Worktree agents cannot push with bot tokens** — the repository's "Global Updates" ruleset blocks app installation tokens. Push from the main workspace after the agent finishes, or use the default credentials which have bypass.
 
