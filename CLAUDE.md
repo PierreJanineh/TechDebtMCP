@@ -10,7 +10,7 @@ this section before pushing, so keep it accurate.
 
 | Stage         | Command                                       |
 |---------------|-----------------------------------------------|
-| Install (CI)  | `npm ci`                                      |
+| Install (CI)  | `npm ci --ignore-scripts`                     |
 | Install (dev) | `npm install --include=dev --ignore-scripts`  |
 | Typecheck     | `npm run typecheck`                           |
 | Lint          | `npm run lint`                                |
@@ -21,7 +21,7 @@ this section before pushing, so keep it accurate.
 - These commands are the source of truth. If a stage is **N/A**, skip it entirely — do not search for alternatives, do not run binaries directly (`node_modules/.bin/jest`), do not install missing tools, do not modify `package.json` to add scripts.
 - If a listed command fails, fix the underlying issue or report it. Do not "work around" by switching to a different command.
 - If you believe a stage *should* exist but doesn't, surface that as a finding in your PR summary — do not silently add it.
-- **Install context matters.** Use `npm ci` in CI and any reproducible environment (fails fast on lockfile drift). Use `npm install --include=dev --ignore-scripts` locally after checkout or worktree creation — `--include=dev` pulls the devDependencies that an agent needs for `npm run lint` / `npm test`, and `--ignore-scripts` skips the `prepare` lifecycle hook so installing does not trigger a full `tsc` build.
+- **Install context matters.** Both install commands pass `--ignore-scripts` because `package.json` declares `"prepare": "npm run build"` — leaving the hook enabled causes every install to run `tsc`, which duplicates the later Build step and wastes CI minutes. In CI, `npm ci --ignore-scripts` fails fast on lockfile drift while skipping the double-compile. Locally, `npm install --include=dev --ignore-scripts` additionally pulls the devDependencies that an agent needs for `npm run lint` / `npm test`.
 
 Lint config lives in `eslint.config.mjs` (flat config, ESLint 10 + typescript-eslint 8). Tests and build scripts are ignored by lint; only `src/**/*.ts` is checked.
 
