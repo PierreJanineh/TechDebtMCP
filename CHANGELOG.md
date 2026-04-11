@@ -7,8 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-04-10
+
 ### Security
-- **Test coverage trace for v2.0.2 security fixes (TEC-13):** All six TEC-13 checklist items are verified by existing tests shipped alongside the individual security PRs. Coverage as of this entry (all files ≥ 80% statement coverage; branch coverage is ≥ 80% for all listed files except `dependencyHandlers.ts` at 74%): `inputParser.ts` 99%/99%, `resourceHandlers.ts` 100%/96%, `configValidator.ts` 94%/92%, `customRulesEngine.ts` 96%/85%, `regexUtils.ts` 100%/100%, `dependencyHandlers.ts` 95%/74%. Bullet-by-bullet trace:
+- **Test coverage trace for v2.0.2 security fixes:** All six security-hardening checklist items are verified by existing tests shipped alongside the individual security PRs. Coverage as of this entry (all files ≥ 80% statement; branch coverage ≥ 80% except `dependencyHandlers.ts` at 74%): `inputParser.ts` 99%/99%, `resourceHandlers.ts` 100%/96%, `configValidator.ts` 94%/92%, `customRulesEngine.ts` 96%/85%, `regexUtils.ts` 100%/100%, `dependencyHandlers.ts` 95%/74%. Bullet-by-bullet trace:
   1. **Path validation rejects relative paths / `../` traversal** — `src/server/__tests__/inputParser.test.ts` lines 396–483 (`path validation` describe block); `src/server/__tests__/configValidator.test.ts` lines 53–59; `src/server/__tests__/dependencyHandlers.test.ts` lines 79–99.
   2. **Resource handler path validation** — `src/server/__tests__/resourceHandlers.test.ts` lines 348–404 (`should reject a relative projectPath`, `should normalize a path with .. sequences` cases for both summary and issues resources).
   3. **Regex flag allowlist rejects invalid flags** — `src/core/__tests__/customRulesEngine.test.ts` lines 262–396 (`rejects flags containing disallowed characters`, `accepts all valid flag characters`, `rejects combined u and v flags`, `strips disallowed flag characters at execution time`).
@@ -16,12 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   5. **`escapeRegExp()` helper works correctly** — `src/utils/__tests__/regexUtils.test.ts` lines 1–52 (all five test cases covering no-metacharacter pass-through, individual metacharacter escaping, multi-metacharacter strings, safe `new RegExp()` construction, and literal-match semantics).
   6. **Error messages use relative paths / no absolute-path leakage** — `src/server/__tests__/configValidator.test.ts` lines 62–134 (`should not leak absolute path in ...` assertions); `src/server/__tests__/dependencyHandlers.test.ts` lines 88–93; `src/server/__tests__/handlers.test.ts` lines 122–213 (`path sanitization — no absolute paths in output` describe block, 4 assertions for `get_debt_summary` and `get_sqale_metrics`).
 - Dependency bumps to resolve reachable and unreachable Dependabot alerts ahead of v2.0.2: `glob` `^10.3.10` → `^13.0.6`, `ignore` `^5.3.0` → `^7.0.5`, `toml` `^3.0.0` → `^4.1.1`. All runtime vulnerabilities flagged on the previous lockfile state no longer appear in `npm audit`. Remaining Dependabot alerts (handlebars via `ts-jest`, hono/express/path-to-regexp via `@modelcontextprotocol/sdk` HTTP transport) are dev-only or unreachable code paths — TechDebtMCP uses stdio transport and does not ship dev dependencies to npm consumers.
-- **Dropped Node 18 support** — `toml@4.1.1` (runtime dependency) requires Node >=20; `engines.node` bumped from `>=18.0.0` to `>=20.0.0`. Node 18 reached EOL April 2025. CI matrix updated to `[20.x, 22.x]`.
+- **Dropped Node 18 support** — `toml@4.1.1` (runtime dependency) requires Node >=20; `engines.node` bumped from `>=18.0.0` to `>=20.0.0`. Node 18 reached EOL April 2025. CI matrix updated to `[20.x, 22.x]`. Subsequently bumped further to `>=20.19.0` to satisfy ESLint 10.2.0's declared engine requirement (`^20.19.0 || ^22.13.0 || >=24`).
 
 ### Changed
 - **`.techdebtrc.json`** — Added `ruleExclusions` for `console-log` (MCP stdio transport calls in `index.ts`, `setup.ts`), `type-assertion` (idiomatic `as const` / `as Record` patterns in parsers and server modules), `line-length` (`tools.ts` MCP schema strings), and `nesting-depth` (inherent `checkPattern` chains in all language analyzers and dependency parsers); added `jest.config.js` to the `ignore` list to suppress config file nesting noise (#147)
 - **README.md** — Restructured for scannability: added stat line, grouped tools table with collapsible parameter reference, Resources table, collapsed SwiftUI section, merged Custom Rules into Configuration
-- **ARCHITECTURE.md** — Fixed project structure tree (added `inputParser.ts`, `argValidation.ts`, `swiftUiChecks.ts`, `swiftUiChecksPhase2.ts`), removed phantom `src/services/` directory, updated test count (584), fixed file size table, marked resolved debt items
+- **ARCHITECTURE.md** — Fixed project structure tree (added `inputParser.ts`, `argValidation.ts`, `swiftUiChecks.ts`, `swiftUiChecksPhase2.ts`), removed phantom `src/services/` directory, updated test count (597), fixed file size table, marked resolved debt items
 - **CLAUDE.md** — Deduplicated Git and Code Quality sections (reference `.claude/rules/`), updated resource recipe, added Security section
 - **.github/copilot-instructions.md** — Added Security Review and Testing Review sections, updated architecture tree, aligned file length threshold (500)
 - **ROADMAP.md** — Added v2.0.2 security patch section with issues #124-131
@@ -45,6 +47,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Security: captured strings interpolated into `new RegExp()` in `swiftUiChecks.ts` are now escaped via `escapeRegExp()` from the new `src/utils/regexUtils.ts` helper, preventing regex injection and unintended matching (#128)
 - Regex flag allowlist in `customRulesEngine.ts` now includes the `v` (unicodeSets) flag introduced in Node.js 20 (V8 11.0); added mutual-exclusion validation that rejects patterns supplying both `u` and `v` flags simultaneously (#140)
 - `optionalAbsolutePath` in `inputParser.ts` now returns `undefined` for empty string `""` instead of throwing a confusing `must be an absolute path` error; empty string is treated the same as an absent field (#137)
+- `execute_custom_rules` schema in `tools.ts` now declares `minLength: 1` on `path` and `minLength: 1` / `maxLength: MAX_CODE_LENGTH` on `code` to surface the empty-string rejection and 500,000-character cap in the schema. `parseExecuteCustomRulesInput` also rejects empty-string `code` with a targeted `InvalidParams` error before the max-length check
+- `handleAnalyzeFile` (in `handlers.ts`) and `handleExecuteCustomRules` (in `customRulesHandlers.ts`) replaced the `fileExists()` pre-check with a single `getFileStats()` + `isFile()` guard, eliminating the TOCTOU race between `access()` and `stat()`, rejecting directories, devices, FIFOs, and sockets with a clear `InvalidParams` error before `readFile()` is called, and surfacing accurate "Path not found or not accessible" messages for both `ENOENT` and `EACCES` cases without leaking absolute paths
+- Security: `handleValidateConfig` (in `configValidator.ts`) replaced the double `fileExists()` / `stat()` / `fileExists()` check-then-use chain with a single `getFileStats()` call and ENOENT-on-open handling, eliminating the same TOCTOU window the CodeQL `js/file-system-race` rule flagged (#164). `isFile()` guards non-directory inputs so devices/FIFOs/sockets are rejected before `readFile()` is called
+- Dependencies: bumped transitive lockfile entries (`hono`, `path-to-regexp`, `express-rate-limit`, `ajv`, `yaml`, `qs`, `handlebars`, `picomatch`, `minimatch`, `brace-expansion`) to their patched versions via `npm update`, clearing all 29 open Dependabot advisories on the release branch. No direct dependencies changed — the SDK's transitive tree absorbed the fixes within existing semver ranges
 - **npm-shrinkwrap.json** — Removed to stop publishing lockfile to npm (#123)
 - Replaced `console.warn` with `console.error` for MCP stdio compatibility (#100)
 - Eliminated analyzer false positives via `ruleExclusions` config mechanism (#78)
@@ -55,6 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Security: `path` parameters for `analyze_project`, `analyze_file`, `get_debt_summary`, `get_sqale_metrics`, `get_recommendations`, `get_issues_by_severity`, `get_issues_by_category`, and `execute_custom_rules` are now validated with `isAbsolute()` and normalized with `resolve()` in `inputParser.ts`, preventing path traversal and relative-path attacks (#125)
 
 ### Added
+- **ESLint tooling** — `eslint@^10` + `typescript-eslint@^8` added to `devDependencies`, with a flat `eslint.config.mjs` scoped to `src/**/*.ts` (tests, configs, and `dist/` ignored). New `typecheck` npm script (`tsc --noEmit`) and the existing `lint` script now actually runs. CI `test.yml` upgraded to treat `npm run lint` as a blocking check (no more `--if-present` / `continue-on-error`), use `npm ci --ignore-scripts` to skip the `prepare` double-compile, and call `npm run typecheck` instead of `npx tsc --noEmit`. Workflows now also trigger on PRs to `release/**`. `CLAUDE.md` gains a canonical Build & Test Commands cheat sheet so agents stop probing for tools. Partially addresses #165 (`cppAnalyzer.ts:212/228` dead assignments fixed here) and closes #166 via source fixes for the flagged unused-variable warnings. The remaining #165 item — `pipParser.parseDependencyString` dead `name` variable — is closed in PR #171 alongside the back-merge. (PR #168)
 - CodeQL security scanning workflow (`.github/workflows/codeql.yml`) — runs SAST on every push to `develop`/`main`, every PR to `develop`/`main`, and weekly on Mondays at 03:00 UTC; uses `security-and-quality` queries for deeper coverage (#124)
 - `cppParser` vcpkg.json tests for empty dependencies array, missing `dependencies` key, and malformed JSON — completing coverage for all `parseVcpkgJson` edge cases (#131)
 - CI workflow (`.github/workflows/docs-check.yml`) warns on PRs with `src/` changes when none of the five required docs were touched; non-blocking, posts an actionable comment listing the required files and removes the comment automatically when docs are subsequently updated (#130)
@@ -292,7 +299,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tests for SQALE engine
 - Tests for custom rules engine
 
-[Unreleased]: https://github.com/PierreJanineh/TechDebtMCP/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/PierreJanineh/TechDebtMCP/compare/v2.0.2...HEAD
+[2.0.2]: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v2.0.2
 [2.0.1]: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v2.0.1
 [2.0.0]: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v2.0.0
 [1.1.0]: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v1.1.0

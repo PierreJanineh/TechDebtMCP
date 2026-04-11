@@ -153,28 +153,7 @@ git push origin develop
 
 **Expected Duration:** 2-3 minutes
 
-### Step 6: Merge develop to master
-
-After the workflow completes successfully and the release is published, merge develop to master to keep the master branch in sync with the released version:
-
-```bash
-# Switch to master
-git checkout master
-git pull origin master
-
-# Merge develop into master
-git merge develop -m "release: merge v$VERSION to master"
-
-# Push master
-git push origin master
-```
-
-**Why this step?** According to the git workflow in copilot-instructions.md:
-- `develop` branch is for integration of features
-- `master` branch should always point to a released/stable version
-- After tagging and publishing from develop, we merge it to master to keep master current
-
-### Step 7: Workflow Success
+### Step 6: Workflow Success
 
 Once the workflow completes successfully, you'll see:
 
@@ -455,7 +434,7 @@ Follow [Semantic Versioning](https://semver.org/):
 
 ---
 
-**Last Updated:** 2026-04-06
+**Last Updated:** 2026-04-11
 
 For questions or issues, see [CONTRIBUTING.md](CONTRIBUTING.md) or open an issue.
 

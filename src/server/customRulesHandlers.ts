@@ -119,8 +119,8 @@ export async function handleExecuteCustomRules(
   args: unknown,
 ): Promise<ToolResponse> {
   const input = parseExecuteCustomRulesInput(args);
-  let { path, code } = input;
-  const { language } = input;
+  const { path, language } = input;
+  let { code } = input;
 
   if (!path && !code) {
     throw new McpError(ErrorCode.InvalidParams, 'Either path or code must be provided');

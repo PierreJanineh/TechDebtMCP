@@ -181,7 +181,6 @@ export class CAnalyzer extends BaseAnalyzer {
 
     const lines = content.split('\n');
     let globalCount = 0;
-    let inFunction = false;
     let braceDepth = 0;
 
     for (const line of lines) {

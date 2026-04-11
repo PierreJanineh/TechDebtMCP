@@ -209,7 +209,6 @@ export class CppAnalyzer extends BaseAnalyzer {
         // Look ahead for virtual methods and destructor
         let hasVirtualMethod = false;
         let hasVirtualDestructor = false;
-        let classEnd = i;
         let braceCount = 0;
 
         for (let j = i; j < Math.min(i + 100, lines.length); j++) {
@@ -225,7 +224,6 @@ export class CppAnalyzer extends BaseAnalyzer {
           }
 
           if (braceCount === 0 && j > i) {
-            classEnd = j;
             break;
           }
         }

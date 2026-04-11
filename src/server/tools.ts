@@ -142,7 +142,7 @@ export const TOOL_DEFINITIONS = [
     inputSchema: {
       type: 'object',
       properties: {
-        path: { type: 'string', minLength: 1, description: `Absolute filesystem path to the file to analyze (maximum ${String(MAX_FILE_SIZE_BYTES)} bytes)` },
+        path: { type: 'string', description: `Absolute filesystem path to the file to analyze (maximum ${String(MAX_FILE_SIZE_BYTES)} bytes). An empty string is treated the same as omitting the field.` },
         code: { type: 'string', minLength: 1, maxLength: MAX_CODE_LENGTH, description: `Source code content to analyze directly (maximum ${String(MAX_CODE_LENGTH)} characters; alternative to path). Either path or code must be provided.` },
         language: { type: 'string', description: 'Optional: programming language for filtering rules' },
       },

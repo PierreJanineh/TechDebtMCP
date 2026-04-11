@@ -2,23 +2,43 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Commands
+## Build & Test Commands
+
+For agents and contributors — run these from the repo root. The agent
+that processes PR review threads (pr-automation/pr-reviewer) consults
+this section before pushing, so keep it accurate.
+
+| Stage         | Command                                       |
+|---------------|-----------------------------------------------|
+| Install (CI)  | `npm ci --ignore-scripts`                     |
+| Install (dev) | `npm install --include=dev --ignore-scripts`  |
+| Typecheck     | `npm run typecheck`                           |
+| Lint          | `npm run lint`                                |
+| Test          | `npm test`                                    |
+| Build         | `npm run build`                               |
+
+**Rules for agents:**
+- These commands are the source of truth. If a stage is **N/A**, skip it entirely — do not search for alternatives, do not run binaries directly (`node_modules/.bin/jest`), do not install missing tools, do not modify `package.json` to add scripts.
+- If a listed command fails, fix the underlying issue or report it. Do not "work around" by switching to a different command.
+- If you believe a stage *should* exist but doesn't, surface that as a finding in your PR summary — do not silently add it.
+- **Install context matters.** Both install commands pass `--ignore-scripts` because `package.json` declares `"prepare": "npm run build"` — leaving the hook enabled causes every install to run `tsc`, which duplicates the later Build step and wastes CI minutes. In CI, `npm ci --ignore-scripts` fails fast on lockfile drift while skipping the double-compile. Locally, `npm install --include=dev --ignore-scripts` additionally pulls the devDependencies that an agent needs for `npm run lint` / `npm test`.
+
+Lint config lives in `eslint.config.mjs` (flat config, ESLint 10 + typescript-eslint 8). Tests and build scripts are ignored by lint; only `src/**/*.ts` is checked.
+
+**Dev loop helpers (humans):**
 
 ```bash
-npm test                    # Run all tests
-npm test -- --testPathPatterns=src/analyzers  # Run a specific test suite
-npm run build               # Compile TypeScript
-npm run dev                 # Run with ts-node (no build needed)
-npm run watch               # Compile in watch mode
-npm run lint                # Lint source files
+npm run dev     # ts-node src/index.ts (no build needed)
+npm run watch   # tsc --watch
+npm test -- --testPathPatterns=src/analyzers  # run a single suite
 ```
 
 **Before every commit:** run `npm test` then `npm run build`. Both must succeed.
 
 ## Gotchas
 
-- After checking out a branch or creating a worktree, always run `npm install` before running tests or using node modules.
-- **Pre-commit hook enforces doc updates:** Any branch that changes `src/` files must also modify `CLAUDE.md`, `ARCHITECTURE.md`, `README.md`, `ROADMAP.md`, and `CHANGELOG.md`. For pure bug fixes or refactors, a minimal touch (e.g., updating "Last Updated" date) satisfies the hook.
+- After checking out a branch or creating a worktree, always run `npm install --include=dev --ignore-scripts` before running tests or using node modules. This is the canonical dev install — see the Install row of the Build & Test Commands table for the reasoning.
+- **Pre-commit hook enforces doc updates** for any branch that changes `src/` files — see `.claude/rules/docs-maintenance.md` for the file list. For pure bug fixes or refactors, a minimal touch (e.g., bumping "Last Updated") satisfies the hook.
 - **Worktree agents cannot push with bot tokens** — the repository's "Global Updates" ruleset blocks app installation tokens. Push from the main workspace after the agent finishes, or use the default credentials which have bypass.
 
 ## Architecture
@@ -56,7 +76,7 @@ src/
 │       ├── index.ts            # createDependencyParser() factory
 │       └── [ecosystem]Parser.ts # npm, pip, cargo, gradle, nuget, go.mod, etc.
 └── utils/
-    ├── fileUtils.ts            # fs helpers (readFile, fileExists, getRelativePath)
+    ├── fileUtils.ts            # fs helpers (readFile, fileExists, getFileStats, getRelativePath)
     └── regexUtils.ts           # escapeRegExp() — safe RegExp construction helper
 ```
 
@@ -66,6 +86,17 @@ src/
 
 **Resources:** `MCP client` → `resourceHandlers.ts` (via `McpServer.registerResource()`) → `AnalysisEngine.analyzeProject()` → JSON response.
 
+### Testing tools and resources interactively
+
+For manual exercise of any tool or resource, use the MCP Inspector:
+
+```bash
+npm run build
+npx @modelcontextprotocol/inspector node dist/index.js
+```
+
+Opens a web UI where you can call tools and read resources directly, including the RFC-6570 templated ones like `debt://summary/{+projectPath}` (note the `//` when substituting an absolute path — template trailing `/` + path leading `/`).
+
 ### Key conventions
 
 - **Imports use `.js` extensions** — required for `module: NodeNext` / `moduleResolution: NodeNext` in tsconfig.
@@ -73,7 +104,7 @@ src/
 - **Factory pattern** — use `createAnalyzer(language, config)` and `createDependencyParser(filePath)`.
 - **BaseAnalyzer.checkPattern()** — the standard way to match regex patterns and emit `TechDebtIssue` objects.
 - **Domain handler extraction** — when handlers.ts grows, extract domain-specific handlers to dedicated files (e.g., `configValidator.ts`, `customRulesHandlers.ts`, `dependencyHandlers.ts`, `resourceHandlers.ts`).
-- **No `any`** — use `unknown` if truly needed; no `@ts-ignore` (use `@ts-expect-error` with a comment).
+- **Prefer `unknown` over `any`** — the ESLint rule is set to `warn` (not error) so narrowly-scoped boundary uses surface without blocking CI; new code should use `unknown`. No `@ts-ignore` (use `@ts-expect-error` with a comment).
 - **No `console.log`** in production code.
 - **JSDoc on all public functions.**
 
@@ -116,6 +147,8 @@ issues.push(...this.checkPattern(filePath, content, /@ts-ignore/g, {
 ```
 
 Use this to prevent self-detection false positives in analyzer source files — wrap pattern definitions in rule-specific blocks (e.g., `// techdebt-ignore-start debugger`...`// techdebt-ignore-end debugger`).
+
+**Always specify the rule name** in suppression directives (e.g., `// techdebt-ignore-next-line debugger`) — avoid blanket suppressions, which silence all rules and hide real issues.
 
 ## Enums Reference
 
@@ -172,6 +205,8 @@ Implementation details for planned phases are in `docs/superpowers/specs/2026-03
 
 See `.claude/rules/docs-maintenance.md` for the canonical list of files to update after every implementation PR. Do not defer docs to a separate PR — include them in the implementation PR.
 
+**Self-scan metric source of truth:** `TECH_DEBT_SCAN.md` is the canonical source for Health / Debt Score / Issue count / Remediation time. Any occurrence of these metrics elsewhere (`README.md` Self-Scan Results, `ARCHITECTURE.md` Current Status, `CONTRIBUTING.md` Configuration Impact) must agree with `TECH_DEBT_SCAN.md`. When a fresh scan changes the numbers, update `TECH_DEBT_SCAN.md` first, then refresh the three derivative docs in the same commit.
+
 ## Git & PR Workflow
 
 See `.claude/rules/git-workflow.md` for branching, PR, and commit conventions.
@@ -186,14 +221,14 @@ See `.claude/rules/testing.md` for test file conventions, TDD workflow, mock pat
 
 ## Security
 
-**Automated scanning:** CodeQL SAST runs on every push to `develop`/`main` and every PR targeting `develop`/`main` via `.github/workflows/codeql.yml` (using `security-and-quality` queries). See Issue #124.
+**Automated scanning:** CodeQL SAST runs on every push to `develop`/`main`/`release/**` and every PR regardless of base branch via `.github/workflows/codeql.yml` (using `security-and-quality` queries). The sibling workflows `test.yml` and `docs-check.yml` use the same broadened triggers. See Issue #124 and PR #168.
 
 When handling user input from MCP tool calls:
 
 - **Path arguments:** Use `requireAbsolutePath(args, 'path')` or `optionalAbsolutePath(args, 'path')` from `inputParser.ts` — these validate with `path.isAbsolute()` and normalize with `path.resolve()`. `optionalAbsolutePath` treats an empty string `""` the same as `undefined` (returns `undefined`). Never use `requireString` for path parameters. This applies to **all** handler files (`handlers.ts`, `configValidator.ts`, `dependencyHandlers.ts`, and any future domain handler). See Issues #125, #126, #137, #139.
-- **User-supplied regex:** Never compile user-provided patterns via `new RegExp()` without length limits and flag allowlisting. For all supported runtimes, allow only `dgimsuy`; allow `v` only when running on Node.js 20+ (`u` and `v` are mutually exclusive and are validated as such). See Issues #127, #140.
+- **User-supplied regex:** Never compile user-provided patterns via `new RegExp()` without length limits and flag allowlisting. Allow `dgimsuvy`; `u` and `v` are mutually exclusive and must be validated as such. The older "`v` only on Node 20+" caveat is no longer relevant — `package.json` pins `engines.node >=20.19.0`. See Issues #127, #140.
 - **String interpolation into RegExp:** Captured strings interpolated into `new RegExp()` must be escaped first using `escapeRegExp()` from `src/utils/regexUtils.ts`. See Issue #128.
-- **Error messages:** Use `getRelativePath()` or `basename()` in error messages and reports returned to clients — never leak absolute filesystem paths. Applies to all handler files: `dependencyHandlers.ts` (scan errors, McpError messages, project name in reports) and `configValidator.ts` (path in all output messages). Do not echo raw `err.message` from filesystem operations (e.g., `stat()`, `readFile()`) — these typically include absolute paths. Either sanitize by replacing the absolute path with its `basename()`, or rethrow as an `McpError` with a safe message. Implemented in Issue #129.
+- **Error messages:** Use `getRelativePath()` or `basename()` in error messages and reports returned to clients — never leak absolute filesystem paths. Applies to all handler files: `dependencyHandlers.ts`, `configValidator.ts`, `customRulesHandlers.ts`, `handlers.ts`. Do not echo raw `err.message` from filesystem operations (`readFile()`, `getFileStats()`, etc.) — these typically include absolute paths. Either sanitize by replacing the absolute path with its `basename()`, or rethrow as an `McpError` with a safe message. Implemented in Issue #129 and extended by the #148 / #149 / #164 TOCTOU hardening.
 - **Handler output:** Use `basename()` (from `node:path`) to sanitize project paths in user-facing tool responses (e.g., debt summary, SQALE metrics). Never embed raw absolute paths in formatted output. See Issue #138.
 - **Security constants** in `customRulesEngine.ts`: `MAX_PATTERN_LENGTH` (1,000 chars), `MAX_CODE_LENGTH` (500,000 chars), `MAX_FILE_SIZE_BYTES` (500,000 bytes). Import and reference these — never hardcode the values.
 - **`validatePattern` nesting:** The nested flag + regex validation logic lives in `validatePatternRegex` (private static helper) to stay within the 4-level nesting limit. Keep that extraction in place when extending validation (#146).

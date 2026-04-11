@@ -1,6 +1,6 @@
 {
   "name": "tech-debt-mcp",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "MCP Server for analyzing technical debt across multiple programming languages",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,6 +9,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "typecheck": "tsc --noEmit",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
     "watch": "tsc --watch",
@@ -58,11 +59,13 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^20.10.0",
     "@types/semver": "^7.5.6",
+    "eslint": "^10.2.0",
     "jest": "^30.2.0",
     "ts-jest": "^29.4.6",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.58.1"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=20.19.0"
   }
 }

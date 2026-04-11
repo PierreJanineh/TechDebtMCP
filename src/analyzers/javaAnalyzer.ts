@@ -135,7 +135,6 @@ export class JavaAnalyzer extends BaseAnalyzer {
 
     for (let i = 0; i < lines.length - 1; i++) {
       const line = lines[i];
-      const nextLine = lines[i + 1] || '';
 
       // Check for catch followed by empty or just whitespace/comments
       if (/catch\s*\([^)]+\)\s*\{/.test(line)) {

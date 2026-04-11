@@ -332,7 +332,7 @@ The server is split into focused modules under `src/server/`:
 - `static createSimplePattern()` — Helper to create patterns
 
 **Features:**
-- Regex pattern matching with configurable flags (allowlist: `dgimsuvy` — includes the `v` unicodeSets flag, but `v` is only usable when the server is running on Node.js 20+; on supported Node.js 18 runtimes, `v` is not supported and patterns using it will fail rather than being treated as valid; `u` and `v` are mutually exclusive; patterns capped at 1 000 characters; inline `code` capped at 500 000 characters; `path` inputs capped at 500 000 bytes before reading)
+- Regex pattern matching with configurable flags (allowlist: `dgimsuvy` — includes the `v` unicodeSets flag; `u` and `v` are mutually exclusive; patterns capped at 1,000 characters; inline `code` capped at 500,000 characters; `path` inputs capped at 500,000 bytes before reading). Node.js >=20.19.0 required as of v2.0.2 (project minimum, including tooling such as ESLint).
 - Language-specific rule filtering
 - Multiple matches per line support
 - Cross-platform line ending support (\r\n and \n)
@@ -561,7 +561,7 @@ This reduces overhead from O(N × checks) to O(1) for content splitting.
 
 ### Test Coverage
 
-**Total Repository Tests:** 584 (563 passing + 21 todo across all phases)
+**Total Repository Tests:** 597 (576 passing + 21 todo across 29 suites)
 
 **SwiftUI Analyzer Tests:**
 - **Phase 1 Tests:** 21 implemented test cases
@@ -615,14 +615,14 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
 
 ### Project Health Metrics (Self-Scan)
 
-**Current Status (March 20, 2026):**
+**Current Status (v2.0.2, April 2026):**
 - **SQALE Rating:** A ⭐⭐⭐⭐⭐ (Excellent)
-- **Debt Ratio:** 4.6% (Target: <5%)
-- **Health Score:** 42.4/100
-- **Total Issues:** 118 (0 critical, 12 high, 49 medium, 57 low)
-- **Remediation Time:** ~96 hours
+- **Debt Score:** 5/100 (Target: ≤5/100)
+- **Health Score:** 95/100
+- **Total Issues:** 13 (0 critical, 0 high, 6 medium, 7 low)
+- **Remediation Time:** 14 hours
 
-**Note:** Issue count increased from 81 → 118 due to more files analyzed (wider scan scope in v2.0.1), not regression.
+**Note:** Down from 118 issues / 42.4 health in the v2.0.1 baseline after v2.0.2 security hardening, `ruleExclusions` config, nesting refactors (PRs #113, #118, #131, #146), and custom-rules handler extraction (#145). Remaining debt is 5 nesting hotspots (4 in server / core modules + 1 in `eslint.config.mjs`), 7 type-assertion usages at system boundaries, and 1 non-null assertion.
 
 > See [TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md) for complete analysis including before/after comparison.
 
@@ -630,12 +630,12 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
 
 | Metric | Limit | Current Max | Status |
 |--------|-------|-------------|--------|
-| File length | 500 lines | 495 (`src/server/handlers.ts`) | ⚠️ Near limit (index.ts split in v2.0.0) |
-| Nesting depth | 4 levels | ≤4 (all files) | ✅ Good (csharpAnalyzer fixed in PR #113, engines in PR #118, cppParser fixed in #131) |
+| File length | 500 lines | 346 (`src/server/handlers.ts`) | ✅ Good (further reduced in v2.0.2 after custom-rules handler extraction) |
+| Nesting depth | 4 levels | 6 (5 hotspots) | ⚠️ Known — 5 remaining hotspots (max depth 6 in `customRulesEngine.ts`); tracked in [TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md) |
 | Function length | 50 lines | Compliant | ✅ Good |
 | Cyclomatic complexity | 10 | Compliant | ✅ Good |
 
-**Note:** File count increased from 25 to 43 between Feb and March scans due to wider analysis scope (more analyzers, dependency parsers added in v2.0.0/v2.0.1).
+**Note:** File count grew from 25 → 43 → 49 across Feb 2026 → March 2026 → April 2026 scans as more analyzers, dependency parsers, server modules, and the ESLint flat config were added across v2.0.0, v2.0.1, and v2.0.2.
 
 ### Known Technical Debt Items
 
@@ -654,6 +654,8 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
    - ~~`src/core/customRulesEngine.ts:validatePattern` - 6 levels~~ ✅ **DONE** (#146) — extracted `validatePatternRegex` private helper
    - ~~`src/core/analysisEngine.ts:93` - 5 levels~~ ✅ **DONE** (PR #118) — refactored to ≤4 levels via early returns
    - ~~`src/analyzers/dependencies/cppParser.ts` - 5 levels in `parseVcpkgJson`~~ ✅ **DONE** (#131) — extracted `makeVcpkgDep()` helper and early-return guard
+
+   **Remaining (v2.0.2):** 5 active nesting hotspots — `customRulesEngine.ts:156` (depth 6), `handlers.ts:273`, `dependencyHandlers.ts:228`, `analysisEngine.ts:257`, `eslint.config.mjs:25` (all depth 5). See [TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md).
 
 6. **Test file organization** - Previously had 9-level deep nesting
    - Now excluded from production analysis via `.techdebtrc.json`
@@ -681,11 +683,16 @@ These rules are enforced via `.techdebtrc.json` and CI checks:
 - Analyzer files may reference keywords (e.g., "debugger" in pattern definitions)
 - Configuration in `.techdebtrc.json` excludes test directories
 
-**Configuration Impact (Measured, March 2026):**
+**Configuration Impact (Measured, v2.0.2 April 2026):**
 ```bash
-# With .techdebtrc.json:
+# v2.0.2 (April 2026, post security hardening + nesting refactors):
+- 13 issues, 14 hours remediation
+- 49 files analyzed (TypeScript + JavaScript, including the eslint flat config)
+- 0 high-severity issues
+
+# v2.0.1 baseline (March 2026, wider scan scope):
 - 118 issues, ~96 hours remediation
-- 43 files analyzed (wider scope in v2.0.1)
+- 43 files analyzed
 - 12 high-severity issues
 
 # Original baseline (Feb 2026, pre-.techdebtrc.json):
