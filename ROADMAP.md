@@ -145,7 +145,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 
 **Design Spec:** See `docs/superpowers/specs/2026-03-19-phases-3-4-6-design.md` for Phases 3 & 4 implementation details.
 
-**Project Management:** Linear — two-way sync with GitHub.
+**Project Management:** GitHub Issues — see [issues and milestones](https://github.com/PierreJanineh/TechDebtMCP/issues).
 
 ## Phase Overview
 
@@ -169,8 +169,6 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 **Status:** ✅ **COMPLETE** (Release prep complete; pending git tag and npm publish for v2.0.2)
 
 **Objective:** Fix 5 security vulnerabilities found during audit, merge pending refactors, add CI security guardrails.
-
-**Linear:** TEC project — v2.0.2 Security Patch
 
 #### Issues
 

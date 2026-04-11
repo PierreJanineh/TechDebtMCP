@@ -95,10 +95,10 @@ Copilot **must** check documentation consistency on every PR. **Do not approve**
 ## Git Workflow
 
 - **Branch from `develop`**, never commit to `master` directly
-- Branch naming: `feature/tec-{N}-short-description` or `fix/tec-{N}-...` (where `TEC-N` is the Linear issue). Fallback: `feature/issue-{number}-...` for issues without a Linear ticket.
+- Branch naming: `feature/issue-{N}-short-description` or `fix/issue-{N}-...` (where `{N}` is the GitHub issue number). Internal maintainer branches may also use `feature/tec-{N}-...` or `fix/tec-{N}-...`; both patterns are acceptable.
 - PRs target `develop` (not `master`)
 - Releases: tag on `develop` → GitHub Actions publishes → merge `develop` → `master`
-- **Issues are created on GitHub only** — Linear two-way sync auto-creates corresponding `TEC-N` issues. Verify PR branch names match one of the naming patterns above.
+- **Issues are created on GitHub only.** Verify PR branch names match one of the naming patterns above.
 - **Direct-to-develop commits:** Verify only `.md` files are committed directly to `develop`. Code changes (`src/`, tests, config) must come through a branch and PR.
 - **PR author:** Verify PRs are opened by the bot account (`my-llm-bot[bot]`), not a personal account.
 
