@@ -275,11 +275,10 @@ export class PipParser extends BaseDependencyParser {
    * Examples: "requests>=2.28.0", "flask==2.2.2", "django[async]>=4.0"
    */
   private parseDependencyString(depStr: string): { name: string; version: string } | null {
-    // Remove extras
-    let name = depStr.split('[')[0] || '';
-    name = name.trim();
-
-    // Extract version specifier
+    // Extract name and version specifier. The dependency name is the first
+    // capture group; extras like `django[async]` are naturally ignored
+    // because the pattern only matches the leading `[a-zA-Z0-9._-]+`
+    // identifier (the `[` is not in the character class).
     const match = /^([a-zA-Z0-9._-]+)\s*(.*)$/.exec(depStr);
     if (!match) {
       return null;

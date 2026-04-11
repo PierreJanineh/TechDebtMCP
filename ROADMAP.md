@@ -185,7 +185,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 | #140 | Regex flag allowlist missing `v` (unicodeSets) flag for Node.js 20+ | Low | ✅ Fixed |
 | #146 | `customRulesEngine.validatePattern` nesting depth 6 | Medium | ✅ Fixed — extracted `validatePatternRegex` helper |
 | #164 | TOCTOU race in `handleValidateConfig` — `js/file-system-race` HIGH | High | ✅ Fixed — single-stat `getFileStats()` + `isFile()` pattern (PR #167) |
-| #165 | Useless local variable assignments in cppAnalyzer / pipParser | Low | ✅ Fixed via PR #168 source edits |
+| #165 | Useless local variable assignments in cppAnalyzer / pipParser | Low | ✅ Fixed — `cppAnalyzer.ts` lines in PR #168; `pipParser.parseDependencyString` dead `name` variable completed in PR #171 |
 | #166 | Unused variables / imports flagged by CodeQL | Note | ✅ Fixed via PR #168 source edits |
 | #124 | Add CodeQL security scanning workflow | — | ✅ Done — `.github/workflows/codeql.yml` |
 | #130 | Docs freshness CI check + Claude Code hook | — | ✅ Done |
