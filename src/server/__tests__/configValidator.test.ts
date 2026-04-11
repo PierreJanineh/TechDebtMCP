@@ -11,7 +11,7 @@ jest.mock('node:fs/promises', () => ({
 
 import { handleValidateConfig } from '../configValidator.js';
 import { getFileStats } from '../../utils/fileUtils.js';
-import { open } from 'node:fs/promises';
+import { open, type FileHandle } from 'node:fs/promises';
 
 const mockGetFileStats = getFileStats as jest.MockedFunction<typeof getFileStats>;
 const mockOpen = open as jest.MockedFunction<typeof open>;
@@ -46,7 +46,7 @@ function stubStatsDir() {
 
 /** Helper: stub open() to succeed with the given file content. */
 function stubOpenSuccess(content: string) {
-  mockOpen.mockResolvedValueOnce(makeHandle(content) as any);
+  mockOpen.mockResolvedValueOnce(makeHandle(content) as unknown as FileHandle);
 }
 
 /** Helper: stub open() to reject with the given error. */
@@ -191,7 +191,7 @@ describe('handleValidateConfig', () => {
 
   it('should throw InvalidParams when the opened path is a non-regular file (FIFO/device)', async () => {
     stubStatsFile();
-    mockOpen.mockResolvedValueOnce(makeHandleNonRegular() as any);
+    mockOpen.mockResolvedValueOnce(makeHandleNonRegular() as unknown as FileHandle);
 
     await expect(handleValidateConfig({ path: '/dev/null' })).rejects.toThrow('Path is not a regular file');
   });
