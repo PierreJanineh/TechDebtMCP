@@ -1,23 +1,58 @@
 import { jest } from '@jest/globals';
+import type { Stats } from 'node:fs';
 
 jest.mock('../../utils/fileUtils.js', () => ({
-  fileExists: jest.fn(),
-  readFile: jest.fn(),
-  getRelativePath: jest.fn(),
+  getFileStats: jest.fn(),
 }));
 
 jest.mock('node:fs/promises', () => ({
-  readFile: jest.fn(),
-  stat: jest.fn(),
+  open: jest.fn(),
 }));
 
 import { handleValidateConfig } from '../configValidator.js';
-import { fileExists } from '../../utils/fileUtils.js';
-import { readFile as fsReadFile, stat } from 'node:fs/promises';
+import { getFileStats } from '../../utils/fileUtils.js';
+import { open, type FileHandle } from 'node:fs/promises';
 
-const mockFileExists = fileExists as jest.MockedFunction<typeof fileExists>;
-const mockFsReadFile = fsReadFile as jest.MockedFunction<typeof fsReadFile>;
-const mockStat = stat as jest.MockedFunction<typeof stat>;
+const mockGetFileStats = getFileStats as jest.MockedFunction<typeof getFileStats>;
+const mockOpen = open as jest.MockedFunction<typeof open>;
+
+/** Creates a mock FileHandle that reads content successfully. */
+function makeHandle(content: string) {
+  return {
+    stat: jest.fn().mockImplementation(() => Promise.resolve({ isFile: () => true, isDirectory: () => false })),
+    readFile: jest.fn().mockImplementation(() => Promise.resolve(content)),
+    close: jest.fn().mockImplementation(() => Promise.resolve()),
+  };
+}
+
+/** Creates a mock FileHandle for a non-regular file (FIFO/device/socket). */
+function makeHandleNonRegular() {
+  return {
+    stat: jest.fn().mockImplementation(() => Promise.resolve({ isFile: () => false, isDirectory: () => false })),
+    readFile: jest.fn(),
+    close: jest.fn().mockImplementation(() => Promise.resolve()),
+  };
+}
+
+/** Helper: stub getFileStats to return a regular-file Stats object. */
+function stubStatsFile() {
+  mockGetFileStats.mockResolvedValueOnce({ isDirectory: () => false, isFile: () => true } as unknown as Stats);
+}
+
+/** Helper: stub getFileStats to return a directory Stats object. */
+function stubStatsDir() {
+  mockGetFileStats.mockResolvedValueOnce({ isDirectory: () => true, isFile: () => false } as unknown as Stats);
+}
+
+/** Helper: stub open() to succeed with the given file content. */
+function stubOpenSuccess(content: string) {
+  mockOpen.mockResolvedValueOnce(makeHandle(content) as unknown as FileHandle);
+}
+
+/** Helper: stub open() to reject with the given error. */
+function stubOpenError(error: Error) {
+  mockOpen.mockRejectedValueOnce(error);
+}
 
 describe('handleValidateConfig', () => {
   beforeEach(() => {
@@ -55,30 +90,38 @@ describe('handleValidateConfig', () => {
   });
 
   it('should throw when path does not exist', async () => {
-    mockFileExists.mockResolvedValue(false);
-    await expect(handleValidateConfig({ path: '/no/such/path' })).rejects.toThrow('Path not found');
+    mockGetFileStats.mockResolvedValueOnce(null);
+    await expect(handleValidateConfig({ path: '/no/such/path' })).rejects.toThrow('Path not found or not accessible');
+  });
+
+  it('should include "(root path)" hint when basename of path is empty (e.g. /)', async () => {
+    mockGetFileStats.mockResolvedValueOnce(null);
+    const err = await handleValidateConfig({ path: '/' }).catch(e => e);
+    expect(err.message).toContain('(root path)');
   });
 
   it('should not leak absolute path in "path not found" error message', async () => {
-    mockFileExists.mockResolvedValue(false);
+    mockGetFileStats.mockResolvedValueOnce(null);
     const err = await handleValidateConfig({ path: '/secret/server/path' }).catch(e => e);
     expect(err.message).not.toContain('/secret/server/path');
     expect(err.message).toContain('path');
   });
 
   it('should report missing config when directory has no .techdebtrc.json', async () => {
-    mockFileExists.mockResolvedValueOnce(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
-    mockFileExists.mockResolvedValueOnce(false);
+    stubStatsDir();
+    stubOpenError(
+      Object.assign(new Error("ENOENT: no such file or directory, open '/project/.techdebtrc.json'"), { code: 'ENOENT' }),
+    );
 
     const result = await handleValidateConfig({ path: '/project' });
     expect(result.content[0].text).toContain('No .techdebtrc.json found');
   });
 
   it('should not leak absolute path in "missing config" message', async () => {
-    mockFileExists.mockResolvedValueOnce(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => true } as any);
-    mockFileExists.mockResolvedValueOnce(false);
+    stubStatsDir();
+    stubOpenError(
+      Object.assign(new Error("ENOENT: no such file or directory, open '/secret/server/project/.techdebtrc.json'"), { code: 'ENOENT' }),
+    );
 
     const result = await handleValidateConfig({ path: '/secret/server/project' });
     expect(result.content[0].text).not.toContain('/secret/server/project');
@@ -86,18 +129,16 @@ describe('handleValidateConfig', () => {
   });
 
   it('should report JSON parse errors', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce('{ invalid json' as any);
+    stubStatsFile();
+    stubOpenSuccess('{ invalid json');
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('Invalid JSON');
   });
 
   it('should not leak absolute path in JSON parse error message', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce('{ bad' as any);
+    stubStatsFile();
+    stubOpenSuccess('{ bad');
 
     const result = await handleValidateConfig({ path: '/secret/server/.techdebtrc.json' });
     expect(result.content[0].text).not.toContain('/secret/server');
@@ -105,38 +146,65 @@ describe('handleValidateConfig', () => {
   });
 
   it('should not leak absolute path in valid config message', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ ignore: ['node_modules/**'] }) as any);
+    stubStatsFile();
+    stubOpenSuccess(JSON.stringify({ ignore: ['node_modules/**'] }));
 
     const result = await handleValidateConfig({ path: '/secret/server/.techdebtrc.json' });
     expect(result.content[0].text).not.toContain('/secret/server');
     expect(result.content[0].text).toContain('.techdebtrc.json');
   });
 
-  it('should not leak absolute path when stat throws EACCES', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockRejectedValueOnce(Object.assign(new Error(`EACCES: permission denied, stat '/secret/server'`), { code: 'EACCES' }));
+  it('should not leak absolute path when getFileStats fails (e.g. EACCES)', async () => {
+    // getFileStats() catches all fs errors and returns null, so an EACCES
+    // on the root path surfaces as the generic "Path not found or not
+    // accessible" error. The important security property is that the error
+    // message never contains the absolute path.
+    mockGetFileStats.mockResolvedValueOnce(null);
 
     const err = await handleValidateConfig({ path: '/secret/server/.techdebtrc.json' }).catch(e => e);
     expect(err.message).not.toContain('/secret/server');
     expect(err.message).toContain('.techdebtrc.json');
   });
 
-  it('should not leak absolute path when fsReadFile fails with EACCES', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockRejectedValueOnce(Object.assign(new Error(`EACCES: permission denied, open '/secret/server/.techdebtrc.json'`), { code: 'EACCES' }));
+  it('should not leak absolute path when open() fails with EACCES', async () => {
+    stubStatsFile();
+    stubOpenError(Object.assign(new Error(`EACCES: permission denied, open '/secret/server/.techdebtrc.json'`), { code: 'EACCES' }));
 
     const result = await handleValidateConfig({ path: '/secret/server/.techdebtrc.json' });
     expect(result.content[0].text).not.toContain('/secret/server');
     expect(result.content[0].text).toContain('.techdebtrc.json');
   });
 
+  it('should report "Cannot access" (not "Invalid JSON") when open() fails with a fs error code', async () => {
+    stubStatsFile();
+    stubOpenError(Object.assign(new Error(`EACCES: permission denied, open '/project/.techdebtrc.json'`), { code: 'EACCES' }));
+
+    const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
+    expect(result.content[0].text).toContain('Cannot access');
+    expect(result.content[0].text).not.toContain('Invalid JSON');
+  });
+
+  it('should report "not found or not accessible" (not "No .techdebtrc.json found") for ENOENT on a direct file path', async () => {
+    stubStatsFile();
+    stubOpenError(
+      Object.assign(new Error("ENOENT: no such file or directory, open '/project/myconfig.json'"), { code: 'ENOENT' }),
+    );
+
+    const result = await handleValidateConfig({ path: '/project/myconfig.json' });
+    expect(result.content[0].text).not.toContain('No .techdebtrc.json found');
+    expect(result.content[0].text).toContain('not found or not accessible');
+  });
+
+  it('should throw InvalidParams when the opened path is a non-regular file (FIFO/device)', async () => {
+    stubStatsFile();
+    mockOpen.mockResolvedValueOnce(makeHandleNonRegular() as unknown as FileHandle);
+
+    await expect(handleValidateConfig({ path: '/dev/null' })).rejects.toThrow('Path is not a regular file');
+  });
+
   it('should reject non-object top-level values (null)', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce('null' as any);
+    stubStatsFile();
+    stubOpenSuccess('null');
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('Top-level value must be a JSON object');
@@ -144,32 +212,29 @@ describe('handleValidateConfig', () => {
   });
 
   it('should reject array top-level values', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce('[]' as any);
+    stubStatsFile();
+    stubOpenSuccess('[]');
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('array');
   });
 
   it('should accept a valid config', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({
+    stubStatsFile();
+    stubOpenSuccess(JSON.stringify({
       ignore: ['node_modules/**'],
       include: ['src/**'],
       rules: { maxFileLines: 500, maxComplexity: 10 },
       severity: { 'todo-comment': 'low' },
-    }) as any);
+    }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('is valid');
   });
 
   it('should warn on unknown top-level keys', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ unknownKey: true }) as any);
+    stubStatsFile();
+    stubOpenSuccess(JSON.stringify({ unknownKey: true }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('Unknown top-level key');
@@ -177,54 +242,48 @@ describe('handleValidateConfig', () => {
   });
 
   it('should error when ignore is not an array', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ ignore: 'not-an-array' }) as any);
+    stubStatsFile();
+    stubOpenSuccess(JSON.stringify({ ignore: 'not-an-array' }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('"ignore" must be an array');
   });
 
   it('should error when ignore contains non-strings', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ ignore: ['valid', 42] }) as any);
+    stubStatsFile();
+    stubOpenSuccess(JSON.stringify({ ignore: ['valid', 42] }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('must contain only strings');
   });
 
   it('should error when include is not an array', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ include: {} }) as any);
+    stubStatsFile();
+    stubOpenSuccess(JSON.stringify({ include: {} }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('"include" must be an array');
   });
 
   it('should error when rules is not an object', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ rules: 'bad' }) as any);
+    stubStatsFile();
+    stubOpenSuccess(JSON.stringify({ rules: 'bad' }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('"rules" must be an object');
   });
 
   it('should error when rule values are not numbers', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ rules: { maxFileLines: 'many' } }) as any);
+    stubStatsFile();
+    stubOpenSuccess(JSON.stringify({ rules: { maxFileLines: 'many' } }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('"rules.maxFileLines" must be a number');
   });
 
   it('should warn on unknown rule keys', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ rules: { badKey: 5 } }) as any);
+    stubStatsFile();
+    stubOpenSuccess(JSON.stringify({ rules: { badKey: 5 } }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('Unknown rule key');
@@ -232,18 +291,16 @@ describe('handleValidateConfig', () => {
   });
 
   it('should error when severity is not an object', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ severity: 'bad' }) as any);
+    stubStatsFile();
+    stubOpenSuccess(JSON.stringify({ severity: 'bad' }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('"severity" must be an object');
   });
 
   it('should error on invalid severity values', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ severity: { 'my-rule': 'extreme' } }) as any);
+    stubStatsFile();
+    stubOpenSuccess(JSON.stringify({ severity: { 'my-rule': 'extreme' } }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('invalid value');
@@ -251,78 +308,70 @@ describe('handleValidateConfig', () => {
   });
 
   it('should error when languageOverrides is not an object', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ languageOverrides: [] }) as any);
+    stubStatsFile();
+    stubOpenSuccess(JSON.stringify({ languageOverrides: [] }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('"languageOverrides" must be an object');
   });
 
   it('should accept valid languageOverrides with nested objects', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({
+    stubStatsFile();
+    stubOpenSuccess(JSON.stringify({
       languageOverrides: { typescript: { rules: { maxFileLines: 600 } } },
-    }) as any);
+    }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('valid');
   });
 
   it('should validate customPatterns entries', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({
+    stubStatsFile();
+    stubOpenSuccess(JSON.stringify({
       customPatterns: [{ id: 'test', pattern: 'TODO', severity: 'low', category: 'code-quality', message: 'found TODO' }],
-    }) as any);
+    }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('valid');
   });
 
   it('should error when customPatterns is not an array', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ customPatterns: 'bad' }) as any);
+    stubStatsFile();
+    stubOpenSuccess(JSON.stringify({ customPatterns: 'bad' }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('"customPatterns" must be an array');
   });
 
   it('should accept valid ruleExclusions', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({
+    stubStatsFile();
+    stubOpenSuccess(JSON.stringify({
       ruleExclusions: { debugger: ['**/src/analyzers/**'], 'ts-ignore': ['**/src/analyzers/**'] },
-    }) as any);
+    }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('valid');
   });
 
   it('should error when ruleExclusions is not an object', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ ruleExclusions: 'bad' }) as any);
+    stubStatsFile();
+    stubOpenSuccess(JSON.stringify({ ruleExclusions: 'bad' }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('"ruleExclusions" must be an object');
   });
 
   it('should error when ruleExclusions values are not arrays', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ ruleExclusions: { debugger: 'bad' } }) as any);
+    stubStatsFile();
+    stubOpenSuccess(JSON.stringify({ ruleExclusions: { debugger: 'bad' } }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('"ruleExclusions.debugger" must be an array');
   });
 
   it('should error when ruleExclusions arrays contain non-strings', async () => {
-    mockFileExists.mockResolvedValue(true);
-    mockStat.mockResolvedValueOnce({ isDirectory: () => false } as any);
-    mockFsReadFile.mockResolvedValueOnce(JSON.stringify({ ruleExclusions: { debugger: ['valid', 42] } }) as any);
+    stubStatsFile();
+    stubOpenSuccess(JSON.stringify({ ruleExclusions: { debugger: ['valid', 42] } }));
 
     const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
     expect(result.content[0].text).toContain('"ruleExclusions.debugger" array must contain only strings');
