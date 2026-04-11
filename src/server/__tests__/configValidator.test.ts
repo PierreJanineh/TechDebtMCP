@@ -94,6 +94,12 @@ describe('handleValidateConfig', () => {
     await expect(handleValidateConfig({ path: '/no/such/path' })).rejects.toThrow('Path not found or not accessible');
   });
 
+  it('should include "(root path)" hint when basename of path is empty (e.g. /)', async () => {
+    mockGetFileStats.mockResolvedValueOnce(null);
+    const err = await handleValidateConfig({ path: '/' }).catch(e => e);
+    expect(err.message).toContain('(root path)');
+  });
+
   it('should not leak absolute path in "path not found" error message', async () => {
     mockGetFileStats.mockResolvedValueOnce(null);
     const err = await handleValidateConfig({ path: '/secret/server/path' }).catch(e => e);

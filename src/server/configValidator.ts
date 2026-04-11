@@ -148,7 +148,8 @@ export async function handleValidateConfig(args: unknown): Promise<{ content: Ar
   // eliminate TOCTOU risk for mutable paths such as symlinks. See issue #164.
   const inputStats = await getFileStats(inputPath);
   if (inputStats === null) {
-    throw new McpError(ErrorCode.InvalidParams, `Path not found or not accessible: ${basename(inputPath)}`);
+    const displayPath = basename(inputPath) || '(root path)';
+    throw new McpError(ErrorCode.InvalidParams, `Path not found or not accessible: ${displayPath}`);
   }
 
   const configPath = inputStats.isDirectory()
