@@ -115,9 +115,9 @@ src/
 
 ### Tech Debt Compliance (SQALE Rating: A ⭐⭐⭐⭐⭐)
 
-**Project maintains 4.6% debt ratio - follow these rules to keep it excellent:**
+**Project maintains A SQALE rating (0.7% debt ratio · Debt Score 5/100) — follow these rules to keep it excellent:**
 
-> **📊 See [TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md)** for complete self-scan results showing how `.techdebtrc.json` reduced false positives by 20 issues (-19.8%).
+> **📊 See [TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md)** for the complete self-scan history, including the documented `210c50a` baseline (118 issues) and later scans showing 12/13 issues.
 
 #### File Size & Complexity Limits
 - **Max file length:** 500 lines (split larger files into modules)
@@ -140,8 +140,9 @@ src/
 3. ~~Non-null assertions at `src/index.ts:804, 809`~~ ✅ Resolved in v2.0.0
 
 #### Configuration Impact
-**Current (March 2026):** 118 issues, ~96 hours (wider scan scope in v2.0.1)
-**Original baseline (Feb 2026):** 101 issues, 70 hours → 81 issues, 60 hours after `.techdebtrc.json`
+**Current (v2.0.2, April 2026):** 13 issues, 14h remediation, Health 95/100, Debt Score 5/100, debt ratio 0.7%, SQALE A. No critical or high-severity issues; remaining debt is 5 nesting hotspots (4 in server/core modules + 1 in `eslint.config.mjs` itself from the flat-config structure), 7 type-assertion usages, and 1 non-null assertion. (Debt Score /100 and debt ratio % are distinct SQALE metrics; both are reported here because they scale differently.)
+**Baseline (v2.0.1, March 2026):** 118 issues, ~96h remediation, Health 42.4/100 — before the v2.0.2 security hardening, `ruleExclusions` config, nesting refactors (#113, #118, #131, #146), and custom-rules handler extraction (#145).
+**Original (Feb 2026):** 101 issues, 70h → 81 issues, 60h after initial `.techdebtrc.json`.
 
 **Configuration:** See `.techdebtrc.json` for project-specific rules.
 

@@ -158,7 +158,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 | Quality & Compliance | v2.0.0 | ✅ Complete | Code of Conduct, .techdebtrc.json, TECH_DEBT_SCAN.md, documentation |
 | Phase 2 | v2.0.0 | ✅ Complete | Dependency analysis — 10 parsers, 3 MCP tools, index.ts refactor |
 | Phase 6 | v2.0.1 | ✅ Complete | MCP Resources (debt://summary, debt://issues) |
-| Security Patch | v2.0.2 | ✅ Complete | Security hardening, refactor merges, CI guardrails (Issues #124-131) |
+| Security Patch | v2.0.2 | ✅ Complete | Security hardening, refactor merges, CI guardrails (#124–#130, #137–#140, #146, #164–#166) |
 | Phase 3 | v2.1.0 | 📋 Planned | Snapshot & trend tracking |
 | Phase 4 | v2.2.0 | 📋 Planned | Code complexity analysis |
 
@@ -168,7 +168,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 
 **Status:** ✅ **COMPLETE** (Release prep complete; pending git tag and npm publish for v2.0.2)
 
-**Objective:** Fix 5 security vulnerabilities found during audit, merge pending refactors, add CI security guardrails.
+**Objective:** Fix the security vulnerabilities found during audit plus a follow-up TOCTOU regression, merge pending refactors, add CI security guardrails and ESLint tooling.
 
 #### Issues
 
@@ -179,7 +179,14 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 | #127 | ReDoS via user-controlled regex in custom rules engine | High | ✅ Fixed |
 | #128 | Unescaped string interpolated into RegExp in swiftUiChecks | Medium | ✅ Fixed — `escapeRegExp()` in `src/utils/regexUtils.ts` |
 | #129 | Absolute filesystem paths leaked in error messages | Low | ✅ Fixed |
+| #137 | `optionalAbsolutePath` rejects empty string instead of treating as absent | Low | ✅ Fixed |
+| #138 | Absolute path leakage in `get_debt_summary` / `get_sqale_metrics` output | Low | ✅ Fixed |
+| #139 | Path validation missing on `check_dependencies` / `validate_config` / `get_vulnerability_report` | High | ✅ Fixed |
 | #140 | Regex flag allowlist missing `v` (unicodeSets) flag for Node.js 20+ | Low | ✅ Fixed |
+| #146 | `customRulesEngine.validatePattern` nesting depth 6 | Medium | ✅ Fixed — extracted `validatePatternRegex` helper |
+| #164 | TOCTOU race in `handleValidateConfig` — `js/file-system-race` HIGH | High | ✅ Fixed — single-stat `getFileStats()` + `isFile()` pattern (PR #167) |
+| #165 | Useless local variable assignments in cppAnalyzer / pipParser | Low | ✅ Fixed via PR #168 source edits |
+| #166 | Unused variables / imports flagged by CodeQL | Note | ✅ Fixed via PR #168 source edits |
 | #124 | Add CodeQL security scanning workflow | — | ✅ Done — `.github/workflows/codeql.yml` |
 | #130 | Docs freshness CI check + Claude Code hook | — | ✅ Done |
 
@@ -190,7 +197,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 
 #### Acceptance Criteria
 
-- [x] All 5 security issues fixed with tests (>80% statement coverage)
+- [x] All security issues fixed with tests (>80% statement coverage)
 - [x] CodeQL workflow running on push/PR
 - [x] Docs freshness check warns on PRs missing doc updates
 - [x] `npm test && npm run build` pass

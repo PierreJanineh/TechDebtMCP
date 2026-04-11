@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/tech-debt-mcp)](https://www.npmjs.com/package/tech-debt-mcp)
 [![Add to MCP](https://img.shields.io/badge/MCP-Install_Server-6f42c1)](#installation)
-[![SQALE Rating](https://img.shields.io/badge/SQALE-A_(4.6%25)-brightgreen)](#code-quality)
+[![SQALE Rating](https://img.shields.io/badge/SQALE-A_(0.7%25)-brightgreen)](#code-quality)
 [![CodeQL](https://github.com/PierreJanineh/TechDebtMCP/actions/workflows/codeql.yml/badge.svg)](https://github.com/PierreJanineh/TechDebtMCP/actions/workflows/codeql.yml)
 
 **16 Tools** · **2 Resources** · **14 Languages** · **10 Dependency Ecosystems**
@@ -495,15 +495,15 @@ publisher
 
 Tech Debt MCP practices what it preaches — built with AI-assisted vibe coding, it maintains an A rating by regularly scanning itself. Internal refactors (e.g., nesting reduction in `customRulesEngine.validatePattern` via extracted helper — #146) are driven by self-scan findings.
 
-### Self-Scan Results (March 2026)
+### Self-Scan Results (v2.0.2, April 2026)
 
 - **SQALE Rating:** A (Excellent)
-- **Debt Ratio:** 4.6% (Target: <5%)
-- **Total Issues:** 118 (0 critical, 12 high, 49 medium, 57 low)
-- **Remediation Time:** ~96 hours
-- **Health Score:** 42.4/100
+- **Debt Score:** 5/100 (Target: ≤5/100)
+- **Total Issues:** 13 (0 critical, 0 high, 6 medium, 7 low)
+- **Remediation Time:** 14 hours
+- **Health Score:** 95/100
 
-> Issue count increased from 81 to 118 due to wider scan scope in v2.0.1 (more files analyzed), not regression. See [TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md) for full results.
+> Down from 118 issues / 42.4 health in the v2.0.1 baseline after the v2.0.2 security hardening, `ruleExclusions` config, nesting refactors (#113, #118, #131, #146), and custom-rules handler extraction (#145). Remaining debt: 5 nesting hotspots (4 in server / core modules + 1 in `eslint.config.mjs`), 7 type-assertion usages at system boundaries, and 1 non-null assertion. See [TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md) for per-issue detail.
 
 ## Development
 
