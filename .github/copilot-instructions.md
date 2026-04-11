@@ -95,10 +95,10 @@ Copilot **must** check documentation consistency on every PR. **Do not approve**
 ## Git Workflow
 
 - **Branch from `develop`**, never commit to `master` directly
-- Branch naming: `feature/tec-{N}-short-description` or `fix/tec-{N}-...` (where `TEC-N` is the Linear issue). Fallback: `feature/issue-{number}-...` for issues without a Linear ticket.
+- Branch naming: `feature/issue-{N}-short-description` or `fix/issue-{N}-...` (where `{N}` is the GitHub issue number). Internal maintainer branches may also use `feature/tec-{N}-...` or `fix/tec-{N}-...`; both patterns are acceptable.
 - PRs target `develop` (not `master`)
 - Releases: tag on `develop` → GitHub Actions publishes → merge `develop` → `master`
-- **Issues are created on GitHub only** — Linear two-way sync auto-creates corresponding `TEC-N` issues. Verify PR branch names match one of the naming patterns above.
+- **Issues are created on GitHub only.** Verify PR branch names match one of the naming patterns above.
 - **Direct-to-develop commits:** Verify only `.md` files are committed directly to `develop`. Code changes (`src/`, tests, config) must come through a branch and PR.
 - **PR author:** Verify PRs are opened by the bot account (`my-llm-bot[bot]`), not a personal account.
 
@@ -107,6 +107,8 @@ Copilot **must** check documentation consistency on every PR. **Do not approve**
 When touching files, check for:
 - Deep nesting (>4 levels) — use guard clauses
 - File length (>500 lines) — must be split (matches `.claude/rules/code-quality.md`)
+- Function length (>50 lines) — flag for refactor
+- Cyclomatic complexity (>10) — flag for simplification
 - Missing JSDoc on public APIs
 - Verify `// techdebt-ignore-next-line` directives include the specific rule name, not a blanket suppress
 - Flag use of `any` type (prefer `unknown`). Flag `@ts-ignore` (use `@ts-expect-error` with explanation)

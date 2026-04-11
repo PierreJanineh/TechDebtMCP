@@ -36,7 +36,7 @@ npm test -- --testPathPatterns=src/analyzers  # run a single suite
 ## Gotchas
 
 - After checking out a branch or creating a worktree, always run `npm ci` before running tests or using node modules.
-- **Pre-commit hook enforces doc updates:** Any branch that changes `src/` files must also modify `CLAUDE.md`, `ARCHITECTURE.md`, `README.md`, `ROADMAP.md`, and `CHANGELOG.md`. For pure bug fixes or refactors, a minimal touch (e.g., updating "Last Updated" date) satisfies the hook.
+- **Pre-commit hook enforces doc updates** for any branch that changes `src/` files — see `.claude/rules/docs-maintenance.md` for the file list. For pure bug fixes or refactors, a minimal touch (e.g., bumping "Last Updated") satisfies the hook.
 - **Worktree agents cannot push with bot tokens** — the repository's "Global Updates" ruleset blocks app installation tokens. Push from the main workspace after the agent finishes, or use the default credentials which have bypass.
 
 ## Architecture
@@ -134,6 +134,8 @@ issues.push(...this.checkPattern(filePath, content, /@ts-ignore/g, {
 ```
 
 Use this to prevent self-detection false positives in analyzer source files — wrap pattern definitions in rule-specific blocks (e.g., `// techdebt-ignore-start debugger`...`// techdebt-ignore-end debugger`).
+
+**Always specify the rule name** in suppression directives (e.g., `// techdebt-ignore-next-line debugger`) — avoid blanket suppressions, which silence all rules and hide real issues.
 
 ## Enums Reference
 

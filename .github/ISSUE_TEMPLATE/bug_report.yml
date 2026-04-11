@@ -1,0 +1,74 @@
+name: Bug report
+description: Report a bug in TechDebtMCP
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug report. Please fill out the sections below so we can reproduce and fix the issue quickly.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Clear and concise description of the bug.
+      placeholder: What happened? What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps to reproduce the bug.
+      placeholder: |
+        1. Run `...`
+        2. Call MCP tool `...` with args `...`
+        3. See error `...`
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: TechDebtMCP version
+      description: From `package.json` or the MCP server startup log.
+      placeholder: e.g., 2.0.2
+    validations:
+      required: true
+
+  - type: input
+    id: node
+    attributes:
+      label: Node.js version
+      placeholder: e.g., 20.11.0
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: e.g., macOS 14.4, Ubuntu 22.04, Windows 11
+    validations:
+      required: true
+
+  - type: dropdown
+    id: client
+    attributes:
+      label: MCP client
+      options:
+        - Claude Desktop
+        - Claude Code (CLI)
+        - GitHub Copilot
+        - Cursor
+        - Other (please specify in description)
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or error output
+      description: Paste any relevant error output, stack traces, or MCP protocol logs. Redact secrets and absolute paths if possible.
+      render: shell
