@@ -1,9 +1,8 @@
 import { jest } from '@jest/globals';
+import type { Stats } from 'node:fs';
 
 jest.mock('../../utils/fileUtils.js', () => ({
   getFileStats: jest.fn(),
-  readFile: jest.fn(),
-  getRelativePath: jest.fn(),
 }));
 
 jest.mock('node:fs/promises', () => ({
@@ -37,12 +36,12 @@ function makeHandleNonRegular() {
 
 /** Helper: stub getFileStats to return a regular-file Stats object. */
 function stubStatsFile() {
-  mockGetFileStats.mockResolvedValueOnce({ isDirectory: () => false, isFile: () => true } as any);
+  mockGetFileStats.mockResolvedValueOnce({ isDirectory: () => false, isFile: () => true } as unknown as Stats);
 }
 
 /** Helper: stub getFileStats to return a directory Stats object. */
 function stubStatsDir() {
-  mockGetFileStats.mockResolvedValueOnce({ isDirectory: () => true, isFile: () => false } as any);
+  mockGetFileStats.mockResolvedValueOnce({ isDirectory: () => true, isFile: () => false } as unknown as Stats);
 }
 
 /** Helper: stub open() to succeed with the given file content. */
