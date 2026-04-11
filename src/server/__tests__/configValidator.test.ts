@@ -165,9 +165,9 @@ describe('handleValidateConfig', () => {
 
   it('should not leak absolute path when getFileStats fails (e.g. EACCES)', async () => {
     // getFileStats() catches all fs errors and returns null, so an EACCES
-    // on the root path surfaces as the generic "Path not found" McpError.
-    // The important security property is that the error message never
-    // contains the absolute path.
+    // on the root path surfaces as the generic "Path not found or not
+    // accessible" error. The important security property is that the error
+    // message never contains the absolute path.
     mockGetFileStats.mockResolvedValueOnce(null);
 
     const err = await handleValidateConfig({ path: '/secret/server/.techdebtrc.json' }).catch(e => e);

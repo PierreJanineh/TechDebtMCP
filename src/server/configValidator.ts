@@ -6,6 +6,7 @@ import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
 import { CustomRulesEngine } from '../core/customRulesEngine.js';
 import { getFileStats } from '../utils/fileUtils.js';
 import { open, type FileHandle } from 'node:fs/promises';
+import { constants } from 'node:fs';
 import { join, basename } from 'node:path';
 import { CustomPattern } from '../types/index.js';
 import { isRecord, requireRecord } from './argValidation.js';
@@ -141,9 +142,10 @@ export async function handleValidateConfig(args: unknown): Promise<{ content: Ar
   const a = requireRecord(args);
   const inputPath = requireAbsolutePath(a, 'path');
 
-  // stat() the user-provided path only to determine whether it is a
-  // directory. This does not gate the file read, so no TOCTOU window exists
-  // at this step. See issue #164.
+  // stat() the user-provided path only to decide whether to treat it as a
+  // directory (and append .techdebtrc.json) or as the config file itself.
+  // That path selection still occurs before open(), so this step does not
+  // eliminate TOCTOU risk for mutable paths such as symlinks. See issue #164.
   const inputStats = await getFileStats(inputPath);
   if (inputStats === null) {
     throw new McpError(ErrorCode.InvalidParams, `Path not found or not accessible: ${basename(inputPath)}`);
@@ -162,7 +164,9 @@ export async function handleValidateConfig(args: unknown): Promise<{ content: Ar
 
   let fileHandle: FileHandle | undefined;
   try {
-    fileHandle = await open(configPath, 'r');
+    // O_NONBLOCK prevents blocking on special files (e.g. FIFOs) before the
+    // isFile() guard can reject them. Has no effect on regular files.
+    fileHandle = await open(configPath, constants.O_RDONLY | constants.O_NONBLOCK);
     const fileStats = await fileHandle.stat();
     if (!fileStats.isFile()) {
       throw new McpError(ErrorCode.InvalidParams, `Path is not a regular file: ${basename(configPath)}`);
