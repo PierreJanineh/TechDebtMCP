@@ -168,7 +168,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 
 **Status:** ✅ **COMPLETE** (Release prep complete; pending git tag and npm publish for v2.0.2)
 
-**Objective:** Fix 6 security vulnerabilities found during audit plus a follow-up TOCTOU regression, merge pending refactors, add CI security guardrails and ESLint tooling.
+**Objective:** Fix the security vulnerabilities found during audit plus a follow-up TOCTOU regression, merge pending refactors, add CI security guardrails and ESLint tooling.
 
 #### Issues
 
