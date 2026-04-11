@@ -50,8 +50,8 @@ jobs:
           echo "Contents:"
           ls -la dist/
 
-      - name: Check for TypeScript errors
-        run: npx tsc --noEmit
+      - name: Typecheck
+        run: npm run typecheck
 
       - name: Test Summary
         if: always()
