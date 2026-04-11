@@ -4,8 +4,9 @@
 
 import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
 import { CustomRulesEngine } from '../core/customRulesEngine.js';
-import { fileExists } from '../utils/fileUtils.js';
-import { readFile as fsReadFile, stat } from 'node:fs/promises';
+import { getFileStats } from '../utils/fileUtils.js';
+import { open, type FileHandle } from 'node:fs/promises';
+import { constants } from 'node:fs';
 import { join, basename } from 'node:path';
 import { CustomPattern } from '../types/index.js';
 import { isRecord, requireRecord } from './argValidation.js';
@@ -140,39 +141,66 @@ function validateCustomPatternsField(value: unknown, errors: string[]): void {
 export async function handleValidateConfig(args: unknown): Promise<{ content: Array<{ type: string; text: string }> }> {
   const a = requireRecord(args);
   const inputPath = requireAbsolutePath(a, 'path');
-  if (!(await fileExists(inputPath))) {
-    throw new McpError(ErrorCode.InvalidParams, `Path not found: ${basename(inputPath)}`);
+
+  // stat() the user-provided path only to decide whether to treat it as a
+  // directory (and append .techdebtrc.json) or as the config file itself.
+  // That path selection still occurs before open(), so this step does not
+  // eliminate TOCTOU risk for mutable paths such as symlinks. See issue #164.
+  const inputStats = await getFileStats(inputPath);
+  if (inputStats === null) {
+    const displayPath = basename(inputPath) || '(root path)';
+    throw new McpError(ErrorCode.InvalidParams, `Path not found or not accessible: ${displayPath}`);
   }
 
-  let configPath: string;
-  try {
-    const pathStat = await stat(inputPath);
-    configPath = pathStat.isDirectory()
-      ? join(inputPath, '.techdebtrc.json')
-      : inputPath;
-  } catch {
-    throw new McpError(ErrorCode.InvalidParams, `Cannot access path: ${basename(inputPath)}`);
-  }
+  const configPath = inputStats.isDirectory()
+    ? join(inputPath, '.techdebtrc.json')
+    : inputPath;
 
-  if (!(await fileExists(configPath))) {
-    return { content: [{ type: 'text', text: `⚠️ No .techdebtrc.json found at:\n  ${basename(configPath)}\n\nCreate one to customize tech debt analysis for your project.` }] };
-  }
-
+  // open() acquires a file descriptor, then fileHandle.stat() and
+  // fileHandle.readFile() operate on that same descriptor — eliminating the
+  // TOCTOU window between the regular-file guard and the read. See issue #164.
   const errors: string[] = [];
   const warnings: string[] = [];
   let config: Record<string, unknown>;
 
+  let fileHandle: FileHandle | undefined;
   try {
-    const raw = await fsReadFile(configPath, 'utf-8');
+    // O_NONBLOCK prevents blocking on special files (e.g. FIFOs) before the
+    // isFile() guard can reject them. Has no effect on regular files.
+    fileHandle = await open(configPath, constants.O_RDONLY | constants.O_NONBLOCK);
+    const fileStats = await fileHandle.stat();
+    if (!fileStats.isFile()) {
+      throw new McpError(ErrorCode.InvalidParams, `Path is not a regular file: ${basename(configPath)}`);
+    }
+    const raw = await fileHandle.readFile('utf-8');
     const parsed: unknown = JSON.parse(raw);
     if (!isRecord(parsed)) {
       return { content: [{ type: 'text', text: `❌ Invalid config in ${basename(configPath)}:\n  Top-level value must be a JSON object, got ${parsed === null ? 'null' : Array.isArray(parsed) ? 'array' : typeof parsed}.` }] };
     }
     config = parsed;
   } catch (err) {
+    if (err instanceof McpError) throw err;
+    const errnoError = err as NodeJS.ErrnoException;
+    if (errnoError.code === 'ENOENT') {
+      if (inputStats.isDirectory()) {
+        return { content: [{ type: 'text', text: `⚠️ No .techdebtrc.json found at:\n  ${basename(configPath)}\n\nCreate one to customize tech debt analysis for your project.` }] };
+      }
+      return { content: [{ type: 'text', text: `❌ Path not found or not accessible: ${basename(configPath)}` }] };
+    }
     const rawMessage = err instanceof Error ? err.message : String(err);
     const safeMessage = rawMessage.split(configPath).join(basename(configPath));
+    if (typeof errnoError.code === 'string') {
+      return { content: [{ type: 'text', text: `❌ Cannot access ${basename(configPath)}:\n  ${safeMessage}` }] };
+    }
     return { content: [{ type: 'text', text: `❌ Invalid JSON in ${basename(configPath)}:\n  ${safeMessage}` }] };
+  } finally {
+    if (fileHandle) {
+      try {
+        await fileHandle.close();
+      } catch {
+        // Ignore cleanup failures so they do not override the validation result.
+      }
+    }
   }
 
   for (const key of Object.keys(config)) {
