@@ -193,7 +193,13 @@ export async function handleValidateConfig(args: unknown): Promise<{ content: Ar
     }
     return { content: [{ type: 'text', text: `❌ Invalid JSON in ${basename(configPath)}:\n  ${safeMessage}` }] };
   } finally {
-    await fileHandle?.close();
+    if (fileHandle) {
+      try {
+        await fileHandle.close();
+      } catch {
+        // Ignore cleanup failures so they do not override the validation result.
+      }
+    }
   }
 
   for (const key of Object.keys(config)) {

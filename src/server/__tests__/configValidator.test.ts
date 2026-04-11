@@ -26,15 +26,6 @@ function makeHandle(content: string) {
   };
 }
 
-/** Creates a mock FileHandle that fails with an error on readFile(). */
-function makeHandleWithReadError(error: Error) {
-  return {
-    stat: jest.fn().mockImplementation(() => Promise.resolve({ isFile: () => true, isDirectory: () => false })),
-    readFile: jest.fn().mockImplementation(() => Promise.reject(error)),
-    close: jest.fn().mockImplementation(() => Promise.resolve()),
-  };
-}
-
 /** Creates a mock FileHandle for a non-regular file (FIFO/device/socket). */
 function makeHandleNonRegular() {
   return {
@@ -62,11 +53,6 @@ function stubOpenSuccess(content: string) {
 /** Helper: stub open() to reject with the given error. */
 function stubOpenError(error: Error) {
   mockOpen.mockRejectedValueOnce(error);
-}
-
-/** Helper: stub open() to succeed but readFile() to reject. */
-function stubOpenReadError(error: Error) {
-  mockOpen.mockResolvedValueOnce(makeHandleWithReadError(error) as any);
 }
 
 describe('handleValidateConfig', () => {
