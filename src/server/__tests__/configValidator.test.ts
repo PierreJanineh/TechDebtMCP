@@ -64,7 +64,7 @@ describe('handleValidateConfig', () => {
 
   it('should throw when path does not exist', async () => {
     mockGetFileStats.mockResolvedValueOnce(null);
-    await expect(handleValidateConfig({ path: '/no/such/path' })).rejects.toThrow('Path not found');
+    await expect(handleValidateConfig({ path: '/no/such/path' })).rejects.toThrow('Path not found or not accessible');
   });
 
   it('should not leak absolute path in "path not found" error message', async () => {
@@ -140,6 +140,26 @@ describe('handleValidateConfig', () => {
     const result = await handleValidateConfig({ path: '/secret/server/.techdebtrc.json' });
     expect(result.content[0].text).not.toContain('/secret/server');
     expect(result.content[0].text).toContain('.techdebtrc.json');
+  });
+
+  it('should report "Cannot access" (not "Invalid JSON") when fsReadFile fails with a fs error code', async () => {
+    stubStatsFile();
+    mockFsReadFile.mockRejectedValueOnce(Object.assign(new Error(`EACCES: permission denied, open '/project/.techdebtrc.json'`), { code: 'EACCES' }));
+
+    const result = await handleValidateConfig({ path: '/project/.techdebtrc.json' });
+    expect(result.content[0].text).toContain('Cannot access');
+    expect(result.content[0].text).not.toContain('Invalid JSON');
+  });
+
+  it('should report "not found or not accessible" (not "No .techdebtrc.json found") for ENOENT on a direct file path', async () => {
+    stubStatsFile();
+    mockFsReadFile.mockRejectedValueOnce(
+      Object.assign(new Error("ENOENT: no such file or directory, open '/project/myconfig.json'"), { code: 'ENOENT' }),
+    );
+
+    const result = await handleValidateConfig({ path: '/project/myconfig.json' });
+    expect(result.content[0].text).not.toContain('No .techdebtrc.json found');
+    expect(result.content[0].text).toContain('not found or not accessible');
   });
 
   it('should reject non-object top-level values (null)', async () => {

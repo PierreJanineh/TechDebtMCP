@@ -143,11 +143,11 @@ export async function handleValidateConfig(args: unknown): Promise<{ content: Ar
 
   // Single stat() call — no pre-existence check. Eliminates the
   // `fileExists` → `stat` → `readFile` TOCTOU window that allowed
-  // a symlink swap between the check and the use. See issue #129
+  // a symlink swap between the check and the use. See issue #164
   // and the v2.0.2 hardening applied to handlers.ts / customRulesHandlers.ts.
   const inputStats = await getFileStats(inputPath);
   if (inputStats === null) {
-    throw new McpError(ErrorCode.InvalidParams, `Path not found: ${basename(inputPath)}`);
+    throw new McpError(ErrorCode.InvalidParams, `Path not found or not accessible: ${basename(inputPath)}`);
   }
 
   const configPath = inputStats.isDirectory()
@@ -174,11 +174,18 @@ export async function handleValidateConfig(args: unknown): Promise<{ content: Ar
     }
     config = parsed;
   } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
-      return { content: [{ type: 'text', text: `⚠️ No .techdebtrc.json found at:\n  ${basename(configPath)}\n\nCreate one to customize tech debt analysis for your project.` }] };
+    const errnoError = err as NodeJS.ErrnoException;
+    if (errnoError.code === 'ENOENT') {
+      if (inputStats.isDirectory()) {
+        return { content: [{ type: 'text', text: `⚠️ No .techdebtrc.json found at:\n  ${basename(configPath)}\n\nCreate one to customize tech debt analysis for your project.` }] };
+      }
+      return { content: [{ type: 'text', text: `❌ Path not found or not accessible: ${basename(configPath)}` }] };
     }
     const rawMessage = err instanceof Error ? err.message : String(err);
     const safeMessage = rawMessage.split(configPath).join(basename(configPath));
+    if (typeof errnoError.code === 'string') {
+      return { content: [{ type: 'text', text: `❌ Cannot access ${basename(configPath)}:\n  ${safeMessage}` }] };
+    }
     return { content: [{ type: 'text', text: `❌ Invalid JSON in ${basename(configPath)}:\n  ${safeMessage}` }] };
   }
 
