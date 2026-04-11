@@ -158,7 +158,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 | Quality & Compliance | v2.0.0 | ✅ Complete | Code of Conduct, .techdebtrc.json, TECH_DEBT_SCAN.md, documentation |
 | Phase 2 | v2.0.0 | ✅ Complete | Dependency analysis — 10 parsers, 3 MCP tools, index.ts refactor |
 | Phase 6 | v2.0.1 | ✅ Complete | MCP Resources (debt://summary, debt://issues) |
-| Security Patch | v2.0.2 | ✅ Complete | Security hardening, refactor merges, CI guardrails (#124–#131, #137–#140, #146, #164–#166) |
+| Security Patch | v2.0.2 | ✅ Complete | Security hardening, refactor merges, CI guardrails (#124–#130, #137–#140, #146, #164–#166) |
 | Phase 3 | v2.1.0 | 📋 Planned | Snapshot & trend tracking |
 | Phase 4 | v2.2.0 | 📋 Planned | Code complexity analysis |
 
