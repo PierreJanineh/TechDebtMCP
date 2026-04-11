@@ -11,13 +11,13 @@ this section before pushing, so keep it accurate.
 | Stage     | Command            |
 |-----------|--------------------|
 | Install   | `npm ci`           |
-| Typecheck | N/A                |
+| Typecheck | `npm run typecheck` |
 | Lint      | `npm run lint`     |
 | Test      | `npm test`         |
 | Build     | `npm run build`    |
 
 **Rules for agents:**
-- These commands are the source of truth. If a stage is **N/A**, skip it entirely — do not search for alternatives, do not run binaries directly (`npx tsc`, `node_modules/.bin/jest`), do not install missing tools, do not modify `package.json` to add scripts.
+- These commands are the source of truth. If a stage is **N/A**, skip it entirely — do not search for alternatives, do not run binaries directly (`node_modules/.bin/jest`), do not install missing tools, do not modify `package.json` to add scripts.
 - If a listed command fails, fix the underlying issue or report it. Do not "work around" by switching to a different command.
 - If you believe a stage *should* exist but doesn't, surface that as a finding in your PR summary — do not silently add it.
 
