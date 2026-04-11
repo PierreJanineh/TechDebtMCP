@@ -183,7 +183,7 @@ export async function handleValidateConfig(args: unknown): Promise<{ content: Ar
     const errnoError = err as NodeJS.ErrnoException;
     if (errnoError.code === 'ENOENT') {
       if (inputStats.isDirectory()) {
-        return { content: [{ type: 'text', text: `⚠️ No .techdebtrc.json found at:\n  ${basename(configPath)}\n\nCreate one to customize tech debt analysis for your project.` }] };
+        return { content: [{ type: 'text', text: `⚠️ No .techdebtrc.json found at:\n  ${basename(inputPath)}/.techdebtrc.json\n\nCreate one to customize tech debt analysis for your project.` }] };
       }
       return { content: [{ type: 'text', text: `❌ Path not found or not accessible: ${basename(configPath)}` }] };
     }
