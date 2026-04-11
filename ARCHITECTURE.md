@@ -617,7 +617,7 @@ import { BaseAnalyzer } from './baseAnalyzer.js';
 
 **Current Status (v2.0.2, April 2026):**
 - **SQALE Rating:** A ⭐⭐⭐⭐⭐ (Excellent)
-- **Debt Score:** 5/100 (Target: <5/100)
+- **Debt Score:** 5/100 (Target: ≤5/100)
 - **Health Score:** 95/100
 - **Total Issues:** 13 (0 critical, 0 high, 6 medium, 7 low)
 - **Remediation Time:** 14 hours
