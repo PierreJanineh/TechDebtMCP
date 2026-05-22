@@ -35,7 +35,7 @@ Once installed, Claude has access to these MCP tools:
 | `get_issues_by_severity` | Filter findings by severity | Read |
 | `get_issues_by_category` | Filter findings by category | Read |
 | `get_recommendations` | Prioritized remediation suggestions | Read |
-| `get_vulnerability_report` | Dependency CVE report from local manifests | Read |
+| `get_vulnerability_report` | Offline dependency inventory for CVE review | Read |
 | `check_dependencies` | Parse and inspect dependency files | Read |
 | `list_supported_languages` | List the 14 supported languages | Read |
 | `validate_config` | Lint a `.techdebtrc.json` | Read |
@@ -61,11 +61,13 @@ You don't call tools by name — Claude routes your prompts to them. Here are tw
 >
 > I scanned the project and found 47 issues — health score 68/100, SQALE rating B, estimated remediation 14h.
 >
+> *(Sample output below is illustrative — actual findings, paths, and line numbers depend on the project being scanned.)*
+>
 > The top three by impact:
 >
-> 1. **`src/api/handlers.ts:142` — deep nesting (depth 6).** Extract the inner conditional into a helper to drop to depth 3. *(effort: small, ~20m)*
-> 2. **`src/services/userService.ts:88` — function length 124 lines.** Split into `fetchUser` and `formatUserResponse`. *(effort: medium, ~1h)*
-> 3. **Three `@ts-ignore` directives** in `src/legacy/parser.ts`. Replace with `@ts-expect-error` plus a comment explaining each. *(effort: trivial, ~5m each)*
+> 1. **`src/server/handlers.ts:142` — deep nesting (depth 6).** Extract the inner conditional into a helper to drop to depth 3. *(effort: small, ~20m)*
+> 2. **`src/server/dependencyHandlers.ts:88` — function length 124 lines.** Split into smaller focused functions. *(effort: medium, ~1h)*
+> 3. **Three `@ts-ignore` directives** in `src/core/analysisEngine.ts`. Replace with `@ts-expect-error` plus a comment explaining each. *(effort: trivial, ~5m each)*
 >
 > Want me to start with #3 since they're quick wins?
 
@@ -75,18 +77,25 @@ You don't call tools by name — Claude routes your prompts to them. Here are tw
 >
 > **Claude:** *(calls `get_vulnerability_report` against the project root)*
 >
-> I parsed `package-lock.json` and found 2 of 47 production dependencies flagged in the local advisory database:
+> I parsed your manifest files and produced an offline dependency inventory. The tool does not perform CVE lookups — that's a planned Phase 2b feature. Here's what I found:
 >
-> - **`lodash@4.17.20` (high)** — CVE-2021-23337, command injection in `template`. Upgrade to `≥ 4.17.21`.
-> - **`axios@0.21.0` (moderate)** — CVE-2021-3749, ReDoS. Upgrade to `≥ 0.21.4` (or current `1.x`).
+> **Project:** my-app  
+> **Package files found:** 1 across 1 ecosystem  
+> **Total dependencies inventoried:** 47  
 >
-> Note: this report is generated from local manifest data only — no calls to the OSV API or other online vulnerability databases. Online lookups are a future opt-in feature (see TechDebtMCP issues #31, #32).
+> | Package | Version |
+> |---------|---------|
+> | lodash | 4.17.20 |
+> | axios | 0.21.0 |
+> | … | … |
+>
+> **Next steps:** Cross-reference with [OSV](https://osv.dev) or [Snyk](https://snyk.io) to check these versions for known CVEs. Online CVE checking will be available in Phase 2b (opt-in, privacy-friendly).
 
 ## Security posture
 
 The plugin invokes a Node MCP server over the local stdio transport. The server:
 
-- **Reads files** only on paths you explicitly pass via tool arguments. Path arguments are validated (`path.isAbsolute`, `path.resolve`) at the handler boundary.
+- **Reads files** only on paths you explicitly pass via tool arguments. Path arguments are validated with `isAbsolute()` and normalized with `resolve()` (via `requireAbsolutePath()`) at the handler boundary.
 - **Never writes** to files it analyzes.
 - **Never executes shell commands.** No `child_process`, no `eval`, no dynamic code loading.
 - **Never makes outbound network calls** at runtime — no telemetry, no analytics, no third-party services. Vulnerability checks use local manifest data only.
