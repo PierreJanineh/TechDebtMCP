@@ -87,7 +87,7 @@ mcpb/                           # (repo root — Claude Desktop one-click bundle
 ├── staging/                    # gitignored — clean prod tree built by scripts/build-mcpb.mjs
 └── tech-debt-mcp-<version>.mcpb # gitignored artifact, attached to GitHub Releases
 scripts/
-└── build-mcpb.mjs              # `npm run mcpb:pack` driver — stages, runs `npm ci --omit=dev`, packs
+└── build-mcpb.mjs              # `npm run mcpb:pack` driver — stages, runs `npm ci --omit=dev --ignore-scripts`, packs
 ```
 
 ### Building the MCPB bundle
