@@ -5,7 +5,7 @@
   "display_name": "Tech Debt MCP",
   "version": "2.0.2",
   "description": "Static technical-debt analyzer for 14 languages, exposed as an MCP server.",
-  "long_description": "Tech Debt MCP scans source files across TypeScript, JavaScript, Python, Java, Kotlin, Swift, Go, Rust, C, C++, C#, Ruby, PHP, and Scala for code smells, SQALE metrics, dependency issues, and user-defined patterns. Exposes 16 MCP tools and 2 resource templates for use from Claude Desktop, Claude Code, and any MCP-compatible client.",
+  "long_description": "Tech Debt MCP scans source files across TypeScript, JavaScript, Python, Java, Kotlin, Swift, Go, Rust, C, C++, C#, Ruby, PHP, and Objective-C for code smells, SQALE metrics, dependency issues, and user-defined patterns. Exposes 16 MCP tools and 2 resource templates for use from Claude Desktop, Claude Code, and any MCP-compatible client.",
   "author": {
     "name": "Pierre Janineh",
     "email": "janinehpierre@gmail.com",
