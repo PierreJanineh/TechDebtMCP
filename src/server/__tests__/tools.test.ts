@@ -23,6 +23,7 @@ describe('TOOL_DEFINITIONS annotations', () => {
   it('every tool declares an annotations object', () => {
     for (const tool of TOOL_DEFINITIONS) {
       expect(tool).toHaveProperty('annotations');
+      expect(tool.annotations).not.toBeNull();
       expect(typeof tool.annotations).toBe('object');
     }
   });

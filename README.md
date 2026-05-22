@@ -167,7 +167,7 @@ For development: `npm run dev`
 
 ## Tools
 
-Every tool declares a [tool annotation](https://modelcontextprotocol.io/specification/server/tools#tool-annotations) — `Read` tools are side-effect-free (`readOnlyHint: true`); `Write` tools mutate `.techdebtrc.json` (`destructiveHint: true`).
+Every tool declares a [tool annotation](https://modelcontextprotocol.io/specification/server/tools#tool-annotations) — `Read` tools are side-effect-free (`readOnlyHint: true`); `Write` tools mutate server session state (`destructiveHint: true`).
 
 | Category | Tool | Type | Description |
 |----------|------|------|-------------|
