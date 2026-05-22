@@ -5,6 +5,10 @@ hero:
   name: Tech Debt MCP
   text: Static tech-debt analysis as an MCP server
   tagline: 16 tools, 14 languages, custom rules, dependency vulnerability scanning — drop it into Claude Code, Copilot, or any MCP client.
+  image:
+    light: /icon-light.png
+    dark: /icon.png
+    alt: Tech Debt MCP
   actions:
     - theme: brand
       text: Install

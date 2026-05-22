@@ -9,8 +9,8 @@ export default defineConfig({
   cleanUrls: true,
   ignoreDeadLinks: true,
   head: [
-    ['link', { rel: 'icon', href: '/TechDebtMCP/favicon.ico' }],
-    ['meta', { name: 'theme-color', content: '#3c8772' }],
+    ['link', { rel: 'icon', type: 'image/png', href: '/TechDebtMCP/icon.png' }],
+    ['meta', { name: 'theme-color', content: '#4b5563' }],
   ],
   themeConfig: {
     nav: [
