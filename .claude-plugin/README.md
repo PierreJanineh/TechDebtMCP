@@ -16,7 +16,7 @@ From a Claude Code session:
 /plugin install tech-debt-mcp@techdebtmcp
 ```
 
-That's it. The plugin registers an MCP server (`tech-debt-mcp`) that Claude Code launches on demand via `npx -y tech-debt-mcp@latest`. The npm package is pinned to the published release line — updates flow automatically when you start a new session.
+That's it. The plugin registers an MCP server (`tech-debt-mcp`) that Claude Code launches on demand via `npx -y tech-debt-mcp@latest` (tracks the npm `latest` dist-tag) — updates flow in automatically when you start a new session.
 
 **Requirements:** Node.js ≥ 20.19.0 on your machine. The first invocation downloads the package (~160 KB + production dependencies); subsequent invocations use the npm/npx cache.
 
