@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Privacy policy** (TEC-44, #183) — new `PRIVACY.md` at repo root and a hosted mirror at <https://pierrejanineh.github.io/TechDebtMCP/privacy> covering data handling, telemetry posture, and third-party services. README gains a Privacy section linking to both. The hosted URL is the stable link for the Anthropic MCP directory submission form (TEC-45).
+
 ### Security
 - **Dependabot alert sweep — 13 alerts triaged (TEC-46, #189): 10 dismissed (patched version present), 3 dev-only tracked via `dependabot.yml` ignore entries (alerts remain open until upstream patches).** `npm audit --omit=dev` confirmed 0 runtime vulnerabilities throughout. Per-alert trace:
   - **#45** `fast-uri` ≤3.1.1 (high, GHSA path-traversal) — lockfile already installs `fast-uri@3.1.2` (patched) via `@modelcontextprotocol/sdk`. Dismissed: patched version present.

@@ -76,7 +76,7 @@ TechDebtMCP/
 │   ├── .vitepress/              # VitePress config + custom slate theme
 │   ├── public/                  # Static assets (icon.png + inverted icon-light.png)
 │   ├── index.md                 # Landing hero
-│   └── install.md, languages.md, custom-rules.md, security.md
+│   └── install.md, languages.md, custom-rules.md, security.md, privacy.md
 ├── scripts/
 │   ├── build-mcpb.mjs           # Stages + packs the .mcpb (npm run mcpb:pack)
 │   └── gen-docs-tools.mjs       # Generates docs/site/tools/*.md from TOOL_DEFINITIONS
