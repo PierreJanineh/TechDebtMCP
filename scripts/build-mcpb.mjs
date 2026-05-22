@@ -3,13 +3,13 @@
  * Build the Tech Debt MCP .mcpb bundle.
  *
  * Steps:
- *   1. Clean mcpb/staging/ and previous artifacts.
+ *   1. Assert mcpb/manifest.json version matches package.json version.
  *   2. Ensure dist/ is current (npm run build).
- *   3. Assert mcpb/manifest.json version matches package.json version.
- *   4. Stage runtime files into mcpb/staging/.
- *   5. Run `npm ci --omit=dev --ignore-scripts` in staging for a lean prod tree.
- *   6. Run `mcpb pack` to produce mcpb/tech-debt-mcp-<version>.mcpb.
- *   7. Report bundle size; warn if > 50 MB.
+ *   3. Clean mcpb/staging/ and stage runtime files.
+ *   4. Run `npm ci --omit=dev --ignore-scripts` in staging for a lean prod tree.
+ *   5. Run `mcpb pack` to produce mcpb/tech-debt-mcp-<version>.mcpb
+ *      (replaces any existing artifact for this exact version).
+ *   6. Report bundle size; warn if > 50 MB.
  */
 import { spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, readFileSync, rmSync, statSync } from 'node:fs';
@@ -23,7 +23,7 @@ const STAGING_DIR = join(MCPB_DIR, 'staging');
 const SIZE_WARN_BYTES = 50 * 1024 * 1024;
 
 function run(cmd, args, opts = {}) {
-  const result = spawnSync(cmd, args, { stdio: 'inherit', cwd: REPO_ROOT, ...opts });
+  const result = spawnSync(cmd, args, { stdio: 'inherit', cwd: REPO_ROOT, shell: true, ...opts });
   if (result.status !== 0) {
     throw new Error(`${cmd} ${args.join(' ')} failed with exit code ${result.status}`);
   }
