@@ -106,7 +106,7 @@ For the full privacy stance — including the npm-registry boundary on first ins
 
 ## Configuration
 
-Drop a `.techdebtrc.json` at your project root to customize severity thresholds, exclude paths, or define persistent custom rules. Schema and examples: <https://pierrejanineh.github.io/TechDebtMCP/custom-rules>.
+Drop a `.techdebtrc.json` at your project root to customize severity thresholds and exclude paths. Custom rules are added per-session via the `add_custom_rule` tool (not loaded from config). Schema and examples: <https://pierrejanineh.github.io/TechDebtMCP/custom-rules>.
 
 ## Troubleshooting
 
