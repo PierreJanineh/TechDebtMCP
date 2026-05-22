@@ -4,7 +4,7 @@ layout: home
 hero:
   name: Tech Debt MCP
   text: Static tech-debt analysis as an MCP server
-  tagline: 16 tools, 14 languages, custom rules, dependency vulnerability scanning — drop it into Claude Code, Copilot, or any MCP client.
+  tagline: 16 tools, 14 languages, custom rules, offline dependency inventory — drop it into Claude Code, Copilot, or any MCP client.
   image:
     light: /icon-light.png
     dark: /icon.png
@@ -49,7 +49,7 @@ Then add it to your MCP client config — see [Install](/install) for `claude_de
 - **16 MCP tools** for project-, file-, and rule-level analysis — see the [tool reference](/tools/).
 - **Two MCP resource templates** (`debt://summary/{+projectPath}`, `debt://issues/{+projectPath}`) for read-only ingestion.
 - **SQALE rating + remediation time** for every project.
-- **Dependency vulnerability reports** across the major package managers.
+- **Offline dependency reports** across the major package managers (CVE lookup is a planned future feature).
 - **Inline suppression** (`// techdebt-ignore-next-line <rule>`) to silence false positives without disabling rules globally.
 
 ## Project links

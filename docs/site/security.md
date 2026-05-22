@@ -35,7 +35,7 @@ These constants live in `src/core/customRulesEngine.ts` — import them rather t
 
 ## Error messages
 
-Errors returned to clients never leak absolute filesystem paths:
+Domain handlers sanitize paths in error output; unexpected non-`McpError` exceptions that escape to the top-level catch may still include implementation detail:
 
 - `getRelativePath()` or `basename()` sanitize paths in error output.
 - Raw `err.message` from domain-specific handlers (`customRulesHandlers.ts`, `configValidator.ts`, `dependencyHandlers.ts`) is caught and rethrown as an `McpError` with a safe message before it reaches the client.

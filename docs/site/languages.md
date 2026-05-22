@@ -5,7 +5,7 @@ outline: deep
 
 # Language Coverage
 
-Tech Debt MCP analyzes **14 languages** for code-quality issues and **10 package ecosystems** for dependency vulnerabilities.
+Tech Debt MCP analyzes **14 languages** for code-quality issues and **10 package ecosystems** for offline dependency inventory.
 
 ## Code analyzers
 
