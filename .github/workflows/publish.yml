@@ -64,6 +64,16 @@ jobs:
           fi
           echo "Version verified: $PKG_VERSION"
 
+      - name: Verify mcpb/manifest.json version matches package.json
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          MANIFEST_VERSION=$(node -p "require('./mcpb/manifest.json').version")
+          if [ "$PKG_VERSION" != "$MANIFEST_VERSION" ]; then
+            echo "Error: mcpb/manifest.json version ($MANIFEST_VERSION) does not match package.json version ($PKG_VERSION)"
+            exit 1
+          fi
+          echo "MCPB manifest version verified: $MANIFEST_VERSION"
+
       - name: Publish to npm with provenance
         run: npm publish --provenance --access public
 
@@ -103,6 +113,34 @@ jobs:
             See [CHANGELOG.md](https://github.com/PierreJanineh/TechDebtMCP/blob/v${{ steps.version.outputs.VERSION }}/CHANGELOG.md) for detailed changes.
           draft: false
           prerelease: false
+
+      - name: Build MCPB bundle
+        run: npm run mcpb:pack
+
+      - name: Verify MCPB artifact exists
+        id: mcpb
+        run: |
+          ARTIFACT="mcpb/tech-debt-mcp-${{ steps.version.outputs.VERSION }}.mcpb"
+          if [ ! -f "$ARTIFACT" ]; then
+            echo "Error: MCPB artifact not found at $ARTIFACT"
+            exit 1
+          fi
+          echo "ARTIFACT=$ARTIFACT" >> $GITHUB_OUTPUT
+          ls -la "$ARTIFACT"
+
+      - name: Upload MCPB as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tech-debt-mcp-${{ steps.version.outputs.VERSION }}.mcpb
+          path: ${{ steps.mcpb.outputs.ARTIFACT }}
+          if-no-files-found: error
+
+      - name: Attach MCPB to GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: v${{ steps.version.outputs.VERSION }}
+          ARTIFACT: ${{ steps.mcpb.outputs.ARTIFACT }}
+        run: gh release upload "$TAG" "$ARTIFACT" --clobber
 
       - name: Notify success
         if: success()
