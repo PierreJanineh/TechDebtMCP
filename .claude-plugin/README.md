@@ -95,7 +95,7 @@ You don't call tools by name — Claude routes your prompts to them. Here are tw
 
 The plugin invokes a Node MCP server over the local stdio transport. The server:
 
-- **Reads files** only on paths you explicitly pass via tool arguments. Path arguments are validated with `isAbsolute()` and normalized with `resolve()` (via `requireAbsolutePath()`) at the handler boundary.
+- **Reads files** only within the project/file paths you provide — including standard config files (`.gitignore`, `.techdebtrc.json`) discovered automatically under that root. Path arguments are validated with `isAbsolute()` and normalized with `resolve()` (via `requireAbsolutePath()`) at the handler boundary.
 - **Never writes** to files it analyzes.
 - **Never executes shell commands.** No `child_process`, no `eval`, no dynamic code loading.
 - **Never makes outbound network calls** at runtime — no telemetry, no analytics, no third-party services. Vulnerability checks use local manifest data only.
