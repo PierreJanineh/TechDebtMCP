@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    ignore:
+      # esbuild <=0.24.2 (GHSA-67mh-4wv8-2f99) — dev-only transitive via vitepress→vite→esbuild.
+      # The dev server is never exposed in production; `npm audit --omit=dev` reports 0 vulns.
+      # Upstream vitepress must release a patch before this can be bumped.
+      - dependency-name: "esbuild"
+        versions: ["<=0.24.2"]
+
+      # vite <=6.4.1 (GHSA-67mh-4wv8-2f99, transitive via vitepress) — dev-only docs build tool.
+      # Not shipped in the npm package or invoked at runtime. Ignore until vitepress upgrades vite.
+      - dependency-name: "vite"
+        versions: ["<=6.4.1"]
+
+      # tmp <=0.2.3 (GHSA-52f5-9888-hmc6) — dev-only transitive via @anthropic-ai/mcpb bundler.
+      # The mcpb tool is only used locally to produce release artifacts; never runs in production.
+      - dependency-name: "tmp"
+        versions: ["<=0.2.3"]

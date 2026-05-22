@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+- **Dependabot alert sweep — 13 alerts resolved (TEC-46, #189).** `npm audit --omit=dev` confirmed 0 runtime vulnerabilities throughout. Per-alert trace:
+  - **#45** `fast-uri` ≤3.1.1 (high, GHSA path-traversal) — lockfile already installs `fast-uri@3.1.2` (patched) via `@modelcontextprotocol/sdk`. Dismissed: patched version present.
+  - **#41** `fast-uri` ≤3.1.0 (high, GHSA host-confusion) — same resolution as #45. Dismissed: patched version present.
+  - **#44** `hono` <4.12.18 (moderate, CSS Declaration Injection in JSX SSR) — lockfile installs `hono@4.12.22` (patched). TechDebtMCP uses stdio transport only; `hono` is bundled by the SDK for its HTTP transport which is never invoked. Dismissed: patched version present, unreachable code path.
+  - **#43** `hono` <4.12.18 (low, improper NumericDate JWT validation) — same resolution as #44.
+  - **#42** `hono` <4.12.18 (moderate, `bodyLimit()` bypass) — same resolution as #44.
+  - **#40** `hono` <4.12.16 (moderate, Cache Middleware `Vary` leakage) — lockfile installs `hono@4.12.22`. Dismissed: patched version present, unreachable code path.
+  - **#39** `hono` <4.12.16 (moderate, unvalidated JSX tag names) — same resolution as #40.
+  - **#37** `hono` <4.12.14 (moderate, HTML Injection in `hono/jsx` SSR) — lockfile installs `hono@4.12.22`. Dismissed: patched version present, unreachable code path.
+  - **#38** `ip-address` ≤10.1.0 (moderate, XSS in `Address6` HTML methods) — lockfile installs `ip-address@10.2.0` (patched) via `@modelcontextprotocol/sdk→express-rate-limit`. Dismissed: patched version present.
+  - **#46** `brace-expansion` ≥5.0.0,<5.0.6 (moderate, numeric range DoS) — lockfile installs `brace-expansion@5.0.6` (patched) via direct `minimatch` dependency. Dismissed: patched version present.
+  - **#49** `vite` ≤6.4.1 (moderate, GHSA-67mh-4wv8-2f99) — dev-only transitive via `vitepress`. Not shipped to npm consumers; not executed at runtime. Added `dependabot.yml` ignore entry. Dismissed: tolerable risk, dev-only.
+  - **#48** `esbuild` ≤0.24.2 (moderate, GHSA-67mh-4wv8-2f99) — dev-only transitive via `vitepress→vite`. Same rationale as #49. Added `dependabot.yml` ignore entry. Dismissed: tolerable risk, dev-only.
+  - **#47** `tmp` ≤0.2.3 (low, GHSA-52f5-9888-hmc6) — dev-only transitive via `@anthropic-ai/mcpb` bundler tool. Not shipped to npm consumers; only used locally to produce `.mcpb` release artifacts. Added `dependabot.yml` ignore entry. Dismissed: tolerable risk, dev-only.
+- **Added `.github/dependabot.yml`** — documents ignore entries for `esbuild`, `vite`, and `tmp` with code-reference comments explaining why each is dev-only and unreachable at runtime.
+
 ### Added
 - **Tool annotations** (`readOnlyHint` / `destructiveHint`) on every entry in `TOOL_DEFINITIONS`. Read tools are flagged `readOnlyHint: true`; `add_custom_rule` and `remove_custom_rule` are flagged `destructiveHint: true`. README tool table gains a "Type" column documenting Read vs Write. (TEC-43)
 - **Claude Code plugin manifest** (TEC-35, #175) — `.claude-plugin/plugin.json` declares the plugin and wires `mcpServers.tech-debt-mcp` to `npx -y tech-debt-mcp@latest` (no source bundling, tracks the published npm release). `.claude-plugin/marketplace.json` lets the repo double as its own marketplace, so users can run `/plugin marketplace add PierreJanineh/TechDebtMCP` then `/plugin install tech-debt-mcp@techdebtmcp`.
