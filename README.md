@@ -1,4 +1,8 @@
-# Tech Debt MCP Server
+<p align="center">
+  <img src="mcpb/icon.png" alt="Tech Debt MCP" width="160" height="160" />
+</p>
+
+<h1 align="center">Tech Debt MCP Server</h1>
 
 [![npm version](https://img.shields.io/npm/v/tech-debt-mcp)](https://www.npmjs.com/package/tech-debt-mcp)
 [![Add to MCP](https://img.shields.io/badge/MCP-Install_Server-6f42c1)](#installation)
@@ -105,6 +109,23 @@ claude mcp add tech-debt-mcp -- npx -y tech-debt-mcp@latest
 ```
 
 The plugin runs `npx -y tech-debt-mcp@latest` under the hood — no source bundling, always tracks the published npm release.
+
+</details>
+
+<details>
+<summary><img src="https://img.shields.io/badge/Claude_Desktop-Install%20MCPB%20Bundle-d97757?logo=Claude&logoColor=f5f5f5" alt="Claude Desktop: Install MCPB Bundle"></summary>
+
+**Claude Desktop MCPB bundle** — single-click install with bundled `node_modules` (no `npx`, no internet required at runtime).
+
+Download `tech-debt-mcp-<version>.mcpb` from the [latest GitHub Release](https://github.com/PierreJanineh/TechDebtMCP/releases/latest) and open it with Claude for macOS or Windows.
+
+To build the bundle locally:
+
+```sh
+npm install --include=dev --ignore-scripts
+npm run mcpb:pack
+# -> mcpb/tech-debt-mcp-<version>.mcpb
+```
 
 </details>
 
