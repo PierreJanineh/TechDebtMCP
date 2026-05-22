@@ -36,9 +36,11 @@ for (const [k, v] of Object.entries({
 
 const REPO_URL = `https://github.com/${GITHUB_REPOSITORY}`;
 const UA = `repo-analytics-forwarder/1.0 (+${REPO_URL})`;
+const FETCH_TIMEOUT_MS = 30_000;
 
 async function gh(path) {
   const res = await fetch(`https://api.github.com/repos/${GITHUB_REPOSITORY}${path}`, {
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     headers: {
       Authorization: `Bearer ${GH_TRAFFIC_TOKEN}`,
       Accept: 'application/vnd.github+json',
@@ -51,15 +53,28 @@ async function gh(path) {
   return res.json();
 }
 
+/**
+ * Returns a deterministic loopback IP for the given event name so that
+ * different event categories are not merged into a single Plausible visitor
+ * session (Plausible deduplicates sessions by IP + User-Agent).
+ */
+function eventIp(name) {
+  let hash = 0;
+  for (const c of name) hash = (hash * 31 + c.charCodeAt(0)) >>> 0;
+  return `127.0.${(hash >>> 8) & 0xff}.${hash & 0xff}`;
+}
+
 async function plausible(name, props) {
   const res = await fetch(PLAUSIBLE_ENDPOINT, {
     method: 'POST',
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     headers: {
       'Content-Type': 'application/json',
       'User-Agent': UA,
-      // Plausible deduplicates by IP+UA; vary the IP per event category so
-      // events aren't merged into a single "visitor session".
-      'X-Forwarded-For': '127.0.0.1',
+      // Plausible deduplicates by IP+UA; use a deterministic per-category
+      // loopback IP so events from different categories aren't merged into a
+      // single visitor session.
+      'X-Forwarded-For': eventIp(name),
     },
     body: JSON.stringify({
       domain: PLAUSIBLE_DOMAIN,
