@@ -167,24 +167,26 @@ For development: `npm run dev`
 
 ## Tools
 
-| Category | Tool | Description |
-|----------|------|-------------|
-| **Analysis** | `analyze_project` | Analyze entire project — filter by language, category, severity, maxFiles |
-| | `analyze_file` | Analyze a single file |
-| | `get_debt_summary` | Quick summary with health score and issue counts |
-| | `get_sqale_metrics` | SQALE rating, remediation time, debt ratio, breakdowns |
-| **Filtering** | `get_recommendations` | Prioritized fix suggestions (configurable limit) |
-| | `get_issues_by_severity` | Issues filtered by severity level |
-| | `get_issues_by_category` | Issues filtered by debt category |
-| | `list_supported_languages` | All languages with their checks |
-| **Custom Rules** | `add_custom_rule` | Add regex-based tech debt rule |
-| | `remove_custom_rule` | Remove a custom rule by ID |
-| | `list_custom_rules` | List active rules with stats |
-| | `execute_custom_rules` | Run custom rules against code or file |
-| | `validate_custom_pattern` | Test a pattern before adding it |
-| **Dependencies** | `check_dependencies` | Scan package manifests across 10 ecosystems |
-| | `get_vulnerability_report` | Offline dependency inventory for CVE review |
-| | `validate_config` | Validate `.techdebtrc.json` schema |
+Every tool declares a [tool annotation](https://modelcontextprotocol.io/specification/server/tools#tool-annotations) — `Read` tools are side-effect-free (`readOnlyHint: true`); `Write` tools mutate `.techdebtrc.json` (`destructiveHint: true`).
+
+| Category | Tool | Type | Description |
+|----------|------|------|-------------|
+| **Analysis** | `analyze_project` | Read | Analyze entire project — filter by language, category, severity, maxFiles |
+| | `analyze_file` | Read | Analyze a single file |
+| | `get_debt_summary` | Read | Quick summary with health score and issue counts |
+| | `get_sqale_metrics` | Read | SQALE rating, remediation time, debt ratio, breakdowns |
+| **Filtering** | `get_recommendations` | Read | Prioritized fix suggestions (configurable limit) |
+| | `get_issues_by_severity` | Read | Issues filtered by severity level |
+| | `get_issues_by_category` | Read | Issues filtered by debt category |
+| | `list_supported_languages` | Read | All languages with their checks |
+| **Custom Rules** | `add_custom_rule` | Write | Add regex-based tech debt rule |
+| | `remove_custom_rule` | Write | Remove a custom rule by ID |
+| | `list_custom_rules` | Read | List active rules with stats |
+| | `execute_custom_rules` | Read | Run custom rules against code or file |
+| | `validate_custom_pattern` | Read | Test a pattern before adding it |
+| **Dependencies** | `check_dependencies` | Read | Scan package manifests across 10 ecosystems |
+| | `get_vulnerability_report` | Read | Offline dependency inventory for CVE review |
+| | `validate_config` | Read | Validate `.techdebtrc.json` schema |
 
 **Debt categories used throughout:** `dependency` · `code-quality` · `architecture` · `documentation` · `testing` · `security` · `performance` · `maintainability`
 

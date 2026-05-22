@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Tool annotations** (`readOnlyHint` / `destructiveHint`) on every entry in `TOOL_DEFINITIONS`. Read tools are flagged `readOnlyHint: true`; `add_custom_rule` and `remove_custom_rule` are flagged `destructiveHint: true`. README tool table gains a "Type" column documenting Read vs Write. (TEC-43)
+
 ## [2.0.2] - 2026-04-10
 
 ### Security
