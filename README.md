@@ -109,7 +109,7 @@ claude mcp add tech-debt-mcp -- npx -y tech-debt-mcp@latest
 /plugin install tech-debt-mcp@techdebtmcp
 ```
 
-The plugin runs `npx -y tech-debt-mcp@latest` under the hood — no source bundling, always tracks the published npm release.
+The plugin runs `npx -y tech-debt-mcp@latest` under the hood — no source bundling, always tracks the published npm release. See [`.claude-plugin/README.md`](.claude-plugin/README.md) for plugin-user-facing docs (install flow, example transcripts, security posture).
 
 </details>
 
@@ -567,6 +567,7 @@ npm test           # Run tests
 - **[TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md)** - Self-scan results with before/after comparison
 - **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** - Community standards
 - **[PRIVACY.md](PRIVACY.md)** - Privacy policy (also hosted at <https://pierrejanineh.github.io/TechDebtMCP/privacy>)
+- **[.claude-plugin/README.md](.claude-plugin/README.md)** - Plugin-user-facing docs (install, example transcripts, security posture)
 
 ## Privacy
 
