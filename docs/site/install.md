@@ -5,7 +5,7 @@ outline: deep
 
 # Install
 
-Tech Debt MCP ships through three channels. Pick whichever matches your client.
+Tech Debt MCP ships through multiple channels. Pick whichever matches your client.
 
 ## npx (any MCP client)
 

@@ -5,7 +5,7 @@ outline: deep
 
 # Security Model
 
-Tech Debt MCP runs in-process inside your MCP client and reads files from disk on your behalf. The threat surface is small but real — this page documents what's hardened and what isn't.
+Tech Debt MCP runs as a local Node process started by your MCP client and reads files from disk on your behalf. The threat surface is small but real — this page documents what's hardened and what isn't.
 
 ## Trust boundary
 
