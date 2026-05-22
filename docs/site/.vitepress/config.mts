@@ -11,6 +11,17 @@ export default defineConfig({
   head: [
     ['link', { rel: 'icon', type: 'image/png', href: '/TechDebtMCP/icon.png' }],
     ['meta', { name: 'theme-color', content: '#4b5563' }],
+    // Plausible analytics — self-hosted at plausible.pierrejanineh.com.
+    // Cookieless, no PII, no fingerprinting. data-domain matches the
+    // GitHub Pages hostname so events are scoped to this site.
+    [
+      'script',
+      {
+        defer: '',
+        'data-domain': 'pierrejanineh.github.io',
+        src: 'https://plausible.pierrejanineh.com/js/script.404.outbound-links.js',
+      },
+    ],
   ],
   themeConfig: {
     nav: [
