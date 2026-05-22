@@ -25,7 +25,7 @@ features:
     details: TypeScript, JavaScript, Python, Java, Kotlin, Swift, Go, Rust, Ruby, PHP, C#, C/C++, plus dependency parsers for npm, pip, cargo, gradle, nuget, go.mod and more.
     link: /languages
   - title: SQALE metrics + 16 MCP tools
-    details: Project + file-level analysis, severity/category filters, recommendations, dependency vulnerability reports, and a custom-rules engine — all exposed as MCP tools and resources.
+    details: Project + file-level analysis, severity/category filters, recommendations, offline dependency reports, and a custom-rules engine — all exposed as MCP tools and resources.
     link: /tools/
   - title: Custom rules, no plugin needed
     details: Define regex-based rules in `.techdebtrc.json` with severity, category, and per-rule file globs. Validated at registration time with length and flag allowlists.
