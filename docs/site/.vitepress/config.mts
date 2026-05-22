@@ -19,7 +19,7 @@ export default defineConfig({
       {
         defer: '',
         'data-domain': 'pierrejanineh.github.io',
-        src: 'https://plausible.pierrejanineh.com/js/script.js',
+        src: 'https://plausible.pierrejanineh.com/js/script.404.outbound-links.js',
       },
     ],
   ],
