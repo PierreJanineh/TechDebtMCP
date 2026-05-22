@@ -78,6 +78,9 @@ src/
 └── utils/
     ├── fileUtils.ts            # fs helpers (readFile, fileExists, getFileStats, getRelativePath)
     └── regexUtils.ts           # escapeRegExp() — safe RegExp construction helper
+.claude-plugin/
+├── plugin.json                 # Claude Code plugin manifest (mcpServers → npx -y tech-debt-mcp)
+└── marketplace.json            # Marketplace entry so this repo doubles as its own marketplace
 ```
 
 ### Request flow
