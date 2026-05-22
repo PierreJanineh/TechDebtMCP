@@ -13,13 +13,15 @@ The MCP client is trusted. Anything that arrives via tool arguments — file pat
 
 ## Path arguments
 
-All path parameters flow through `requireAbsolutePath` / `optionalAbsolutePath` (`src/server/inputParser.ts`):
+**Tool arguments** — Path parameters in tool handlers flow through `requireAbsolutePath` / `optionalAbsolutePath` (`src/server/inputParser.ts`):
 
 - `path.isAbsolute()` rejected if false.
 - Normalized via `path.resolve()` so `..` traversal collapses before use.
 - An empty string for an optional path is treated as `undefined`.
 
 Path parameters must never be read from `args` directly — they must flow through `requireAbsolutePath` or `optionalAbsolutePath`. Non-path fields (e.g., `includeDev`, `severity`) may be read from the validated record returned by `requireRecord()` after the path is extracted. This convention is enforced across `handlers.ts`, `configValidator.ts`, `customRulesHandlers.ts`, and `dependencyHandlers.ts`.
+
+**Resource templates** — MCP resource templates (`debt://summary/{+projectPath}`, `debt://issues/{+projectPath}`) validate `projectPath` via `validateAbsolutePath()` in `src/server/resourceHandlers.ts`, which applies the same `path.isAbsolute()` + `path.resolve()` checks outside of the `inputParser.ts` flow.
 
 ## User-supplied regex
 
@@ -38,7 +40,7 @@ These constants live in `src/core/customRulesEngine.ts` — import them rather t
 Domain handlers sanitize paths in error output; unexpected non-`McpError` exceptions that escape to the top-level catch may still include implementation detail:
 
 - `getRelativePath()` or `basename()` sanitize paths in error output.
-- Raw `err.message` from domain-specific handlers (`customRulesHandlers.ts`, `configValidator.ts`, `dependencyHandlers.ts`) is caught and rethrown as an `McpError` with a safe message before it reaches the client.
+- Raw `err.message` from domain-specific handlers (`customRulesHandlers.ts`, `configValidator.ts`, `dependencyHandlers.ts`) is caught and sanitized before returning to the client (e.g., by substituting `basename()` for any path, or by returning a safe text response without the raw exception message).
 - The top-level catch in `handlers.ts` wraps unexpected non-`McpError` exceptions using `error.message`; errors that escape domain handlers may therefore include implementation detail. Prefer throwing sanitized `McpError` instances from all code paths to avoid this.
 - This rule applies to **every** handler file.
 

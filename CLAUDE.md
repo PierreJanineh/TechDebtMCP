@@ -116,7 +116,7 @@ npm run docs:dev      # local dev server at http://localhost:5173/TechDebtMCP/
 npm run docs:build    # full build: tsc → gen-docs-tools.mjs → vitepress build
 ```
 
-`docs:build` runs `npm run build` first so `dist/server/tools.js` exists, then `scripts/gen-docs-tools.mjs` imports `TOOL_DEFINITIONS` directly and emits one Markdown page per tool plus mirrors of `ARCHITECTURE.md`, `ROADMAP.md`, and `CHANGELOG.md` into `docs/site/`. The whole generated tree is gitignored — root docs stay the canonical source. Deploys to GitHub Pages via `.github/workflows/docs.yml` on every push to `develop` that touches site sources, `src/server/tools.ts`, or the mirrored root docs.
+`docs:build` runs `npm run build` first so `dist/server/tools.js` exists, then `scripts/gen-docs-tools.mjs` imports `TOOL_DEFINITIONS` directly and emits one Markdown page per tool plus mirrors of `ARCHITECTURE.md`, `ROADMAP.md`, and `CHANGELOG.md` into `docs/site/`. The whole generated tree is gitignored — root docs stay the canonical source. Deploys to GitHub Pages via `.github/workflows/docs.yml` on path-filtered pushes to `develop` (triggers on `docs/site/**`, `src/server/tools.ts`, `scripts/gen-docs-tools.mjs`, `ARCHITECTURE.md`, `ROADMAP.md`, `CHANGELOG.md`, `package.json`, `package-lock.json`, and `.github/workflows/docs.yml`).
 
 ### Request flow
 
