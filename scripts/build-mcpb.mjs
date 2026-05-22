@@ -25,6 +25,9 @@ const SIZE_WARN_BYTES = 50 * 1024 * 1024;
 function run(cmd, args, opts = {}) {
   const resolvedCmd = process.platform === 'win32' ? `${cmd}.cmd` : cmd;
   const result = spawnSync(resolvedCmd, args, { stdio: 'inherit', cwd: REPO_ROOT, ...opts });
+  if (result.error) {
+    throw new Error(`${cmd} ${args.join(' ')} failed to launch: ${result.error.message}`);
+  }
   if (result.status !== 0) {
     throw new Error(`${cmd} ${args.join(' ')} failed with exit code ${result.status}`);
   }
