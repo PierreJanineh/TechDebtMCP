@@ -73,7 +73,7 @@ Don't commit a rule blind — validate the regex first via the `validate_custom_
 
 ## Running custom rules
 
-The `execute_custom_rules` tool runs every rule from `.techdebtrc.json` over a project root. See the [tool reference](/tools/execute-custom-rules).
+The `execute_custom_rules` tool executes all registered rules from `.techdebtrc.json` against a single file (`path`) or inline code (`code`), with optional `language` filtering. It does not traverse a project directory. See the [tool reference](/tools/execute-custom-rules).
 
 ## Security limits
 
