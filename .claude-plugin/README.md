@@ -1,6 +1,6 @@
 # Tech Debt MCP — Claude Code Plugin
 
-Static technical-debt analysis across 14 languages, delivered to Claude Code as an MCP server. Ask Claude to scan a project for debt, look up vulnerabilities, or grade maintainability with SQALE — the plugin wires up the tools, Claude routes your prompts to them.
+Static technical-debt analysis across 14 languages, delivered to Claude Code as an MCP server. Ask Claude to scan a project for debt, generate an offline dependency inventory for CVE review, or grade maintainability with SQALE — the plugin wires up the tools, Claude routes your prompts to them.
 
 - **Engine source:** <https://github.com/PierreJanineh/TechDebtMCP>
 - **Tool reference & docs:** <https://pierrejanineh.github.io/TechDebtMCP/>
@@ -20,7 +20,7 @@ That's it. The plugin registers an MCP server (`tech-debt-mcp`) that Claude Code
 
 **Requirements:** Node.js ≥ 20.19.0 on your machine. The first invocation downloads the package (~160 KB + production dependencies); subsequent invocations use the npm/npx cache.
 
-> Prefer a one-click install with no Node requirement? Use the [MCPB bundle](https://github.com/PierreJanineh/TechDebtMCP/releases) for Claude Desktop — it ships the server pre-installed.
+> Prefer a one-click install with no Node toolchain needed? Use the [MCPB bundle](https://github.com/PierreJanineh/TechDebtMCP/releases) for Claude Desktop — it ships the server pre-installed.
 
 ## What you get
 
