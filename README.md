@@ -95,6 +95,20 @@ claude mcp add tech-debt-mcp -- npx -y tech-debt-mcp@latest
 </details>
 
 <details>
+<summary><img src="https://img.shields.io/badge/Claude_Code-Install%20as%20Plugin-d97757?logo=Claude&logoColor=f5f5f5" alt="Claude Code: Install as Plugin"></summary>
+
+**Claude Code plugin** — add this repo's marketplace, then install the plugin:
+
+```sh
+/plugin marketplace add PierreJanineh/TechDebtMCP
+/plugin install tech-debt-mcp@techdebtmcp
+```
+
+The plugin runs `npx -y tech-debt-mcp@latest` under the hood — no source bundling, always tracks the published npm release.
+
+</details>
+
+<details>
 <summary><img src="https://img.shields.io/badge/Windsurf-Install%20Server-0B100F?logo=Windsurf&logoColor=f5f5f5" alt="Windsurf: Install Server"></summary>
 
 Add to your Windsurf MCP configuration (`~/.codeium/windsurf/mcp_config.json`):

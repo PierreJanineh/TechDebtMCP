@@ -285,7 +285,7 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 Four parallelizable tickets to begin the cycle:
 
 - **TEC-43 (#181)** — `readOnlyHint` / `destructiveHint` annotations on all tool schemas. Highest-leverage standalone; benefits planner behavior immediately and unblocks both submission tracks.
-- **TEC-35 (#175)** — Scaffold `.claude-plugin/` manifest + own marketplace entry.
+- **TEC-35 (#175)** — Scaffold `.claude-plugin/` manifest + own marketplace entry. ✅ Landed: `.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json` (plugin runs `npx -y tech-debt-mcp@latest`, repo doubles as its own marketplace).
 - **TEC-42 (#182)** — Add `manifest.json` and `@anthropic-ai/mcpb` packaging tooling.
 - **TEC-38 (#178)** — Stand up the docs site scaffold (unblocks the privacy policy URL).
 
