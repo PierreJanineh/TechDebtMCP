@@ -48,6 +48,10 @@ export default defineConfig({
       { text: 'Custom Rules', link: '/custom-rules' },
       { text: 'Security', link: '/security' },
       {
+        text: 'Stats',
+        link: 'https://plausible.pierrejanineh.com/pierrejanineh.github.io',
+      },
+      {
         text: 'More',
         items: [
           { text: 'Language Coverage', link: '/languages' },
@@ -94,7 +98,10 @@ export default defineConfig({
     search: { provider: 'local' },
     footer: {
       message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2026 Pierre Janineh',
+      // Footer copyright accepts HTML — embeds the author's logo (served
+      // from /public/pj-logo.svg) as a small image-link to their portfolio.
+      copyright:
+        'Copyright © 2026 <a href="https://pierrejanineh.com"><img src="/TechDebtMCP/pj-logo.svg" alt="" style="height: 1em !important; width: auto !important; vertical-align: -0.15em; margin-right: 0.3em; display: inline-block;"/>Pierre Janineh</a>',
     },
   },
 });
