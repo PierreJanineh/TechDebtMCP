@@ -28,7 +28,7 @@ The server never writes to files it analyzes. Custom rules you define are stored
 
 ## Data transmitted to third parties
 
-**None at runtime.** Once running, Tech Debt MCP makes no outbound HTTP, DNS, or socket calls. Dependency vulnerability checks operate on local manifests only — there is no online vulnerability database lookup. (Online vulnerability lookups are tracked as a future, opt-in feature; see [issues #31 and #32](https://github.com/PierreJanineh/TechDebtMCP/issues/31).)
+**None at runtime.** Once running, Tech Debt MCP makes no outbound HTTP, DNS, or socket calls. Dependency vulnerability checks operate on local manifests only — there is no online vulnerability database lookup. (Online vulnerability lookups are tracked as a future, opt-in feature; see [issue #31](https://github.com/PierreJanineh/TechDebtMCP/issues/31) and [issue #32](https://github.com/PierreJanineh/TechDebtMCP/issues/32).)
 
 ## Installation and updates
 
