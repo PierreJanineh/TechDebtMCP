@@ -8,6 +8,7 @@
 [![Add to MCP](https://img.shields.io/badge/MCP-Install_Server-6f42c1)](#installation)
 [![SQALE Rating](https://img.shields.io/badge/SQALE-A_(0.7%25)-brightgreen)](#code-quality)
 [![CodeQL](https://github.com/PierreJanineh/TechDebtMCP/actions/workflows/codeql.yml/badge.svg)](https://github.com/PierreJanineh/TechDebtMCP/actions/workflows/codeql.yml)
+[![Documentation](https://img.shields.io/badge/docs-pierrejanineh.github.io%2FTechDebtMCP-3c8772)](https://pierrejanineh.github.io/TechDebtMCP/)
 
 **16 Tools** · **2 Resources** · **14 Languages** · **10 Dependency Ecosystems**
 

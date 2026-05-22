@@ -13,3 +13,9 @@ coverage/
 *.local.*
 mcpb/staging/
 mcpb/*.mcpb
+docs/site/.vitepress/cache/
+docs/site/.vitepress/dist/
+docs/site/tools/
+docs/site/architecture.md
+docs/site/roadmap.md
+docs/site/changelog.md
