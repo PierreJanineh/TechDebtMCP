@@ -14,13 +14,31 @@ export default defineConfig({
     // Plausible analytics — self-hosted at plausible.pierrejanineh.com.
     // Cookieless, no PII, no fingerprinting. data-domain matches the
     // GitHub Pages hostname so events are scoped to this site.
+    //
+    // The script filename encodes the optional measurements enabled in
+    // the Plausible site settings. Currently: outbound-links. Adding 404
+    // or other toggles requires both flipping them in Plausible UI and
+    // updating the src filename here (Plausible only serves variants
+    // whose toggles are on; mismatches 404 on the script load).
     [
       'script',
       {
         defer: '',
         'data-domain': 'pierrejanineh.github.io',
-        src: 'https://plausible.pierrejanineh.com/js/script.404.outbound-links.js',
+        src: 'https://plausible.pierrejanineh.com/js/script.outbound-links.js',
       },
+    ],
+    // Bootstrap helper required by the "404 error pages" measurement.
+    // Plausible doesn't detect 404s client-side automatically — the site
+    // has to call plausible('404', { props: { path } }) when it renders
+    // a missing page. The actual firing happens in the theme's enhanceApp
+    // (see .vitepress/theme/index.ts). This shim buffers calls until the
+    // deferred tracker script is loaded, so the firing code works even if
+    // it runs before the main script attaches plausible().
+    [
+      'script',
+      {},
+      'window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }',
     ],
   ],
   themeConfig: {
