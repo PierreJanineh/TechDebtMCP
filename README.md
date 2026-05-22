@@ -104,7 +104,7 @@ claude mcp add tech-debt-mcp -- npx -y tech-debt-mcp@latest
 /plugin install tech-debt-mcp@techdebtmcp
 ```
 
-The plugin runs `npx -y tech-debt-mcp` under the hood — no source bundling, always tracks the published npm release.
+The plugin runs `npx -y tech-debt-mcp@latest` under the hood — no source bundling, always tracks the published npm release.
 
 </details>
 

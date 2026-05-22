@@ -67,7 +67,7 @@ TechDebtMCP/
 │       └── regexUtils.ts        # escapeRegExp() — safe RegExp interpolation helper
 ├── dist/                        # Compiled output
 ├── .claude-plugin/
-│   ├── plugin.json              # Claude Code plugin manifest (mcpServers → npx -y tech-debt-mcp)
+│   ├── plugin.json              # Claude Code plugin manifest (mcpServers → npx -y tech-debt-mcp@latest)
 │   └── marketplace.json         # Marketplace entry so this repo doubles as its own marketplace
 ├── package.json
 ├── tsconfig.json

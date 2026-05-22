@@ -78,8 +78,8 @@ src/
 └── utils/
     ├── fileUtils.ts            # fs helpers (readFile, fileExists, getFileStats, getRelativePath)
     └── regexUtils.ts           # escapeRegExp() — safe RegExp construction helper
-.claude-plugin/
-├── plugin.json                 # Claude Code plugin manifest (mcpServers → npx -y tech-debt-mcp)
+.claude-plugin/                 # (repo root — sibling of src/)
+├── plugin.json                 # Claude Code plugin manifest (mcpServers → npx -y tech-debt-mcp@latest)
 └── marketplace.json            # Marketplace entry so this repo doubles as its own marketplace
 ```
 

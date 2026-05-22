@@ -21,7 +21,7 @@
   "mcpServers": {
     "tech-debt-mcp": {
       "command": "npx",
-      "args": ["-y", "tech-debt-mcp"]
+      "args": ["-y", "tech-debt-mcp@latest"]
     }
   }
 }
