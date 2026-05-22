@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Security
-- **Dependabot alert sweep — 13 alerts resolved (TEC-46, #189).** `npm audit --omit=dev` confirmed 0 runtime vulnerabilities throughout. Per-alert trace:
+- **Dependabot alert sweep — 13 alerts triaged (TEC-46, #189): 10 dismissed (patched version present), 3 dev-only tracked via `dependabot.yml` ignore entries (alerts remain open until upstream patches).** `npm audit --omit=dev` confirmed 0 runtime vulnerabilities throughout. Per-alert trace:
   - **#45** `fast-uri` ≤3.1.1 (high, GHSA path-traversal) — lockfile already installs `fast-uri@3.1.2` (patched) via `@modelcontextprotocol/sdk`. Dismissed: patched version present.
   - **#41** `fast-uri` ≤3.1.0 (high, GHSA host-confusion) — same resolution as #45. Dismissed: patched version present.
   - **#44** `hono` <4.12.18 (moderate, CSS Declaration Injection in JSX SSR) — lockfile installs `hono@4.12.22` (patched). TechDebtMCP uses stdio transport only; `hono` is bundled by the SDK for its HTTP transport which is never invoked. Dismissed: patched version present, unreachable code path.
