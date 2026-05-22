@@ -47,7 +47,7 @@ Then add it to your MCP client config — see [Install](/install) for `claude_de
 ## What you get
 
 - **16 MCP tools** for project-, file-, and rule-level analysis — see the [tool reference](/tools/).
-- **Two MCP resource templates** (`debt://summary/{+path}`, `debt://issues/{+path}`) for read-only ingestion.
+- **Two MCP resource templates** (`debt://summary/{+projectPath}`, `debt://issues/{+projectPath}`) for read-only ingestion.
 - **SQALE rating + remediation time** for every project.
 - **Dependency vulnerability reports** across the major package managers.
 - **Inline suppression** (`// techdebt-ignore-next-line <rule>`) to silence false positives without disabling rules globally.

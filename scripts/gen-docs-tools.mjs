@@ -32,12 +32,12 @@ const slugify = (name) => name.replace(/_/g, '-');
 
 const formatArgRow = (key, schema, required) => {
   const type = schema.type ?? 'unknown';
-  const enumStr = schema.enum ? ` \`(${schema.enum.join(' \\| ')})\`` : '';
+  const enumStr = schema.enum ? ` \`(${schema.enum.join(' | ')})\`` : '';
   const min = schema.minimum !== undefined ? ` *min: ${schema.minimum}*` : '';
   const items = schema.items?.type ? `\`array<${schema.items.type}>\`` : `\`${type}\``;
   const typeCell = schema.type === 'array' ? items : `\`${type}\`${enumStr}`;
   const req = required ? '✅' : '—';
-  const desc = (schema.description ?? '').replace(/\|/g, '\\|');
+  const desc = (schema.description ?? '').replace(/\\/g, '\\\\').replace(/\|/g, '\\|');
   return `| \`${key}\` | ${typeCell}${min} | ${req} | ${desc} |`;
 };
 
@@ -60,6 +60,7 @@ const renderToolPage = (tool) => {
   return `---
 title: ${tool.name}
 outline: deep
+editLink: false
 ---
 
 # \`${tool.name}\`
@@ -114,6 +115,7 @@ const renderIndex = (tools) => {
   return `---
 title: Tool Reference
 outline: 2
+editLink: false
 ---
 
 # Tool Reference
@@ -151,7 +153,7 @@ const mirrors = [
 ];
 for (const { src, dest, title } of mirrors) {
   const body = await readFile(resolve(repoRoot, src), 'utf8');
-  const frontmatter = `---\ntitle: ${title}\noutline: 2\n---\n\n> Mirrored from [\`${src}\`](https://github.com/PierreJanineh/TechDebtMCP/blob/develop/${src}) at build time.\n\n`;
+  const frontmatter = `---\ntitle: ${title}\noutline: 2\neditLink: false\n---\n\n> Mirrored from [\`${src}\`](https://github.com/PierreJanineh/TechDebtMCP/blob/develop/${src}) at build time.\n\n`;
   await writeFile(resolve(siteRoot, dest), frontmatter + body, 'utf8');
 }
 

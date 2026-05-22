@@ -43,7 +43,7 @@ Errors returned to clients never leak absolute filesystem paths:
 
 ## Pre-commit hardening
 
-The repo's pre-commit hook enforces doc updates on `src/**` changes and the test suite enforces:
+Doc updates on `src/**` changes are enforced as a convention (see `CLAUDE.md`). The test suite enforces:
 
 - Every entry in `TOOL_DEFINITIONS` carries an `annotations` object (`readOnlyHint` or `destructiveHint`).
 - `mcpb/manifest.json` mirrors `TOOL_DEFINITIONS` exactly.

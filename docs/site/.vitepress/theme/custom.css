@@ -35,7 +35,7 @@
  * Home palette — keyed to the icon body color.
  *
  *   dark mode:  bg #2f373e (icon body, sampled from mcpb/icon.png)
- *   light mode: bg #d0c8c1 (255-bit inverse, matches icon-light.png)
+ *   light mode: bg #d0c8c1 (per-channel 255-complement of #2f373e, matches icon-light.png)
  *
  * Custom properties make the rest of the file mode-agnostic.
  * -------------------------------------------------------------------------- */
