@@ -86,8 +86,17 @@ mcpb/                           # (repo root — Claude Desktop one-click bundle
 ├── icon.png                    # 512×512 bundle icon
 ├── staging/                    # gitignored — clean prod tree built by scripts/build-mcpb.mjs
 └── tech-debt-mcp-<version>.mcpb # gitignored artifact, attached to GitHub Releases
+docs/site/                      # (repo root — VitePress docs site for GitHub Pages)
+├── .vitepress/
+│   ├── config.mts              # Nav, sidebar, base = '/TechDebtMCP/', local search
+│   └── theme/                  # Custom slate palette + home-scoped --home-* vars
+├── public/                     # Static assets (icon.png + inverted icon-light.png)
+├── index.md                    # Landing hero
+├── install.md, languages.md, custom-rules.md, security.md
+└── tools/                      # gitignored — regenerated each build by gen-docs-tools.mjs
 scripts/
-└── build-mcpb.mjs              # `npm run mcpb:pack` driver — stages, runs `npm ci --omit=dev --ignore-scripts`, packs
+├── build-mcpb.mjs              # `npm run mcpb:pack` driver — stages, runs `npm ci --omit=dev --ignore-scripts`, packs
+└── gen-docs-tools.mjs          # `npm run docs:gen-tools` — imports dist/server/tools.js TOOL_DEFINITIONS, emits docs/site/tools/*.md + mirrors of ARCHITECTURE/ROADMAP/CHANGELOG
 ```
 
 ### Building the MCPB bundle
@@ -99,6 +108,15 @@ npm run mcpb:pack
 ```
 
 The build script asserts `mcpb/manifest.json.version === package.json.version` — bump both in lockstep at release time. `src/server/__tests__/mcpbManifest.test.ts` enforces the manifest's tool list matches `TOOL_DEFINITIONS`, so adding/removing a tool requires updating `mcpb/manifest.json` in the same PR.
+
+### Building the docs site
+
+```bash
+npm run docs:dev      # local dev server at http://localhost:5173/TechDebtMCP/
+npm run docs:build    # full build: tsc → gen-docs-tools.mjs → vitepress build
+```
+
+`docs:build` runs `npm run build` first so `dist/server/tools.js` exists, then `scripts/gen-docs-tools.mjs` imports `TOOL_DEFINITIONS` directly and emits one Markdown page per tool plus mirrors of `ARCHITECTURE.md`, `ROADMAP.md`, and `CHANGELOG.md` into `docs/site/`. The whole generated tree is gitignored — root docs stay the canonical source. Deploys to GitHub Pages via `.github/workflows/docs.yml` on path-filtered pushes to `develop` (triggers on `docs/site/**`, `src/server/tools.ts`, `scripts/gen-docs-tools.mjs`, `ARCHITECTURE.md`, `ROADMAP.md`, `CHANGELOG.md`, `package.json`, `package-lock.json`, and `.github/workflows/docs.yml`).
 
 ### Request flow
 

@@ -1,0 +1,146 @@
+/**
+ * Slate monochrome palette — keyed to mcpb/icon.png (concentric arches in
+ * #2a2d33 → #5e6168). The icon and shields.io badges carry color; the docs
+ * stay deliberately quiet.
+ *
+ *   slate-700 #374151   slate-600 #4b5563   slate-500 #6b7280
+ *   slate-400 #9ca3af   slate-300 #d1d5db   slate-200 #e5e7eb
+ */
+:root {
+  --vp-c-brand-1: #4b5563;
+  --vp-c-brand-2: #6b7280;
+  --vp-c-brand-3: #9ca3af;
+  --vp-c-brand-soft: rgba(75, 85, 99, 0.14);
+
+  --vp-c-brand-hover: var(--vp-c-brand-2);
+  --vp-c-brand-active: #374151;
+
+  --vp-button-brand-border: var(--vp-c-brand-1);
+  --vp-button-brand-bg: var(--vp-c-brand-1);
+  --vp-button-brand-hover-border: var(--vp-c-brand-2);
+  --vp-button-brand-hover-bg: var(--vp-c-brand-2);
+  --vp-button-brand-active-border: var(--vp-c-brand-active);
+  --vp-button-brand-active-bg: var(--vp-c-brand-active);
+}
+
+.dark {
+  --vp-c-brand-1: #9ca3af;
+  --vp-c-brand-2: #d1d5db;
+  --vp-c-brand-3: #6b7280;
+  --vp-c-brand-soft: rgba(156, 163, 175, 0.16);
+  --vp-c-brand-active: #e5e7eb;
+}
+
+/* -----------------------------------------------------------------------------
+ * Home palette — keyed to the icon body color.
+ *
+ *   dark mode:  bg #2f373e (icon body, sampled from mcpb/icon.png)
+ *   light mode: bg #d0c8c1 (per-channel 255-complement of #2f373e, matches icon-light.png)
+ *
+ * Custom properties make the rest of the file mode-agnostic.
+ * -------------------------------------------------------------------------- */
+:root {
+  --home-bg: #d0c8c1;
+  --home-bg-elev: #e6e1da;
+  --home-text-strong: #1f2428;
+  --home-text-soft: #4b5563;
+  --home-text-muted: #6b7280;
+  --home-divider: rgba(31, 36, 40, 0.12);
+  --home-name-grad-from: #374151;
+  --home-name-grad-to: #6b7280;
+  --home-btn-brand-bg: #1f2428;
+  --home-btn-brand-text: #ffffff;
+  --home-btn-alt-text: #1f2428;
+  --home-btn-alt-border: rgba(31, 36, 40, 0.32);
+  --home-btn-alt-hover-bg: rgba(31, 36, 40, 0.06);
+}
+
+.dark {
+  --home-bg: #2f373e;
+  --home-bg-elev: #3a424a;
+  --home-text-strong: #e5e7eb;
+  --home-text-soft: #d1d5db;
+  --home-text-muted: #9ca3af;
+  --home-divider: rgba(229, 231, 235, 0.08);
+  --home-name-grad-from: #e5e7eb;
+  --home-name-grad-to: #9ca3af;
+  --home-btn-brand-bg: #e5e7eb;
+  --home-btn-brand-text: #1f2428;
+  --home-btn-alt-text: #e5e7eb;
+  --home-btn-alt-border: rgba(229, 231, 235, 0.4);
+  --home-btn-alt-hover-bg: rgba(229, 231, 235, 0.08);
+}
+
+/* Body + home wrapper — paint behind everything so any layout gap between
+ * .VPContent and .VPFooter doesn't reveal the default page background.
+ * :has() scopes the override to the home route only. */
+body:has(.VPHome),
+.VPHome {
+  background-color: var(--home-bg);
+}
+
+.VPHome .VPHero .image-bg {
+  background-image: none !important;
+  filter: none !important;
+  opacity: 0;
+}
+
+.VPHome .VPHero .name,
+.VPHome .VPHero .text {
+  --vp-home-hero-name-background: linear-gradient(
+    120deg,
+    var(--home-name-grad-from) 30%,
+    var(--home-name-grad-to)
+  );
+  color: var(--home-text-strong);
+}
+
+.VPHome .VPHero .tagline {
+  color: var(--home-text-soft);
+}
+
+.VPHome .VPHero .VPButton.brand {
+  --vp-button-brand-border: var(--home-btn-brand-bg);
+  --vp-button-brand-bg: var(--home-btn-brand-bg);
+  --vp-button-brand-text: var(--home-btn-brand-text);
+  --vp-button-brand-hover-border: var(--home-btn-brand-bg);
+  --vp-button-brand-hover-bg: var(--home-btn-brand-bg);
+  --vp-button-brand-hover-text: var(--home-btn-brand-text);
+}
+
+.VPHome .VPHero .VPButton.alt {
+  --vp-button-alt-border: var(--home-btn-alt-border);
+  --vp-button-alt-bg: transparent;
+  --vp-button-alt-text: var(--home-btn-alt-text);
+  --vp-button-alt-hover-border: var(--home-btn-alt-text);
+  --vp-button-alt-hover-bg: var(--home-btn-alt-hover-bg);
+  --vp-button-alt-hover-text: var(--home-btn-alt-text);
+}
+
+.VPHome .VPFeatures .VPFeature {
+  background-color: var(--home-bg-elev);
+  border-color: var(--home-divider);
+}
+.VPHome .VPFeatures .VPFeature .title {
+  color: var(--home-text-strong);
+}
+.VPHome .VPFeatures .VPFeature .details,
+.VPHome .VPFeatures .VPFeature .link-text-value {
+  color: var(--home-text-soft);
+}
+
+body:has(.VPHome) .VPFooter {
+  background-color: var(--home-bg);
+  border-top: 1px solid var(--home-divider);
+  color: var(--home-text-muted);
+}
+body:has(.VPHome) .VPFooter .message,
+body:has(.VPHome) .VPFooter .copyright {
+  color: var(--home-text-muted);
+}
+body:has(.VPHome) .VPFooter a {
+  color: var(--home-text-soft);
+}
+body:has(.VPHome) .VPFooter a:hover {
+  color: var(--home-text-strong);
+}

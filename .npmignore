@@ -28,6 +28,7 @@ ROADMAP.md
 RELEASE.md
 NPM_SETUP.md
 test_output.log
+docs/
 
 # Temporary files
 *.tmp

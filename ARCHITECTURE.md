@@ -72,8 +72,14 @@ TechDebtMCP/
 ├── mcpb/
 │   ├── manifest.json            # MCPB v0.3 manifest for Claude Desktop one-click bundle
 │   └── icon.png                 # 512×512 bundle icon
+├── docs/site/
+│   ├── .vitepress/              # VitePress config + custom slate theme
+│   ├── public/                  # Static assets (icon.png + inverted icon-light.png)
+│   ├── index.md                 # Landing hero
+│   └── install.md, languages.md, custom-rules.md, security.md
 ├── scripts/
-│   └── build-mcpb.mjs           # Stages + packs the .mcpb (npm run mcpb:pack)
+│   ├── build-mcpb.mjs           # Stages + packs the .mcpb (npm run mcpb:pack)
+│   └── gen-docs-tools.mjs       # Generates docs/site/tools/*.md from TOOL_DEFINITIONS
 ├── package.json
 ├── tsconfig.json
 ├── .github/copilot-instructions.md
