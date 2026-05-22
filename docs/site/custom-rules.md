@@ -81,6 +81,6 @@ Custom rules carry guardrails to prevent ReDoS and runaway scans:
 
 - Patterns capped at **1,000 chars** (`MAX_PATTERN_LENGTH`).
 - Code chunks capped at **500,000 chars** (`MAX_CODE_LENGTH`).
-- Files larger than **500,000 bytes** (`MAX_FILE_SIZE_BYTES`) are skipped.
+- Files larger than **500,000 bytes** (`MAX_FILE_SIZE_BYTES`) are rejected with an `InvalidParams` error.
 
 See [Security Model](/security) for the full threat surface.

@@ -27,7 +27,7 @@ Custom rules accept regex patterns. To prevent catastrophic backtracking and eng
 
 - Pattern length capped at **`MAX_PATTERN_LENGTH = 1,000`** chars.
 - Code chunks capped at **`MAX_CODE_LENGTH = 500,000`** chars.
-- Files larger than **`MAX_FILE_SIZE_BYTES = 500,000`** bytes are skipped before pattern execution.
+- Files larger than **`MAX_FILE_SIZE_BYTES = 500,000`** bytes are rejected with an `InvalidParams` error before pattern execution.
 - Flags allowlisted to `dgimsuvy`; `u` and `v` are validated as mutually exclusive.
 - Any captured string interpolated into `new RegExp()` is escaped through `escapeRegExp()` (`src/utils/regexUtils.ts`).
 
@@ -38,7 +38,8 @@ These constants live in `src/core/customRulesEngine.ts` — import them rather t
 Errors returned to clients never leak absolute filesystem paths:
 
 - `getRelativePath()` or `basename()` sanitize paths in error output.
-- Raw `err.message` from `fs` calls is rethrown as an `McpError` with a safe message — not echoed.
+- Raw `err.message` from domain-specific handlers (`customRulesHandlers.ts`, `configValidator.ts`, `dependencyHandlers.ts`) is caught and rethrown as an `McpError` with a safe message before it reaches the client.
+- The top-level catch in `handlers.ts` wraps unexpected non-`McpError` exceptions using `error.message`; errors that escape domain handlers may therefore include implementation detail. Prefer throwing sanitized `McpError` instances from all code paths to avoid this.
 - This rule applies to **every** handler file.
 
 ## Pre-commit hardening
