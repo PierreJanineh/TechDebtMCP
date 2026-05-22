@@ -28,11 +28,13 @@ export default defineConfig({
         src: 'https://plausible.pierrejanineh.com/js/script.outbound-links.js',
       },
     ],
-    // Bootstrap helper for plausible() — buffers manual events until the
-    // deferred tracker loads. Plausible's UI generates this companion
-    // snippet alongside the tracker; we keep them paired so future
-    // manual event calls (e.g. plausible('Install Click')) work without
-    // a race against script load.
+    // Bootstrap helper required by the "404 error pages" measurement.
+    // Plausible doesn't detect 404s client-side automatically — the site
+    // has to call plausible('404', { props: { path } }) when it renders
+    // a missing page. The actual firing happens in the theme's enhanceApp
+    // (see .vitepress/theme/index.ts). This shim buffers calls until the
+    // deferred tracker script is loaded, so the firing code works even if
+    // it runs before the main script attaches plausible().
     [
       'script',
       {},
