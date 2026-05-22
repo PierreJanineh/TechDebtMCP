@@ -8,7 +8,7 @@
   "long_description": "Tech Debt MCP scans source files across TypeScript, JavaScript, Python, Java, Kotlin, Swift, Go, Rust, C, C++, C#, Ruby, PHP, and Objective-C for code smells, SQALE metrics, dependency issues, and user-defined patterns. Exposes 16 MCP tools and 2 resource templates for use from Claude Desktop, Claude Code, and any MCP-compatible client.",
   "author": {
     "name": "Pierre Janineh",
-    "email": "janinehpierre@gmail.com",
+    "email": "techdebtmcp@pierrejanineh.com",
     "url": "https://github.com/PierreJanineh"
   },
   "repository": {

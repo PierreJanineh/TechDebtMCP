@@ -62,6 +62,6 @@ Material changes to this policy will be announced in [`CHANGELOG.md`](https://gi
 
 ## Contact
 
-Questions about this policy: open a [GitHub Discussion](https://github.com/PierreJanineh/TechDebtMCP/discussions) or email the maintainer at **janinehpierre@gmail.com**.
+Questions about this policy: open a [GitHub Discussion](https://github.com/PierreJanineh/TechDebtMCP/discussions) or email **techdebtmcp@pierrejanineh.com**.
 
 For security-sensitive reports, use [GitHub Security Advisories](https://github.com/PierreJanineh/TechDebtMCP/security/advisories/new) instead — see the [Security Model](/security) page for the disclosure policy.
