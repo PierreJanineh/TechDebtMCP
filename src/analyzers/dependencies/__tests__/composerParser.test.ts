@@ -1,5 +1,4 @@
 import { ComposerParser } from '../composerParser.js';
-import { ParsedDependency } from '../baseParser.js';
 
 describe('ComposerParser', () => {
   let parser: ComposerParser;

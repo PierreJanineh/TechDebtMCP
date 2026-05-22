@@ -1,5 +1,4 @@
 import { GoModParser } from '../goModParser.js';
-import { ParsedDependency } from '../baseParser.js';
 
 describe('GoModParser', () => {
   let parser: GoModParser;

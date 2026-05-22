@@ -1,5 +1,4 @@
 import { CppParser } from '../cppParser.js';
-import { ParsedDependency } from '../baseParser.js';
 
 describe('CppParser', () => {
   let parser: CppParser;

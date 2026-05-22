@@ -1,5 +1,4 @@
 import { BundlerParser } from '../bundlerParser.js';
-import { ParsedDependency } from '../baseParser.js';
 
 describe('BundlerParser', () => {
   let parser: BundlerParser;

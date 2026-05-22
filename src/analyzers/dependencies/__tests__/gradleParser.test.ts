@@ -1,5 +1,4 @@
 import { GradleParser } from '../gradleParser.js';
-import { ParsedDependency } from '../baseParser.js';
 
 describe('GradleParser', () => {
   let parser: GradleParser;
