@@ -177,7 +177,7 @@ Use this to prevent self-detection false positives in analyzer source files — 
 
 ## Adding a New MCP Tool
 
-1. Add the tool schema to `TOOL_DEFINITIONS` in `src/server/tools.ts`.
+1. Add the tool schema to `TOOL_DEFINITIONS` in `src/server/tools.ts`. Every tool **must** include an `annotations` object — set `readOnlyHint: true` for side-effect-free tools, or `destructiveHint: true` for tools that mutate server session state. The test suite (`src/server/__tests__/tools.test.ts`) enforces this and will fail CI if `annotations` is missing or unclassified.
 2. Add a `case 'tool_name':` in `handlers.ts` `CallToolRequestSchema` handler.
 3. Implement the handler function — in `handlers.ts` for core tools, or in a dedicated file (e.g., `configValidator.ts`, `dependencyHandlers.ts`) for domain-specific tools. Keep `handlers.ts` under 500 lines.
 4. Validate tool arguments using `inputParser.ts` helpers (`requireString`, `requireAbsolutePath`, `optionalAbsolutePath`, `requireRecord`, `optionalString`, `optionalNumber`, etc.) — never access `args` properties directly. Use `requireAbsolutePath`/`optionalAbsolutePath` for any path parameter.
