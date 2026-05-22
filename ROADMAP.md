@@ -287,7 +287,7 @@ Four parallelizable tickets to begin the cycle:
 - **TEC-43 (#181)** — `readOnlyHint` / `destructiveHint` annotations on all tool schemas. Highest-leverage standalone; benefits planner behavior immediately and unblocks both submission tracks.
 - **TEC-35 (#175)** — Scaffold `.claude-plugin/` manifest + own marketplace entry. ✅ Landed: `.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json` (plugin runs `npx -y tech-debt-mcp@latest`, repo doubles as its own marketplace).
 - **TEC-42 (#182)** — Add `manifest.json` and `@anthropic-ai/mcpb` packaging tooling. ✅ Landed: `mcpb/manifest.json` + `mcpb/icon.png` + `npm run mcpb:pack` producing a 3.9 MB `.mcpb` bundle, manifest sync test in `mcpbManifest.test.ts`.
-- **TEC-38 (#178)** — Stand up the docs site scaffold (unblocks the privacy policy URL). ✅ Landed: VitePress site under `docs/site/` with generated tool reference from `TOOL_DEFINITIONS`, mirrored `ARCHITECTURE`/`ROADMAP`/`CHANGELOG`, and `.github/workflows/docs.yml` deploying to `pierrejanineh.github.io/TechDebtMCP` on every push to `develop`.
+- **TEC-38 (#178)** — Stand up the docs site scaffold (unblocks the privacy policy URL). ✅ Landed: VitePress site under `docs/site/` with generated tool reference from `TOOL_DEFINITIONS`, mirrored `ARCHITECTURE`/`ROADMAP`/`CHANGELOG`, and `.github/workflows/docs.yml` deploying to `pierrejanineh.github.io/TechDebtMCP` on path-filtered pushes to `develop` (triggers on changes to `docs/site/**`, `src/server/tools.ts`, `scripts/gen-docs-tools.mjs`, root docs, and workflow files).
 
 #### Acceptance Criteria
 

@@ -19,7 +19,7 @@ All path parameters flow through `requireAbsolutePath` / `optionalAbsolutePath` 
 - Normalized via `path.resolve()` so `..` traversal collapses before use.
 - An empty string for an optional path is treated as `undefined`.
 
-Handler code must never reach into `args` directly. The convention is enforced across `handlers.ts`, `configValidator.ts`, `customRulesHandlers.ts`, and `dependencyHandlers.ts`.
+Path parameters must never be read from `args` directly — they must flow through `requireAbsolutePath` or `optionalAbsolutePath`. Non-path fields (e.g., `includeDev`, `severity`) may be read from the validated record returned by `requireRecord()` after the path is extracted. This convention is enforced across `handlers.ts`, `configValidator.ts`, `customRulesHandlers.ts`, and `dependencyHandlers.ts`.
 
 ## User-supplied regex
 
