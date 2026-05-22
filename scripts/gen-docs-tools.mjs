@@ -151,9 +151,35 @@ const mirrors = [
   { src: 'ROADMAP.md', dest: 'roadmap.md', title: 'Roadmap' },
   { src: 'CHANGELOG.md', dest: 'changelog.md', title: 'Changelog' },
 ];
+
+/** Route map for docs that are mirrored into the site — relative links to these get site-relative paths. */
+const mirroredRoutes = {
+  'ARCHITECTURE.md': '/architecture',
+  'ROADMAP.md': '/roadmap',
+  'CHANGELOG.md': '/changelog',
+};
+const githubBlobBase = 'https://github.com/PierreJanineh/TechDebtMCP/blob/develop';
+
+/**
+ * Rewrite relative Markdown links so they resolve correctly in the built site.
+ *
+ * - Links to the three mirrored docs → site-relative paths (e.g. `/roadmap`).
+ * - All other relative `.md` / file links → canonical GitHub blob URLs.
+ * - Absolute URLs and anchor-only fragments are left unchanged.
+ */
+const rewriteLinks = (content) =>
+  content.replace(/\[([^\]]*)\]\(([^)]+)\)/g, (match, text, href) => {
+    if (/^https?:\/\//.test(href) || href.startsWith('#')) return match;
+    const clean = href.split('#')[0];
+    const anchor = href.includes('#') ? href.slice(href.indexOf('#')) : '';
+    if (mirroredRoutes[clean]) return `[${text}](${mirroredRoutes[clean]}${anchor})`;
+    return `[${text}](${githubBlobBase}/${href})`;
+  });
+
 for (const { src, dest, title } of mirrors) {
-  const body = await readFile(resolve(repoRoot, src), 'utf8');
-  const frontmatter = `---\ntitle: ${title}\noutline: 2\neditLink: false\n---\n\n> Mirrored from [\`${src}\`](https://github.com/PierreJanineh/TechDebtMCP/blob/develop/${src}) at build time.\n\n`;
+  const raw = await readFile(resolve(repoRoot, src), 'utf8');
+  const body = rewriteLinks(raw);
+  const frontmatter = `---\ntitle: ${title}\noutline: 2\neditLink: false\n---\n\n> Mirrored from [\`${src}\`](${githubBlobBase}/${src}) at build time.\n\n`;
   await writeFile(resolve(siteRoot, dest), frontmatter + body, 'utf8');
 }
 

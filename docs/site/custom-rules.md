@@ -36,7 +36,7 @@ Custom rules let you define project-specific regex patterns without forking the 
 | ------------ | -------- | --------------------------------------------------------------------- |
 | `id`         | ✅       | Stable identifier; must be unique within the file.                    |
 | `name`       | ✅       | Short title shown in issue output.                                    |
-| `pattern`    | ✅       | Regex string, max **1,000 chars**. Use `escapeRegExp` if interpolating user data. |
+| `pattern`    | ✅       | Regex string, max **1,000 chars**. Escape regex metacharacters manually (e.g. `\.` for a literal dot). If generating `.techdebtrc.json` programmatically, use your language's regex-escape utility. |
 | `flags`      | —        | Subset of `dgimsuvy`. `u` and `v` are mutually exclusive.             |
 | `severity`   | ✅       | `critical` \| `high` \| `medium` \| `low`.                            |
 | `category`   | ✅       | One of the eight categories — see below.                              |
