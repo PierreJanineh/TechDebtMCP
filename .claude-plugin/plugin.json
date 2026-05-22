@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "tech-debt-mcp",
+  "displayName": "Tech Debt MCP",
+  "version": "2.0.2",
+  "description": "Static technical-debt analysis across 14 languages, exposed as MCP tools and resources (SQALE ratings, debt summaries, custom rules, dependency vulnerabilities).",
+  "author": {
+    "name": "Pierre Janineh",
+    "url": "https://github.com/PierreJanineh"
+  },
+  "homepage": "https://github.com/PierreJanineh/TechDebtMCP#readme",
+  "repository": "https://github.com/PierreJanineh/TechDebtMCP",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "tech-debt",
+    "static-analysis",
+    "code-quality",
+    "sqale"
+  ],
+  "mcpServers": {
+    "tech-debt-mcp": {
+      "command": "npx",
+      "args": ["-y", "tech-debt-mcp"]
+    }
+  }
+}
