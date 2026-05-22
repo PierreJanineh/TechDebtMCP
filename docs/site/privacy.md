@@ -7,7 +7,7 @@ outline: deep
 
 **Last updated:** 2026-05-22
 
-Tech Debt MCP is a Model Context Protocol (MCP) server that performs static analysis of source code on your local machine. This page is the canonical, hosted version of [`PRIVACY.md`](https://github.com/PierreJanineh/TechDebtMCP/blob/develop/PRIVACY.md) in the repository.
+Tech Debt MCP is a Model Context Protocol (MCP) server that performs static analysis of source code on your local machine. This page is a rendered mirror of [`PRIVACY.md`](https://github.com/PierreJanineh/TechDebtMCP/blob/develop/PRIVACY.md), the canonical policy in the repository.
 
 ## TL;DR
 

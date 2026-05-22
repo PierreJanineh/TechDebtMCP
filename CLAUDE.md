@@ -92,7 +92,7 @@ docs/site/                      # (repo root — VitePress docs site for GitHub 
 │   └── theme/                  # Custom slate palette + home-scoped --home-* vars
 ├── public/                     # Static assets (icon.png + inverted icon-light.png)
 ├── index.md                    # Landing hero
-├── install.md, languages.md, custom-rules.md, security.md
+├── install.md, languages.md, custom-rules.md, security.md, privacy.md
 └── tools/                      # gitignored — regenerated each build by gen-docs-tools.mjs
 scripts/
 ├── build-mcpb.mjs              # `npm run mcpb:pack` driver — stages, runs `npm ci --omit=dev --ignore-scripts`, packs
