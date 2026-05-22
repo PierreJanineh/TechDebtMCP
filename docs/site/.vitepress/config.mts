@@ -58,6 +58,7 @@ export default defineConfig({
           { text: 'Architecture', link: '/architecture' },
           { text: 'Roadmap', link: '/roadmap' },
           { text: 'Changelog', link: '/changelog' },
+          { text: 'Privacy Policy', link: '/privacy' },
         ],
       },
     ],
@@ -77,6 +78,7 @@ export default defineConfig({
             { text: 'Tool Reference', link: '/tools/' },
             { text: 'Custom Rules', link: '/custom-rules' },
             { text: 'Security Model', link: '/security' },
+            { text: 'Privacy Policy', link: '/privacy' },
           ],
         },
         {
@@ -97,7 +99,10 @@ export default defineConfig({
     },
     search: { provider: 'local' },
     footer: {
-      message: 'Released under the MIT License.',
+      // Footer message accepts HTML — surfaces the privacy policy link
+      // on every page (directory reviewers look here first).
+      message:
+        'Released under the MIT License · <a href="/TechDebtMCP/privacy">Privacy Policy</a>',
       // Footer copyright accepts HTML — embeds the author's logo (served
       // from /public/pj-logo.svg) as a small image-link to their portfolio.
       copyright:

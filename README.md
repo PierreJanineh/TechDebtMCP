@@ -566,6 +566,11 @@ npm test           # Run tests
 - **[RELEASE.md](RELEASE.md)** - Release process and versioning guide
 - **[TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md)** - Self-scan results with before/after comparison
 - **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** - Community standards
+- **[PRIVACY.md](PRIVACY.md)** - Privacy policy (also hosted at <https://pierrejanineh.github.io/TechDebtMCP/privacy>)
+
+## Privacy
+
+Tech Debt MCP runs entirely on your machine. Once installed, it reads files you pass it, returns issues to your MCP client over the local stdio transport, and does nothing else — the server itself makes no outbound network calls, has no telemetry, no analytics, and uses no third-party services. Installation via `npm`/`npx` does contact the npm registry as standard package-manager behavior; the MCPB bundle ships pre-installed and needs no further network access. See [`PRIVACY.md`](PRIVACY.md) or the hosted policy at <https://pierrejanineh.github.io/TechDebtMCP/privacy> for details.
 
 ## Contributing
 
