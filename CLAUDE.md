@@ -81,7 +81,24 @@ src/
 .claude-plugin/                 # (repo root — sibling of src/)
 ├── plugin.json                 # Claude Code plugin manifest (mcpServers → npx -y tech-debt-mcp@latest)
 └── marketplace.json            # Marketplace entry so this repo doubles as its own marketplace
+mcpb/                           # (repo root — Claude Desktop one-click bundle)
+├── manifest.json               # MCPB v0.3 manifest (mirrors TOOL_DEFINITIONS, version pinned to package.json)
+├── icon.png                    # 512×512 bundle icon
+├── staging/                    # gitignored — clean prod tree built by scripts/build-mcpb.mjs
+└── tech-debt-mcp-<version>.mcpb # gitignored artifact, attached to GitHub Releases
+scripts/
+└── build-mcpb.mjs              # `npm run mcpb:pack` driver — stages, runs `npm ci --omit=dev`, packs
 ```
+
+### Building the MCPB bundle
+
+```bash
+npm install --include=dev --ignore-scripts
+npm run mcpb:pack
+# -> mcpb/tech-debt-mcp-<version>.mcpb
+```
+
+The build script asserts `mcpb/manifest.json.version === package.json.version` — bump both in lockstep at release time. `src/server/__tests__/mcpbManifest.test.ts` enforces the manifest's tool list matches `TOOL_DEFINITIONS`, so adding/removing a tool requires updating `mcpb/manifest.json` in the same PR.
 
 ### Request flow
 

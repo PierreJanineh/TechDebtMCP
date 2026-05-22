@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Tool annotations** (`readOnlyHint` / `destructiveHint`) on every entry in `TOOL_DEFINITIONS`. Read tools are flagged `readOnlyHint: true`; `add_custom_rule` and `remove_custom_rule` are flagged `destructiveHint: true`. README tool table gains a "Type" column documenting Read vs Write. (TEC-43)
 - **Claude Code plugin manifest** (TEC-35, #175) — `.claude-plugin/plugin.json` declares the plugin and wires `mcpServers.tech-debt-mcp` to `npx -y tech-debt-mcp@latest` (no source bundling, tracks the published npm release). `.claude-plugin/marketplace.json` lets the repo double as its own marketplace, so users can run `/plugin marketplace add PierreJanineh/TechDebtMCP` then `/plugin install tech-debt-mcp@techdebtmcp`.
+- **MCPB bundle tooling** (TEC-42, #182) — `mcpb/manifest.json` + `mcpb/icon.png` describe the server for Claude Desktop's one-click bundle installer. New `npm run mcpb:pack` script (driven by `scripts/build-mcpb.mjs`) stages a clean prod tree (`npm ci --omit=dev`) and produces `mcpb/tech-debt-mcp-<version>.mcpb` (3.9 MB packed). A Jest test (`src/server/__tests__/mcpbManifest.test.ts`) asserts the manifest's tool list and version stay in sync with `TOOL_DEFINITIONS` and `package.json`.
 
 ## [2.0.2] - 2026-04-10
 

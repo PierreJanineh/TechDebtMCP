@@ -16,6 +16,7 @@
     "test": "jest",
     "lint": "eslint src/**/*.ts",
     "prepare": "npm run build",
+    "mcpb:pack": "node scripts/build-mcpb.mjs",
     "webhook": "PROJECT_ROOT=\"$(pwd)\"; if [ -z \"${PR_AUTOMATION_ROOT}\" ]; then echo 'Error: PR_AUTOMATION_ROOT is not set. Export it to the root of your pr-automation repo (containing scripts/webhook-listener.mjs).' >&2; exit 1; fi; node \"${PR_AUTOMATION_ROOT}/scripts/webhook-listener.mjs\""
   },
   "keywords": [
@@ -56,6 +57,7 @@
     "yaml": "^2.3.4"
   },
   "devDependencies": {
+    "@anthropic-ai/mcpb": "^2.1.2",
     "@types/jest": "^30.0.0",
     "@types/node": "^20.10.0",
     "@types/semver": "^7.5.6",

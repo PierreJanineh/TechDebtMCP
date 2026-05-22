@@ -11,3 +11,5 @@ coverage/
 .idea/
 .claude/
 *.local.*
+mcpb/staging/
+mcpb/*.mcpb
