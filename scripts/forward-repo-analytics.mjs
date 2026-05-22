@@ -13,6 +13,23 @@
  *   GITHUB_REPOSITORY    owner/repo (provided by Actions)
  *   PLAUSIBLE_DOMAIN     Plausible site name (e.g. pierrejanineh.github.io)
  *   PLAUSIBLE_ENDPOINT   POST URL (e.g. https://plausible.pierrejanineh.com/api/event)
+ *
+ * Two Plausible CE gotchas to remember when reading the dashboard:
+ *
+ * 1. Goals are prospective-only. Custom-event names are stored regardless,
+ *    but they only roll up into the Goals widget once a matching goal has
+ *    been registered in Site Settings → Goals. Register the four event
+ *    names below BEFORE the first run, otherwise the first day's data is
+ *    invisible (still in the events table, just not aggregated).
+ *
+ *    Goals to register: `Repo Daily Views`, `Repo Daily Clones`,
+ *    `Repo Referrer`, `Repo Path`.
+ *
+ * 2. The dashboard's date filter is receive-time, never event props. To
+ *    see per-day historic breakdowns, set the filter to "Today" (or
+ *    "Last 30 days"), open the goal, then break down by the `date`
+ *    custom property — that's where the original GitHub-traffic day
+ *    survives.
  */
 
 const {

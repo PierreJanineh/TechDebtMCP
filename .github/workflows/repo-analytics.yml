@@ -8,6 +8,15 @@ name: Repo Analytics → Plausible
 # day and send the *previous* UTC day's totals — multiple runs on the same
 # day will produce duplicate events.
 #
+# Plausible CE dashboard quirks (full notes in
+# scripts/forward-repo-analytics.mjs):
+#   - Goals must be registered BEFORE events arrive; pre-goal events stay
+#     invisible in the Goals widget. Register `Repo Daily Views`,
+#     `Repo Daily Clones`, `Repo Referrer`, `Repo Path` in Site Settings.
+#   - The dashboard date filter is receive-time, not the `date` event prop.
+#     Use "Today" / "Last 30 days" and break a goal down by the `date` prop
+#     to see historic per-day distribution.
+#
 # Note on injection safety: this workflow uses only `secrets.*` and
 # `github.repository` (a static org/repo string) — no untrusted event
 # payloads are interpolated into shell commands.
