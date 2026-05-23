@@ -366,6 +366,36 @@ Create a `.techdebtrc.json` file in your project root:
 }
 ```
 
+### Language Overrides
+
+Override rules, severity, or file extensions on a per-language basis using `languageOverrides`. Keys must be valid [supported language](#languages) identifiers.
+
+```json
+{
+  "languageOverrides": {
+    "typescript": {
+      "rules": {
+        "maxFileLines": 800,
+        "maxFunctionLines": 80
+      },
+      "severity": {
+        "todo-comment": "high"
+      }
+    },
+    "python": {
+      "extensions": [".pyw"],
+      "rules": {
+        "maxComplexity": 15
+      }
+    }
+  }
+}
+```
+
+- **`rules`** — per-language thresholds (override the top-level `rules` for matching files).
+- **`severity`** — per-language rule severity overrides.
+- **`extensions`** — additional file extensions (beyond the defaults) to attribute to this language.
+
 ### Rule Exclusions
 
 Use `ruleExclusions` to suppress specific rules for files matching glob patterns. Patterns use forward slashes (`/`) on all platforms. Use `**/` prefixed patterns (e.g., `**/src/analyzers/**`) for reliable matching regardless of path format.

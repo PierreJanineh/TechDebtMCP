@@ -35,13 +35,14 @@ function getOverrideExtensions(config: TechDebtConfig): string[] {
   const overrides = config.languageOverrides;
   if (!overrides) return [];
   const base = getAllExtensions();
-  const extra: string[] = [];
+  const extra = new Set<string>();
   for (const partial of Object.values(overrides)) {
-    for (const ext of partial.extensions ?? []) {
-      if (!base.includes(ext)) extra.push(ext);
+    for (const ext of partial?.extensions ?? []) {
+      const normalized = ext.toLowerCase();
+      if (!base.includes(normalized)) extra.add(normalized);
     }
   }
-  return extra;
+  return Array.from(extra);
 }
 
 /**
@@ -59,7 +60,7 @@ function detectLanguageWithOverrides(
       ? filePath.slice(filePath.lastIndexOf('.')).toLowerCase()
       : '';
     for (const [lang, partial] of Object.entries(overrides)) {
-      if (partial.extensions?.includes(ext)) {
+      if (partial?.extensions?.map(e => e.toLowerCase()).includes(ext) && lang in LANGUAGE_CONFIGS) {
         return lang as SupportedLanguage;
       }
     }
