@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
 import type { Stats } from 'node:fs';
+import { McpError } from '@modelcontextprotocol/sdk/types.js';
 import { handleExecuteCustomRules } from '../customRulesHandlers.js';
 import { CustomRulesEngine, MAX_FILE_SIZE_BYTES } from '../../core/customRulesEngine.js';
 import { getFileStats, readFile } from '../../utils/fileUtils.js';
@@ -53,7 +54,8 @@ describe('handleExecuteCustomRules — language inference (TEC-50)', () => {
     expect(res.content[0].text).toContain('no-foo');
   });
 
-  it('does not regress the file-size guard', () => {
-    expect(MAX_FILE_SIZE_BYTES).toBeGreaterThan(0);
+  it('rejects files that exceed MAX_FILE_SIZE_BYTES', async () => {
+    mockGetFileStats.mockResolvedValue({ size: MAX_FILE_SIZE_BYTES + 1, isFile: () => true } as unknown as Stats);
+    await expect(handleExecuteCustomRules(engine, { path: '/tmp/sample.ts' })).rejects.toThrow(McpError);
   });
 });
