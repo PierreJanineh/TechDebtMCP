@@ -1,5 +1,5 @@
 ---
-description: Analyze a single source file for technical debt and print a line-by-line breakdown of issues found.
+description: Analyze a single source file for technical debt and print a line-numbered issue table of findings sorted by severity.
 argument-hint: "<absolute-file-path>"
 allowed-tools: ["mcp__tech-debt-mcp__analyze_file"]
 ---

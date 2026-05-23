@@ -56,7 +56,7 @@ The plugin registers three slash commands for on-demand invocation:
 | Command | Argument | Purpose |
 |---------|----------|---------|
 | `/techdebt-scan [project-path]` | Optional absolute path (defaults to cwd) | Full project scan — health score, SQALE rating, issue breakdown, and top 5 issues by severity |
-| `/techdebt-file <file-path>` | Absolute path to a source file | Single-file analysis — line-by-line issue table sorted by severity |
+| `/techdebt-file <file-path>` | Absolute path to a source file | Single-file analysis — line-numbered issue table sorted by severity |
 | `/techdebt-summary [project-path]` | Optional absolute path (defaults to cwd) | Aggregate dashboard — health score, SQALE rating, counts by severity, remediation estimate |
 
 Commands delegate to the MCP tools listed above — no logic is duplicated.
