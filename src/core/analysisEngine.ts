@@ -254,8 +254,9 @@ export class AnalysisEngine {
 
   /**
    * Analyze a single file, returning filtered issues or null on failure.
-   * The detected language and a pre-merged config (with languageOverrides applied)
-   * are passed in so callers drive both language resolution and config merging.
+   * The caller passes the detected language and the base merged config; this
+   * method applies the per-language override internally via mergeLanguageOverride()
+   * before creating the analyzer, so callers are not responsible for pre-merging.
    */
   private async analyzeFileSafe(
     file: string,

@@ -25,9 +25,11 @@ jest.mock('../../config/languages.js', () => ({
 }));
 
 import { getProjectFiles, loadConfig } from '../../utils/fileUtils.js';
+import { createAnalyzer } from '../../analyzers/index.js';
 
 const mockGetProjectFiles = getProjectFiles as jest.MockedFunction<typeof getProjectFiles>;
 const mockLoadConfig = loadConfig as jest.MockedFunction<typeof loadConfig>;
+const mockCreateAnalyzer = createAnalyzer as jest.MockedFunction<typeof createAnalyzer>;
 const mockAnalyzeFile = mockAnalyze as unknown as jest.MockedFunction<(file: string, content: string) => Promise<FileAnalysisResult>>;
 
 const FILES = [
@@ -101,5 +103,95 @@ describe('AnalysisEngine.analyzeProject – include glob POSIX normalization', (
     const analyzed = mockAnalyzeFile.mock.calls.map(c => c[0] as string);
     expect(analyzed).toContain('/project/src/foo.ts');
     expect(analyzed).toContain('/project/src/bar.ts');
+  });
+});
+
+describe('AnalysisEngine.analyzeProject – languageOverrides extensions', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetProjectFiles.mockResolvedValue(FILES);
+    mockLoadConfig.mockResolvedValue({} as TechDebtConfig);
+    mockAnalyzeFile.mockResolvedValue({ issues: [] } as unknown as FileAnalysisResult);
+  });
+
+  it('passes extra override extensions to getProjectFiles', async () => {
+    const config: TechDebtConfig = {
+      languageOverrides: {
+        typescript: { extensions: ['.mts'] },
+      },
+    };
+    const engine = new AnalysisEngine(config);
+    await engine.analyzeProject({ path: '/project' });
+    const [, extensions] = mockGetProjectFiles.mock.calls[0] as [string, string[], unknown];
+    expect(extensions).toContain('.ts');   // from base LANGUAGE_CONFIGS
+    expect(extensions).toContain('.mts');  // from languageOverrides
+  });
+
+  it('does not duplicate extensions already in the base list', async () => {
+    const config: TechDebtConfig = {
+      languageOverrides: {
+        typescript: { extensions: ['.ts'] }, // .ts already in base
+      },
+    };
+    const engine = new AnalysisEngine(config);
+    await engine.analyzeProject({ path: '/project' });
+    const [, extensions] = mockGetProjectFiles.mock.calls[0] as [string, string[], unknown];
+    const count = extensions.filter(e => e === '.ts').length;
+    expect(count).toBe(1);
+  });
+});
+
+describe('AnalysisEngine.analyzeProject – languageOverrides language detection', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockLoadConfig.mockResolvedValue({} as TechDebtConfig);
+    mockAnalyzeFile.mockResolvedValue({ issues: [] } as unknown as FileAnalysisResult);
+  });
+
+  it('override extension takes precedence over static detectLanguageFromExtension', async () => {
+    // .myts is not in the base config; detectLanguageFromExtension returns null for it
+    mockGetProjectFiles.mockResolvedValue(['/project/src/foo.myts']);
+    const config: TechDebtConfig = {
+      languageOverrides: {
+        typescript: { extensions: ['.myts'] },
+      },
+    };
+    const engine = new AnalysisEngine(config);
+    await engine.analyzeProject({ path: '/project' });
+    // createAnalyzer should be invoked with the override-detected language
+    expect(mockCreateAnalyzer).toHaveBeenCalledWith('typescript', expect.any(Object));
+  });
+});
+
+describe('AnalysisEngine.analyzeProject – languageOverrides config merging', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetProjectFiles.mockResolvedValue(['/project/src/foo.ts']);
+    mockLoadConfig.mockResolvedValue({} as TechDebtConfig);
+    mockAnalyzeFile.mockResolvedValue({ issues: [] } as unknown as FileAnalysisResult);
+  });
+
+  it('per-language severity override is merged into the config passed to createAnalyzer', async () => {
+    const config: TechDebtConfig = {
+      languageOverrides: {
+        typescript: { severity: { 'todo-comment': 'critical' } },
+      },
+    };
+    const engine = new AnalysisEngine(config);
+    await engine.analyzeProject({ path: '/project' });
+    const calledConfig = (mockCreateAnalyzer.mock.calls[0] as unknown[])[1] as TechDebtConfig;
+    expect(calledConfig.severity?.['todo-comment']).toBe('critical');
+  });
+
+  it('per-language rules override is merged into the config passed to createAnalyzer', async () => {
+    const config: TechDebtConfig = {
+      languageOverrides: {
+        typescript: { rules: { maxFileLines: 200 } },
+      },
+    };
+    const engine = new AnalysisEngine(config);
+    await engine.analyzeProject({ path: '/project' });
+    const calledConfig = (mockCreateAnalyzer.mock.calls[0] as unknown[])[1] as TechDebtConfig;
+    expect(calledConfig.rules?.maxFileLines).toBe(200);
   });
 });
