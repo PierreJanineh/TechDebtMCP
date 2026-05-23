@@ -11,7 +11,7 @@ import {
   DebtCategory,
 } from '../types/index.js';
 import { minimatch } from 'minimatch';
-import { createAnalyzer } from '../analyzers/index.js';
+import { analyzeFileContent } from '../analyzers/index.js';
 import { readFile } from '../utils/fileUtils.js';
 import {
   LANGUAGE_CONFIGS,
@@ -38,55 +38,45 @@ function isValidExtension(ext: string): boolean {
 }
 
 /**
- * Collect extra file extensions declared in languageOverrides that are not
- * already covered by the static LANGUAGE_CONFIGS. Only extensions that are
- * strings, have a leading '.', and contain no glob metacharacters are accepted;
- * invalid values are silently skipped so a malformed config cannot corrupt the
- * discovery glob.
+ * Build a precomputed Map<extension, SupportedLanguage> from languageOverrides.
+ * Uses Object.hasOwn to check only own-property language keys (prevents prototype-
+ * chain false positives for keys like "toString" or "__proto__"). Only extensions
+ * that pass string-type, leading-dot, and glob-metacharacter validation are
+ * included. Called once per analyzeProject() run for O(1) per-file lookups.
  */
-function getOverrideExtensions(config: TechDebtConfig): string[] {
+function buildOverrideExtensionMap(config: TechDebtConfig): Map<string, SupportedLanguage> {
+  const overrideMap = new Map<string, SupportedLanguage>();
   const overrides = config.languageOverrides;
-  if (!overrides) return [];
-  const base = getAllExtensions();
-  const extra = new Set<string>();
+  if (!overrides) return overrideMap;
   for (const [lang, partial] of Object.entries(overrides)) {
-    if (!(lang in LANGUAGE_CONFIGS)) continue;
+    if (!Object.hasOwn(LANGUAGE_CONFIGS, lang)) continue;
     if (!Array.isArray(partial?.extensions)) continue;
     for (const ext of partial.extensions) {
       if (typeof ext !== 'string') continue;
       const normalized = ext.toLowerCase();
       if (!isValidExtension(normalized)) continue;
-      if (!base.includes(normalized)) extra.add(normalized);
+      overrideMap.set(normalized, lang as SupportedLanguage);
     }
   }
-  return Array.from(extra);
+  return overrideMap;
 }
 
 /**
- * Detect the language for a file path, consulting languageOverrides extensions
- * before falling back to the static LANGUAGE_CONFIGS map.
- * Override wins when the file extension matches an override's extensions array.
+ * Detect the language for a file path using a precomputed override extension map.
+ * Override wins when the file extension matches an entry in the map; otherwise
+ * falls back to the static LANGUAGE_CONFIGS map via detectLanguageFromExtension().
+ * The map is built once per analyzeProject() run, making this O(1) per file.
  */
 function detectLanguageWithOverrides(
   filePath: string,
-  config: TechDebtConfig
+  overrideMap: Map<string, SupportedLanguage>
 ): SupportedLanguage | null {
-  const overrides = config.languageOverrides;
-  if (overrides) {
+  if (overrideMap.size > 0) {
     const ext = filePath.includes('.')
       ? filePath.slice(filePath.lastIndexOf('.')).toLowerCase()
       : '';
-    for (const [lang, partial] of Object.entries(overrides)) {
-      if (
-        lang in LANGUAGE_CONFIGS &&
-        Array.isArray(partial?.extensions) &&
-        partial.extensions.some(
-          e => typeof e === 'string' && isValidExtension(e.toLowerCase()) && e.toLowerCase() === ext
-        )
-      ) {
-        return lang as SupportedLanguage;
-      }
-    }
+    const lang = overrideMap.get(ext);
+    if (lang) return lang;
   }
   return detectLanguageFromExtension(filePath);
 }
@@ -160,10 +150,12 @@ export class AnalysisEngine {
     const projectConfig = await loadConfig(projectPath);
     const mergedConfig = { ...this.config, ...projectConfig };
 
-    // Get all relevant file extensions, including any added by languageOverrides
+    // Build override map once — O(1) per-file language detection in both loops below
+    const overrideMap = buildOverrideExtensionMap(mergedConfig);
+    const baseExtensions = getAllExtensions();
     const extensions = [
-      ...getAllExtensions(),
-      ...getOverrideExtensions(mergedConfig),
+      ...baseExtensions,
+      ...Array.from(overrideMap.keys()).filter(ext => !baseExtensions.includes(ext)),
     ];
 
     // Find all files to analyze
@@ -192,7 +184,7 @@ export class AnalysisEngine {
     // Detect languages used in project (override-aware)
     const languagesUsed = new Set<SupportedLanguage>();
     for (const file of filesToAnalyze) {
-      const lang = detectLanguageWithOverrides(file, mergedConfig);
+      const lang = detectLanguageWithOverrides(file, overrideMap);
       if (lang) {
         languagesUsed.add(lang);
       }
@@ -208,7 +200,7 @@ export class AnalysisEngine {
     let analyzedCount = 0;
 
     for (const file of filesToAnalyze) {
-      const lang = detectLanguageWithOverrides(file, mergedConfig);
+      const lang = detectLanguageWithOverrides(file, overrideMap);
       if (!lang || !targetLanguages.has(lang)) continue;
 
       const fileIssues = await this.analyzeFileSafe(file, projectPath, lang, mergedConfig, options);
@@ -268,8 +260,7 @@ export class AnalysisEngine {
     try {
       const effectiveConfig = mergeLanguageOverride(config, language);
       const content = await readFile(file);
-      const analyzer = createAnalyzer(language, effectiveConfig);
-      const result = await analyzer.analyze(file, content);
+      const result = await analyzeFileContent(file, content, language, effectiveConfig);
       const relativePath = getRelativePath(projectPath, file);
       const issues = result.issues.map(issue => ({ ...issue, file: relativePath }));
       return this.filterIssues(issues, options);
