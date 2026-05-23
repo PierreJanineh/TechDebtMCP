@@ -160,8 +160,17 @@ body:has(.VPHome) .VPFooter a:hover {
 .chat-turn.user {
   justify-content: flex-end;
 }
+/* Hide the user avatar visually but keep it accessible to screen readers */
 .chat-turn.user .avatar {
-  display: none;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 .chat-turn.user .bubble {
   max-width: 75%;

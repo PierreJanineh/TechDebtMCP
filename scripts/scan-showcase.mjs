@@ -28,6 +28,14 @@ const cacheDir = resolve(repoRoot, 'node_modules/.cache/td-showcase');
 
 if (process.env.SKIP_SHOWCASE === '1') {
   console.log('[scan-showcase] SKIP_SHOWCASE=1 — skipping showcase generation.');
+  // Emit a minimal examples/index.md so nav/sidebar links remain valid when
+  // showcase generation is bypassed (offline builds, CI opt-out, etc.).
+  await mkdir(resolve(repoRoot, 'docs/site/examples'), { recursive: true });
+  await writeFile(
+    resolve(repoRoot, 'docs/site/examples/index.md'),
+    `---\ntitle: Example Scans\n---\n\n# Example Scans\n\nShowcase generation was skipped (\`SKIP_SHOWCASE=1\`).\nRun \`npm run docs:scan-showcase\` to generate the full example pages.\n`,
+    'utf-8',
+  );
   process.exit(0);
 }
 
