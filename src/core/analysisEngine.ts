@@ -21,7 +21,7 @@ import {
   getSupportedLanguages,
 } from '../config/languages.js';
 import { SQALEEngine } from './sqaleEngine.js';
-import { CustomRulesEngine } from './customRulesEngine.js';
+import { CustomRulesEngine, VALID_SEVERITIES, VALID_CATEGORIES } from './customRulesEngine.js';
 import {
   getProjectFiles,
   loadConfig,
@@ -160,10 +160,16 @@ export class AnalysisEngine {
     let customRulesEngine: CustomRulesEngine | null = null;
     if (Array.isArray(mergedConfig.customPatterns) && mergedConfig.customPatterns.length > 0) {
       const validPatterns = mergedConfig.customPatterns.filter(
-        (p): p is CustomPattern =>
-          p !== null &&
-          typeof p === 'object' &&
-          typeof (p as CustomPattern).id === 'string'
+        (p): p is CustomPattern => {
+          if (p === null || typeof p !== 'object' || Array.isArray(p)) return false;
+          const entry = p as unknown as Record<string, unknown>;
+          return (
+            typeof entry['id'] === 'string' &&
+            typeof entry['pattern'] === 'string' &&
+            VALID_SEVERITIES.includes(entry['severity'] as Severity) &&
+            VALID_CATEGORIES.includes(entry['category'] as DebtCategory)
+          );
+        }
       );
       if (validPatterns.length > 0) {
         customRulesEngine = new CustomRulesEngine(validPatterns);

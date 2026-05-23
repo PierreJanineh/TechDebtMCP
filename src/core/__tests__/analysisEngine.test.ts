@@ -265,4 +265,45 @@ describe('AnalysisEngine.analyzeProject – customPatterns integration', () => {
     const issue = report.issues.find(i => i.rule === 'no-forbidden');
     expect(issue?.severity).toBe('critical');
   });
+
+  it('silently drops entries with invalid severity and preserves valid ones', async () => {
+    const config = {
+      customPatterns: [
+        { id: 'bad-severity', pattern: 'FORBIDDEN', severity: 'INVALID', category: 'code-quality', message: 'bad' },
+        { id: 'good-rule', pattern: 'FORBIDDEN', severity: 'high', category: 'code-quality', message: 'good' },
+      ],
+    } as unknown as TechDebtConfig;
+    const { readFile } = jest.requireMock('../../utils/fileUtils.js') as jest.Mocked<typeof import('../../utils/fileUtils.js')>;
+    readFile.mockResolvedValue('const x = "FORBIDDEN";');
+    const engine = new AnalysisEngine(config);
+    const report = await engine.analyzeProject({ path: '/project' });
+    expect(report.issues.find(i => i.rule === 'bad-severity')).toBeUndefined();
+    expect(report.issues.find(i => i.rule === 'good-rule')).toBeDefined();
+  });
+
+  it('silently drops entries with invalid category', async () => {
+    const config = {
+      customPatterns: [
+        { id: 'bad-category', pattern: 'FORBIDDEN', severity: 'high', category: 'NOT_A_CATEGORY', message: 'bad' },
+      ],
+    } as unknown as TechDebtConfig;
+    const { readFile } = jest.requireMock('../../utils/fileUtils.js') as jest.Mocked<typeof import('../../utils/fileUtils.js')>;
+    readFile.mockResolvedValue('const x = "FORBIDDEN";');
+    const engine = new AnalysisEngine(config);
+    const report = await engine.analyzeProject({ path: '/project' });
+    expect(report.issues.find(i => i.rule === 'bad-category')).toBeUndefined();
+  });
+
+  it('silently drops entries missing required pattern field', async () => {
+    const config = {
+      customPatterns: [
+        { id: 'no-pattern-field', severity: 'high', category: 'code-quality', message: 'bad' },
+      ],
+    } as unknown as TechDebtConfig;
+    const { readFile } = jest.requireMock('../../utils/fileUtils.js') as jest.Mocked<typeof import('../../utils/fileUtils.js')>;
+    readFile.mockResolvedValue('const x = "anything";');
+    const engine = new AnalysisEngine(config);
+    const report = await engine.analyzeProject({ path: '/project' });
+    expect(report.issues.find(i => i.rule === 'no-pattern-field')).toBeUndefined();
+  });
 });

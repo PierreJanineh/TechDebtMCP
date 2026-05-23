@@ -4,12 +4,12 @@ import { buildBlockSuppressionMap, isLineSuppressed } from '../analyzers/baseAna
 /**
  * Valid severity levels for validation
  */
-const VALID_SEVERITIES: Severity[] = ['low', 'medium', 'high', 'critical'];
+export const VALID_SEVERITIES: Severity[] = ['low', 'medium', 'high', 'critical'];
 
 /**
  * Valid debt categories for validation
  */
-const VALID_CATEGORIES: DebtCategory[] = [
+export const VALID_CATEGORIES: DebtCategory[] = [
   'dependency',
   'code-quality',
   'architecture',
