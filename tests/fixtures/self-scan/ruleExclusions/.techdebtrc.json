@@ -1,0 +1,5 @@
+{
+  "ruleExclusions": {
+    "console-log": ["**/excluded/**"]
+  }
+}
