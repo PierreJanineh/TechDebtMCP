@@ -40,10 +40,37 @@ function readJson(path) {
 function assertVersionsMatch() {
   const pkg = readJson(join(REPO_ROOT, 'package.json'));
   const manifest = readJson(join(MCPB_DIR, 'manifest.json'));
+  const plugin = readJson(join(REPO_ROOT, '.claude-plugin', 'plugin.json'));
   if (pkg.version !== manifest.version) {
     throw new Error(
       `Version mismatch: package.json=${pkg.version}, mcpb/manifest.json=${manifest.version}. ` +
         `Update mcpb/manifest.json before packing.`,
+    );
+  }
+  if (pkg.version !== plugin.version) {
+    throw new Error(
+      `Version mismatch: package.json=${pkg.version}, .claude-plugin/plugin.json=${plugin.version}. ` +
+        `Update .claude-plugin/plugin.json before packing.`,
+    );
+  }
+  const marketplace = readJson(join(REPO_ROOT, '.claude-plugin', 'marketplace.json'));
+  if (!Array.isArray(marketplace.plugins)) {
+    throw new Error(
+      `.claude-plugin/marketplace.json is missing a top-level "plugins" array.`,
+    );
+  }
+  const marketplaceEntry = marketplace.plugins.find((p) => p.name === pkg.name);
+  if (!marketplaceEntry) {
+    throw new Error(
+      `No marketplace plugin entry found with name "${pkg.name}" in .claude-plugin/marketplace.json.`,
+    );
+  }
+  if (marketplace.version !== pkg.version || marketplaceEntry.version !== pkg.version) {
+    throw new Error(
+      `Version mismatch: package.json=${pkg.version}, ` +
+        `.claude-plugin/marketplace.json=${marketplace.version}, ` +
+        `plugin entry=${marketplaceEntry.version}. ` +
+        `Update .claude-plugin/marketplace.json before packing.`,
     );
   }
   return pkg.version;

@@ -1,5 +1,6 @@
 {
   "name": "techdebtmcp",
+  "version": "2.0.2",
   "description": "Marketplace hosting the tech-debt-mcp plugin — static technical-debt analysis exposed as MCP tools and resources.",
   "owner": {
     "name": "Pierre Janineh",
@@ -8,18 +9,24 @@
   "plugins": [
     {
       "name": "tech-debt-mcp",
+      "displayName": "Tech Debt MCP",
+      "version": "2.0.2",
       "source": "./",
       "description": "Static technical-debt analysis across 14 languages, exposed as MCP tools and resources.",
-      "homepage": "https://github.com/PierreJanineh/TechDebtMCP#readme",
+      "homepage": "https://pierrejanineh.github.io/TechDebtMCP/",
+      "repository": "https://github.com/PierreJanineh/TechDebtMCP",
       "license": "MIT",
+      "category": "developer-tools",
       "author": {
         "name": "Pierre Janineh"
       },
-      "keywords": [
+      "tags": [
         "mcp",
         "tech-debt",
         "static-analysis",
-        "code-quality"
+        "code-quality",
+        "sqale",
+        "dependency-scanning"
       ]
     }
   ]
