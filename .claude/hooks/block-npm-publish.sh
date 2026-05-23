@@ -35,11 +35,13 @@ fi
 # first flag). Strip all such allowlisted invocations and re-check: if any
 # npm publish remains, it is a bare publish that must be blocked.
 #
-# The sed pattern removes npm publish … up to the next command separator
-# (or end of string), provided --dry-run or --help appears somewhere in
-# that segment.
+# The sed pattern strips each npm publish … segment (up to the next command
+# separator or end of string) when --dry-run or --help appears anywhere
+# in that segment — including after flags that take a value (e.g.
+# --access public, --tag next, --otp 123456). The token class [^;&|[:space:]]+
+# matches any non-separator, non-space argument.
 STRIPPED=$(echo "$COMMAND" | \
-  sed -E 's/(^|[;&|[:space:]])npm[[:space:]]+publish([[:space:]]+--[a-z][a-z-]*)*[[:space:]]+(--dry-run|--help)([[:space:]]+[^;&|]*)?([;&|]|$)/\1/g' | \
+  sed -E 's/(^|[;&|[:space:]])npm[[:space:]]+publish([[:space:]]+[^;&|[:space:]]+)*[[:space:]]+(--dry-run|--help)([[:space:]]+[^;&|]*)?([;&|]|$)/\1/g' | \
   sed -E 's/(^|[;&|[:space:]])npm[[:space:]]+publish[[:space:]]+(--dry-run|--help)([[:space:]]|$)/ /g')
 if ! echo "$STRIPPED" | grep -qE '(^|[;&|[:space:]])npm[[:space:]]+publish([[:space:]]|$)'; then
   exit 0
