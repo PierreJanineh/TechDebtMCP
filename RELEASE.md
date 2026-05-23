@@ -37,17 +37,20 @@ This guide provides step-by-step instructions for releasing new versions of Tech
 
 ## Pre-Release Checklist
 
-Before starting the release process, ensure:
+Before tagging a release on a `release/vX.Y.Z` branch, ensure:
 
-- [ ] All planned features/fixes are merged to `develop` branch
-- [ ] All tests pass locally: `npm test`
-- [ ] Build succeeds locally: `npm run build`
-- [ ] CHANGELOG.md is updated with new version details
-- [ ] README.md reflects any new features or changes
-- [ ] ARCHITECTURE.md is updated if architecture changed
-- [ ] No uncommitted changes: `git status`
-- [ ] You're on the `develop` branch: `git branch --show-current`
-- [ ] Develop branch is up to date: `git pull origin develop`
+- [ ] All planned features/fixes are merged to `develop`, and the release branch is cut from develop
+- [ ] Lint clean: `npm run lint`
+- [ ] Typecheck clean: `npm run typecheck`
+- [ ] All tests pass: `npm test`
+- [ ] Build succeeds: `npm run build`
+- [ ] `package.json` version bumped on the release branch
+- [ ] `mcpb/manifest.json` version matches `package.json` (build asserts equality)
+- [ ] CHANGELOG.md `[Unreleased]` block moved to `[vX.Y.Z] - <date>`
+- [ ] TECH_DEBT_SCAN.md refreshed; README / ARCHITECTURE / CONTRIBUTING scan blocks mirror it
+- [ ] Tracker issue opened from `.github/ISSUE_TEMPLATE/release-checklist.yml`
+- [ ] Sanity-run issue (from `sanity-run.yml`) opened and fully checked
+- [ ] Regression-run issue (from `regression-run.yml`) opened and fully checked — minor/major only; skip on patch unless an analyzer changed
 
 ## Release Process
 
@@ -415,43 +418,13 @@ Users will see a warning when installing the deprecated version.
 
 ## Release Checklist Template
 
-Copy this for each release:
+Per-release trackers live as GitHub issues, not inline here. For each release, open:
 
-```
-Release: v____.____.____
-Date: ________
+- `.github/ISSUE_TEMPLATE/release-checklist.yml` — overarching tracker (prep / verify / ship phases)
+- `.github/ISSUE_TEMPLATE/sanity-run.yml` — smoke pass (every release)
+- `.github/ISSUE_TEMPLATE/regression-run.yml` — broad manual pass (minor/major only)
 
-Pre-Release:
-- [ ] All features merged to develop
-- [ ] All tests pass: npm test
-- [ ] Build succeeds: npm run build
-- [ ] CHANGELOG.md updated
-- [ ] README.md updated
-- [ ] ARCHITECTURE.md updated (if needed)
-- [ ] On develop branch, up to date
-
-Release:
-- [ ] Version bumped: npm version [patch|minor|major]
-- [ ] CHANGELOG.md committed
-- [ ] Tag pushed: git push origin v____.____.____
-- [ ] Commits pushed: git push origin develop
-- [ ] GitHub Actions workflow succeeded
-- [ ] npm package published
-- [ ] GitHub Release created
-- [ ] MCPB bundle attached to GitHub Release
-
-Post-Release:
-- [ ] npm package verified: npm view tech-debt-mcp
-- [ ] GitHub Release verified
-- [ ] Test installation: npm install -g tech-debt-mcp@____.____.____
-- [ ] Basic functionality tested
-- [ ] Provenance verified (optional)
-- [ ] Release announcement (optional)
-
-Notes:
-________________________________________________________________________________
-________________________________________________________________________________
-```
+The release-checklist issue links the other two. Both run issues must be fully checked before pushing the tag in [Step 4](#step-4-push-the-release).
 
 ## Best Practices
 

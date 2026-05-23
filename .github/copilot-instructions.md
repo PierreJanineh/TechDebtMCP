@@ -98,7 +98,7 @@ Copilot **must** check documentation consistency on every PR. **Do not approve**
 ## Git Workflow
 
 - **Two long-lived trunks.** `develop` is the active integration trunk and the GitHub default branch. `main` is the stable production trunk and is only updated via release back-merges (never via direct PRs). There is no `master` — the repo was renamed `master` → `main`. Flag any PR that targets `main` directly instead of going through a `release/vX.X.X` back-merge, and flag any PR that attempts to (re)introduce `master`.
-- Branch naming: `feature/issue-{N}-short-description` or `fix/issue-{N}-...` (where `{N}` is the GitHub issue number). Internal maintainer branches may also use `feature/tec-{N}-...` or `fix/tec-{N}-...`; both patterns are acceptable.
+- Branch naming: `feature/tec-{N}-short-description` or `fix/tec-{N}-...` is the primary convention (where `TEC-N` is the Linear issue ID; triggers Linear two-way sync). For issues without a Linear ticket, `feature/issue-{N}-...` or `fix/issue-{N}-...` (using the GitHub issue number) is the accepted fallback. Both patterns are acceptable on PRs.
 - PRs target `develop` for ongoing work, or the active `release/vX.X.X` branch during a release cycle.
 - Releases: `release/vX.X.X` is cut from `develop`, fixes merge into it, tag `vX.X.X` is cut on the release branch, GitHub Actions publishes to npm, then `release/vX.X.X` back-merges into **both** `develop` (to carry the tagged state forward) **and** `main` (to advance the stable pointer). Verify the branch structure matches this flow — the `main` back-merge is mandatory.
 - **Issues are created on GitHub only.** Verify PR branch names match one of the naming patterns above.

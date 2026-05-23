@@ -45,6 +45,11 @@ npm test -- --testPathPatterns=src/analyzers  # run a single suite
 
 Tech Debt MCP is a Model Context Protocol (MCP) server exposing tools and resources for static tech-debt analysis across 14 languages.
 
+**Canonical enumerations** — before listing supported languages, dependency parsers, or tools in any doc/template, read the source instead of paraphrasing:
+- Languages (14): `case` arms in `createAnalyzer()` in `src/analyzers/index.ts`
+- Dependency parsers: files in `src/analyzers/dependencies/` (excluding `baseParser.ts`, `index.ts`, `__tests__/`)
+- Tools (16): `TOOL_DEFINITIONS` in `src/server/tools.ts`
+
 ```
 src/
 ├── index.ts                    # Entry point — creates server, attaches handlers + resources, runs
@@ -263,7 +268,9 @@ See `.claude/rules/code-quality.md` for file length, function length, nesting, a
 
 ## Testing
 
-See `.claude/rules/testing.md` for test file conventions, TDD workflow, mock patterns, and Jest configuration.
+Run all: `npm test`. Run one suite: `npm test -- --testPathPatterns=src/analyzers`. Run one file: `npm test -- goAnalyzer.test.ts`.
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md#testing) for test file conventions, Jest configuration, and example test structure.
 
 ## Security
 

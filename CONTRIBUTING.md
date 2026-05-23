@@ -278,40 +278,23 @@ Fixes #45
 
 ### Branch Naming
 
-- Feature: `feature/issue-{number}-short-description`
-- Bug fix: `fix/issue-{number}-short-description`
-- Documentation: `docs/issue-{number}-short-description`
+- Primary: `feature/tec-{N}-short-description` or `fix/tec-{N}-...` where `TEC-N` is the Linear issue ID — this triggers Linear's two-way sync on PR merge
+- Fallback for issues without a Linear ticket: `feature/issue-{N}-...` or `fix/issue-{N}-...`
 
 Examples:
-- `feature/issue-7-rust-analyzer`
-- `fix/issue-45-complexity-calculation`
-- `docs/issue-2-contributing-guide`
+- `feature/tec-49-custom-patterns-wiring` (primary — Linear-tracked)
+- `fix/tec-58-language-overrides`
+- `feature/issue-203-rust-analyzer` (fallback — GitHub-only issue)
+
+### PR Target
+
+- Ongoing work targets `develop`
+- During an active release cycle, targets the `release/vX.Y.Z` branch
+- **Never target `main` directly** — main only receives back-merges from release branches
 
 ### PR Template
 
-```markdown
-## Description
-Brief description of what this PR does.
-
-## Changes
-- List of changes made
-- Another change
-
-## Related Issue
-Closes #123
-
-## Testing
-- [ ] Tests added/updated
-- [ ] All tests passing
-- [ ] Manual testing completed
-
-## Checklist
-- [ ] Code follows project style guidelines
-- [ ] Documentation updated
-- [ ] Commit messages follow convention
-- [ ] No TypeScript errors
-- [ ] Copilot review suggestions addressed
-```
+The PR template at [`.github/PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md) auto-populates when you open a PR. Fill in: Summary, Related issue, Type of change, the dev-loop checklist, and Test plan.
 
 ## Testing
 
@@ -357,23 +340,11 @@ describe('TypeScriptAnalyzer', () => {
 
 ## Reporting Issues
 
-### Bug Reports
+Open issues on GitHub — they're synced to Linear automatically.
 
-Use the bug report template and include:
-- **Description** — What's the bug?
-- **Steps to reproduce** — How to trigger it?
-- **Expected behavior** — What should happen?
-- **Actual behavior** — What actually happens?
-- **Environment** — Node version, OS, etc.
-- **Logs/Screenshots** — Any relevant output
-
-### Feature Requests
-
-Use the feature request template and include:
-- **Problem** — What problem does this solve?
-- **Proposed solution** — How should it work?
-- **Alternatives** — Other solutions considered?
-- **Additional context** — Use cases, examples, etc.
+- **Bugs:** [`.github/ISSUE_TEMPLATE/bug_report.yml`](.github/ISSUE_TEMPLATE/bug_report.yml) — required fields cover description, repro steps, version, Node version, OS, and MCP client.
+- **Features:** [`.github/ISSUE_TEMPLATE/feature_request.yml`](.github/ISSUE_TEMPLATE/feature_request.yml) — problem, proposed solution, alternatives, and scope.
+- **Security vulnerabilities:** do **not** file a public issue. Use [GitHub Security Advisories](https://github.com/PierreJanineh/TechDebtMCP/security/advisories/new) instead.
 
 ## Questions?
 

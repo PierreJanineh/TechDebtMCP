@@ -1,0 +1,63 @@
+name: Sanity test run
+description: Manual smoke checks for a shipped artifact (run before tagging a release)
+title: "Sanity run: <version or date>"
+labels: ["test-plan:sanity"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Short manual smoke pass for things CI can't cover — distribution artifacts and MCP-client integration.
+        Run on a clean machine where possible. Check boxes as you go; leave a comment for any failure with logs.
+
+  - type: input
+    id: version
+    attributes:
+      label: Version under test
+      placeholder: e.g., v2.3.0 (or commit SHA for pre-release)
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS + Node version + MCP client(s) used.
+      placeholder: e.g., macOS 14.4, Node 20.11.0, Claude Desktop 0.7.x
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: artifact
+    attributes:
+      label: Distribution artifacts
+      options:
+        - label: "`npx tech-debt-mcp@<version>` boots and responds to MCP handshake"
+        - label: "MCPB bundle installs in Claude Desktop (drag-and-drop), all tools appear in the picker"
+        - label: "Plugin installs from the marketplace entry (`.claude-plugin/marketplace.json`) in a fresh Claude Code workspace"
+        - label: "Docs site renders at https://pierrejanineh.github.io/TechDebtMCP/ — landing, install, tools index all load"
+
+  - type: checkboxes
+    id: tools
+    attributes:
+      label: Tool surface (via MCP Inspector or client)
+      options:
+        - label: "`analyze_project` returns a result on a known fixture repo"
+        - label: "`analyze_file` returns a result on a single source file"
+        - label: "`get_debt_summary` and `get_sqale_metrics` return non-empty output"
+        - label: "`debt://summary/{+projectPath}` resource resolves with absolute path"
+        - label: "`validate_config` accepts a known-good `.techdebtrc.json`"
+
+  - type: checkboxes
+    id: slash
+    attributes:
+      label: Claude Code slash commands
+      options:
+        - label: "`/techdebt-scan` runs end-to-end against the repo"
+        - label: "`/techdebt-file <path>` returns file-scoped issues"
+        - label: "`/techdebt-summary` renders a readable summary"
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes / failures
+      description: Anything unchecked above goes here with details. Link to bug issues filed.

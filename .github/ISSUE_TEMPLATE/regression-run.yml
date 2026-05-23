@@ -1,0 +1,101 @@
+name: Regression test run
+description: Broader manual regression pass (run before minor/major releases)
+title: "Regression run: <version>"
+labels: ["test-plan:regression"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Manual regression pass covering behavior that automated tests don't fully exercise — slash commands in a
+        real Claude Code workspace, MCPB/plugin distribution, custom-rules end-to-end, analyzer coverage on a known
+        fixture project. Run on every minor/major release; skip on patches unless the patch touches an analyzer.
+
+  - type: input
+    id: version
+    attributes:
+      label: Version under test
+      placeholder: e.g., v2.3.0
+    validations:
+      required: true
+
+  - type: input
+    id: fixture
+    attributes:
+      label: Fixture project used
+      description: Path or repo URL of the multi-language project used as the test target.
+      placeholder: e.g., https://github.com/.../techdebt-fixture
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: analyzers
+    attributes:
+      label: Analyzer coverage (14 languages — each must produce expected issues on the fixture)
+      options:
+        - label: JavaScript
+        - label: TypeScript
+        - label: Python
+        - label: Java
+        - label: Kotlin
+        - label: Swift (incl. SwiftUI Phase 1 + Phase 2 checks)
+        - label: Objective-C
+        - label: C
+        - label: C++
+        - label: C#
+        - label: Go
+        - label: Rust
+        - label: Ruby
+        - label: PHP
+
+  - type: checkboxes
+    id: dependencies
+    attributes:
+      label: Dependency parsers
+      options:
+        - label: npm (package.json + lockfile)
+        - label: pip (requirements.txt)
+        - label: Poetry (pyproject.toml, incl. group handling)
+        - label: Pipfile (incl. `[dev-packages]`)
+        - label: cargo
+        - label: gradle
+        - label: nuget
+        - label: go.mod
+        - label: bundler (Gemfile)
+        - label: composer (composer.json)
+        - label: Swift Package Manager (Package.swift)
+        - label: vcpkg (cppParser)
+
+  - type: checkboxes
+    id: config
+    attributes:
+      label: Configuration behavior
+      options:
+        - label: "`.techdebtrc.json` `customPatterns` fire on matching code (TEC-49)"
+        - label: "`languageOverrides` apply during analysis (TEC-58)"
+        - label: "`ruleExclusions` globs exclude expected files"
+        - label: "Per-rule `severity` overrides apply to custom-pattern issues"
+        - label: "Inline `// techdebt-ignore-next-line <rule>` suppresses the targeted rule only"
+        - label: "Block `// techdebt-ignore-start <rule>` / `-end` suppresses across the range"
+
+  - type: checkboxes
+    id: surface
+    attributes:
+      label: Client surface
+      options:
+        - label: "Claude Code: `/techdebt-scan`, `/techdebt-file`, `/techdebt-summary` all behave correctly on the fixture"
+        - label: "Claude Desktop (MCPB): all 16 tools callable, resources resolve"
+        - label: "MCP Inspector: every tool in TOOL_DEFINITIONS invokable with valid args"
+        - label: "Error messages do not leak absolute filesystem paths (sanity-check a forced error)"
+
+  - type: input
+    id: milestone
+    attributes:
+      label: Release milestone
+      description: Link to the release milestone or release branch.
+      placeholder: e.g., release/v2.3.0
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes / failures
+      description: Anything unchecked above, plus links to bug issues filed during the run.

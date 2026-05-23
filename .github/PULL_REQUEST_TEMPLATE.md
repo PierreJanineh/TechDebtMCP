@@ -6,6 +6,10 @@
 
 <!-- Link the GitHub issue: `Fixes #123`. -->
 
+## Linked manual run
+
+<!-- If this PR targets a release branch with an open sanity/regression run, link it: `Part of #123`. Otherwise leave blank. -->
+
 ## Type of change
 
 - [ ] Bug fix (`fix:`)

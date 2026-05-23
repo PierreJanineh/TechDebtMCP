@@ -34,6 +34,16 @@ git commit -m "chore: prepare v$VERSION release"
 git push origin release/v$VERSION
 ```
 
+### 4️⃣.5 Run manual test gates **before tagging**
+
+Open tracker issues from `.github/ISSUE_TEMPLATE/`:
+
+- `release-checklist.yml` — overarching release tracker
+- `sanity-run.yml` — smoke pass on the shipped artifacts (every release)
+- `regression-run.yml` — broad manual pass (minor/major only; skip on patches unless an analyzer changed)
+
+Both run issues must be fully checked before pushing the tag in Step 5️⃣ — once tagged, npm publish fires via OIDC and is irreversible.
+
 ### 5️⃣ Tag on the release branch + push the tag
 
 ```bash
@@ -103,6 +113,9 @@ Always pass `--no-git-tag-version` on the release branch — the tag goes on in 
 - [ ] Release branch `release/v$VERSION` created from develop
 - [ ] `package.json` version bump committed on the release branch
 - [ ] TECH_DEBT_SCAN.md refreshed with the latest `tech-debt-mcp-local` scan (source of truth for README / ARCHITECTURE / CONTRIBUTING scan blocks)
+- [ ] `mcpb/manifest.json` version matches `package.json` (build asserts equality)
+- [ ] Sanity-run issue opened and fully checked
+- [ ] Regression-run issue opened and fully checked (minor/major only)
 
 ---
 
