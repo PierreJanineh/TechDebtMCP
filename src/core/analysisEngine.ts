@@ -10,6 +10,7 @@ import {
   Severity,
   DebtCategory,
 } from '../types/index.js';
+import { minimatch } from 'minimatch';
 import { analyzeFile } from '../analyzers/index.js';
 import {
   LANGUAGE_CONFIGS,
@@ -49,11 +50,20 @@ export class AnalysisEngine {
     const extensions = getAllExtensions();
 
     // Find all files to analyze
-    const files = await getProjectFiles(
+    const allFiles = await getProjectFiles(
       projectPath,
       extensions,
       mergedConfig.ignore
     );
+
+    // Honor the include allowlist when present — filter against relative paths
+    const includeGlobs = mergedConfig.include;
+    const files = (includeGlobs && includeGlobs.length > 0)
+      ? allFiles.filter(file => {
+          const rel = getRelativePath(projectPath, file);
+          return includeGlobs.some(pattern => minimatch(rel, pattern, { dot: true }));
+        })
+      : allFiles;
 
     // Apply max files limit if specified
     const filesToAnalyze = options.maxFiles
