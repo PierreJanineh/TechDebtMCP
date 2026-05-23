@@ -274,7 +274,7 @@ Every tool declares a [tool annotation](https://modelcontextprotocol.io/specific
 | | `languages` | string[] | | | Restrict to specific languages |
 | | `flags` | string | | allowed: `d g i m s u v y`; `u` / `v` mutually exclusive | Regex flags |
 | `remove_custom_rule` | `id` | string | ✓ | | Rule ID to remove |
-| `list_session_custom_rules` | — | — | — | — | No parameters. Renamed from `list_custom_rules` in the v2.0.3 cycle (TEC-51) to clarify scope: only session-registered rules. |
+| `list_session_custom_rules` | — | — | — | — | No parameters. Renamed from `list_custom_rules` (TEC-51) to clarify scope: only session-registered rules. |
 | `execute_custom_rules` | `path` | string | ◐ | absolute path, max 500,000 bytes | File to analyze |
 | | `code` | string | ◐ | 1-500,000 chars | Source code to analyze directly |
 | | `language` | string | | must be a supported language ID (same set as `list_supported_languages`) | Filter rules by language |

@@ -52,7 +52,7 @@
     { "name": "get_issues_by_category", "description": "Get all issues of a specific category." },
     { "name": "add_custom_rule", "description": "Add a custom pattern-based tech debt rule." },
     { "name": "remove_custom_rule", "description": "Remove a custom rule by ID." },
-    { "name": "list_session_custom_rules", "description": "List custom rules registered in this server session via add_custom_rule. Does NOT include customPatterns declared in .techdebtrc.json (those run inside analyze_project via AnalysisEngine but are not surfaced here). Renamed from list_custom_rules in v2.0.3 (TEC-51) for clarity; the old name is no longer registered." },
+    { "name": "list_session_custom_rules", "description": "List custom rules registered in this server session via add_custom_rule. Does NOT include customPatterns declared in .techdebtrc.json (those run inside analyze_project via AnalysisEngine but are not surfaced here). Renamed from list_custom_rules (TEC-51) for clarity; the old name is no longer registered." },
     { "name": "execute_custom_rules", "description": "Execute all custom rules against code or a file." },
     { "name": "validate_custom_pattern", "description": "Validate a custom pattern before adding it as a rule." },
     { "name": "check_dependencies", "description": "Analyze project dependencies across multiple package managers." },

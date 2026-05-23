@@ -78,7 +78,7 @@ export function handleRemoveCustomRule(
  * (added via add_custom_rule) are surfaced; .techdebtrc.json customPatterns
  * are executed inside analyze_project but not listed here.
  */
-export function handleListCustomRules(customRulesEngine: CustomRulesEngine): ToolResponse {
+export function handleListSessionCustomRules(customRulesEngine: CustomRulesEngine): ToolResponse {
   const rules = customRulesEngine.getAllRules();
   const stats = customRulesEngine.getRuleStats();
   if (rules.length === 0) {

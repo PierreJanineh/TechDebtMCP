@@ -40,7 +40,7 @@ Once installed, Claude has access to these MCP tools:
 | `list_supported_languages` | List the 14 supported languages | Read |
 | `validate_config` | Lint a `.techdebtrc.json` | Read |
 | `validate_custom_pattern` | Dry-run a regex rule | Read |
-| `list_session_custom_rules` | List user-defined rules in this session (renamed from `list_custom_rules` in v2.0.3 / TEC-51 — does not surface `.techdebtrc.json` `customPatterns`) | Read |
+| `list_session_custom_rules` | List user-defined rules in this session (renamed from `list_custom_rules` in TEC-51 — does not surface `.techdebtrc.json` `customPatterns`) | Read |
 | `add_custom_rule` | Add an in-memory custom rule | Write (session-scoped) |
 | `remove_custom_rule` | Remove an in-memory custom rule | Write (session-scoped) |
 | `execute_custom_rules` | Run all session custom rules over a file | Read |

@@ -140,7 +140,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'list_session_custom_rules',
-    description: 'List custom rules registered in this server session via add_custom_rule. Does NOT include customPatterns declared in .techdebtrc.json (those run inside analyze_project via AnalysisEngine but are not surfaced here). Renamed from list_custom_rules in v2.0.3 (TEC-51) for clarity; the old name is no longer registered.',
+    description: 'List custom rules registered in this server session via add_custom_rule. Does NOT include customPatterns declared in .techdebtrc.json (those run inside analyze_project via AnalysisEngine but are not surfaced here). Renamed from list_custom_rules (TEC-51) for clarity; the old name is no longer registered.',
     inputSchema: {
       type: 'object',
       properties: {},
