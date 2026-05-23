@@ -2,6 +2,8 @@ import { jest } from '@jest/globals';
 import { AnalysisEngine } from '../analysisEngine.js';
 import type { TechDebtConfig, FileAnalysisResult } from '../../types/index.js';
 
+const mockAnalyze = jest.fn(() => Promise.resolve({ issues: [] }));
+
 jest.mock('../../utils/fileUtils.js', () => ({
   getProjectFiles: jest.fn(),
   loadConfig: jest.fn(() => Promise.resolve({})),
@@ -10,23 +12,23 @@ jest.mock('../../utils/fileUtils.js', () => ({
     // Simulate platform-agnostic relative path
     return file.replace('/project/', '');
   }),
+  readFile: jest.fn(() => Promise.resolve('')),
 }));
 jest.mock('../../analyzers/index.js', () => ({
-  analyzeFile: jest.fn(() => Promise.resolve({ issues: [] })),
+  createAnalyzer: jest.fn(() => ({ analyze: mockAnalyze })),
 }));
 jest.mock('../../config/languages.js', () => ({
-  LANGUAGE_CONFIGS: {},
+  LANGUAGE_CONFIGS: { typescript: { extensions: ['.ts'] } },
   getAllExtensions: jest.fn(() => ['.ts']),
   detectLanguageFromExtension: jest.fn((file: string) => (file.endsWith('.ts') ? 'typescript' : null)),
   getSupportedLanguages: jest.fn(() => ['typescript']),
 }));
 
 import { getProjectFiles, loadConfig } from '../../utils/fileUtils.js';
-import { analyzeFile } from '../../analyzers/index.js';
 
 const mockGetProjectFiles = getProjectFiles as jest.MockedFunction<typeof getProjectFiles>;
 const mockLoadConfig = loadConfig as jest.MockedFunction<typeof loadConfig>;
-const mockAnalyzeFile = analyzeFile as jest.MockedFunction<typeof analyzeFile>;
+const mockAnalyzeFile = mockAnalyze as unknown as jest.MockedFunction<(file: string, content: string) => Promise<FileAnalysisResult>>;
 
 const FILES = [
   '/project/src/foo.ts',
