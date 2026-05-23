@@ -108,6 +108,9 @@ for (const repo of manifest.repos) {
   if (!/^[a-z0-9-]+$/.test(slug)) {
     throw new Error(`[scan-showcase] invalid slug "${slug}" — slugs must match [a-z0-9-]+`);
   }
+  if (!/^[0-9a-f]{40}$/.test(sha)) {
+    throw new Error(`[scan-showcase] invalid sha "${sha}" for ${owner}/${name} — must be a full 40-hex commit SHA`);
+  }
   const path = await cloneAtSha(owner, name, sha);
 
   console.log(`[scan-showcase] scanning ${owner}/${name}...`);
@@ -391,16 +394,7 @@ git clone https://github.com/${d.owner}/${d.name}.git
 cd ${d.name} && git checkout ${d.sha}
 \`\`\`
 
-**Option 1 — Claude Code plugin (recommended)**
-
-\`\`\`
-/plugin marketplace add PierreJanineh/TechDebtMCP
-/plugin install tech-debt-mcp@techdebtmcp
-\`\`\`
-
-Then ask Claude Code: *"Run analyze_project on this directory."*
-
-**Option 2 — MCP server via npx**
+**Option 1 — npx (any MCP client)**
 
 Add to your client's MCP config:
 
@@ -413,6 +407,15 @@ Add to your client's MCP config:
 \`\`\`
 
 Then call \`analyze_project\` with the absolute path to the clone.
+
+**Option 2 — Claude Code plugin**
+
+\`\`\`
+/plugin marketplace add PierreJanineh/TechDebtMCP
+/plugin install tech-debt-mcp@techdebtmcp
+\`\`\`
+
+Then ask Claude Code: *"Run analyze_project on this directory."*
 
   </div>
 </div>

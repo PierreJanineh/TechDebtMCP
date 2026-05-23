@@ -49,7 +49,6 @@ jobs:
         with:
           path: node_modules/.cache/td-showcase
           key: td-showcase-${{ hashFiles('docs/site/.showcase.json') }}
-          restore-keys: td-showcase-
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
