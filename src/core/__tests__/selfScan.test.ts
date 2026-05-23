@@ -51,6 +51,9 @@ describe('self-scan: each VALID_CONFIG_KEYS block has an observable effect', () 
 
   it('ruleExclusions: rule is suppressed in excluded paths only', async () => {
     const report = await analyzeFixture('ruleExclusions');
+    // Both src/sample.js and excluded/skipme.js must be analyzed — verify discovery
+    // actually reached the excluded directory before checking suppression behavior.
+    expect(report.project.analyzedFiles).toBeGreaterThanOrEqual(2);
     const consoleLogIssues = report.issues.filter(i => i.rule === 'console-log');
     expect(consoleLogIssues.some(i => i.file.includes('src/'))).toBe(true);
     expect(consoleLogIssues.some(i => i.file.includes('excluded/'))).toBe(false);
