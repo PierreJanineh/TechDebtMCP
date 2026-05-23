@@ -226,7 +226,7 @@ graph TD
 **Responsibility:** Orchestrates the entire analysis workflow.
 
 **Key Methods:**
-- `analyzeProject(options)` — Main entry point
+- `analyzeProject(options)` — Main entry point; applies `mergedConfig.include` allowlist filter after `getProjectFiles()` (TEC-57)
 - `calculateSummary(issues)` — Aggregate statistics
 - `generateRecommendations(issues, summary)` — Create actionable suggestions
 - `detectPackageManagers(packageFiles)` — Identify dependency managers

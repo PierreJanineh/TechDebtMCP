@@ -62,7 +62,7 @@ src/
 ├── types/index.ts              # Single source of truth for all TypeScript interfaces
 ├── config/languages.ts         # Per-language config: extensions, package files, patterns
 ├── core/
-│   ├── analysisEngine.ts       # Project-level orchestrator: discovers files, fans out to analyzers
+│   ├── analysisEngine.ts       # Project-level orchestrator: discovers files, applies include allowlist, fans out to analyzers
 │   ├── sqaleEngine.ts          # SQALE rating/debt ratio calculation
 │   └── customRulesEngine.ts    # User-defined pattern rules (.techdebtrc.json)
 ├── analyzers/
