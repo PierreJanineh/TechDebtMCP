@@ -105,7 +105,7 @@ docs/site/                      # (repo root — VitePress docs site for GitHub 
 scripts/
 ├── build-mcpb.mjs              # `npm run mcpb:pack` driver — stages, runs `npm ci --omit=dev --ignore-scripts`, packs
 ├── gen-docs-tools.mjs          # `npm run docs:gen-tools` — imports dist/server/tools.js TOOL_DEFINITIONS, emits docs/site/tools/*.md + mirrors of ARCHITECTURE/ROADMAP/CHANGELOG
-└── scan-showcase.mjs           # `npm run docs:scan-showcase` — clones repos in .showcase.json at their pinned SHAs, runs analyze_project + check_dependencies, emits docs/site/examples/*.md as chat-style audit pages
+└── scan-showcase.mjs           # `npm run docs:scan-showcase` — clones repos in .showcase.json at their pinned SHAs, calls AnalysisEngine.analyzeProject() directly + handleCheckDependencies() tool handler, emits docs/site/examples/*.md as chat-style audit pages
 ```
 
 ### Building the MCPB bundle

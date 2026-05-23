@@ -47,7 +47,6 @@ if (!existsSync(distAnalysis) || !existsSync(distSqale) || !existsSync(distDeps)
 }
 
 const { AnalysisEngine } = await import(pathToFileURL(distAnalysis).href);
-const { SQALEEngine } = await import(pathToFileURL(distSqale).href);
 const { handleCheckDependencies } = await import(pathToFileURL(distDeps).href);
 
 const manifest = JSON.parse(await readFile(manifestPath, 'utf-8'));
@@ -139,7 +138,7 @@ for (const repo of manifest.repos) {
   const t0 = Date.now();
   const result = await new AnalysisEngine().analyzeProject({ path });
   const scanMs = Date.now() - t0;
-  const metrics = new SQALEEngine().calculateMetrics(result.issues);
+  const metrics = result.sqale;
 
   const bySev = { critical: 0, high: 0, medium: 0, low: 0 };
   for (const i of result.issues) bySev[i.severity] = (bySev[i.severity] || 0) + 1;
@@ -187,7 +186,7 @@ for (const repo of manifest.repos) {
     depsReport = res?.content?.[0]?.text ?? null;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    depsReport = `_Dependency scan failed: ${msg}_`;
+    depsReport = `Dependency scan failed: ${msg}`;
   }
 
   // SQALE category breakdown (minutes → human format)
@@ -317,7 +316,7 @@ What kind of debt is this? Show the SQALE breakdown by category.
   <div class="avatar"><img src="/TechDebtMCP/icon-light.png" alt="" class="avatar-light"/><img src="/TechDebtMCP/icon.png" alt="" class="avatar-dark"/></div>
   <div class="bubble">
 
-<div class="role">tech-debt-mcp · get_sqale_metrics</div>
+<div class="role">tech-debt-mcp · get_sqale_metrics (full scan — no maxFiles cap)</div>
 
 Remediation time by debt category — where the work would land if you fixed everything:
 

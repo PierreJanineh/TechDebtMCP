@@ -87,7 +87,7 @@ TechDebtMCP/
 ├── scripts/
 │   ├── build-mcpb.mjs           # Stages + packs the .mcpb (npm run mcpb:pack)
 │   ├── gen-docs-tools.mjs       # Generates docs/site/tools/*.md from TOOL_DEFINITIONS
-│   └── scan-showcase.mjs        # Clones repos in docs/site/.showcase.json at pinned SHAs, runs analyze_project, emits docs/site/examples/*.md chat-style pages
+│   └── scan-showcase.mjs        # Clones repos in docs/site/.showcase.json at pinned SHAs, calls AnalysisEngine.analyzeProject() directly (not the MCP tool handler), emits docs/site/examples/*.md chat-style pages
 ├── package.json
 ├── tsconfig.json
 ├── .github/copilot-instructions.md
