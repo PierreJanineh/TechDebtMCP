@@ -306,4 +306,45 @@ describe('AnalysisEngine.analyzeProject – customPatterns integration', () => {
     const report = await engine.analyzeProject({ path: '/project' });
     expect(report.issues.find(i => i.rule === 'no-pattern-field')).toBeUndefined();
   });
+
+  it('silently drops entries with empty id', async () => {
+    const config = {
+      customPatterns: [
+        { id: '', pattern: 'FORBIDDEN', severity: 'high', category: 'code-quality', message: 'msg' },
+      ],
+    } as unknown as TechDebtConfig;
+    const { readFile } = jest.requireMock('../../utils/fileUtils.js') as jest.Mocked<typeof import('../../utils/fileUtils.js')>;
+    readFile.mockResolvedValue('const x = "FORBIDDEN";');
+    const engine = new AnalysisEngine(config);
+    const report = await engine.analyzeProject({ path: '/project' });
+    expect(report.issues).toHaveLength(0);
+  });
+
+  it('silently drops entries with empty pattern string', async () => {
+    const config = {
+      customPatterns: [
+        { id: 'empty-pattern', pattern: '', severity: 'high', category: 'code-quality', message: 'msg' },
+      ],
+    } as unknown as TechDebtConfig;
+    const { readFile } = jest.requireMock('../../utils/fileUtils.js') as jest.Mocked<typeof import('../../utils/fileUtils.js')>;
+    readFile.mockResolvedValue('const x = "anything";');
+    const engine = new AnalysisEngine(config);
+    const report = await engine.analyzeProject({ path: '/project' });
+    expect(report.issues.find(i => i.rule === 'empty-pattern')).toBeUndefined();
+  });
+
+  it('silently drops entries missing message field and preserves valid siblings', async () => {
+    const config = {
+      customPatterns: [
+        { id: 'no-message', pattern: 'FORBIDDEN', severity: 'high', category: 'code-quality' },
+        { id: 'has-message', pattern: 'FORBIDDEN', severity: 'high', category: 'code-quality', message: 'Found forbidden' },
+      ],
+    } as unknown as TechDebtConfig;
+    const { readFile } = jest.requireMock('../../utils/fileUtils.js') as jest.Mocked<typeof import('../../utils/fileUtils.js')>;
+    readFile.mockResolvedValue('const x = "FORBIDDEN";');
+    const engine = new AnalysisEngine(config);
+    const report = await engine.analyzeProject({ path: '/project' });
+    expect(report.issues.find(i => i.rule === 'no-message')).toBeUndefined();
+    expect(report.issues.find(i => i.rule === 'has-message')).toBeDefined();
+  });
 });

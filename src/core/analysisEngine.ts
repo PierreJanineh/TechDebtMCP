@@ -165,7 +165,11 @@ export class AnalysisEngine {
           const entry = p as unknown as Record<string, unknown>;
           return (
             typeof entry['id'] === 'string' &&
+            entry['id'].length > 0 &&
             typeof entry['pattern'] === 'string' &&
+            entry['pattern'].length > 0 &&
+            typeof entry['message'] === 'string' &&
+            entry['message'].length > 0 &&
             VALID_SEVERITIES.includes(entry['severity'] as Severity) &&
             VALID_CATEGORIES.includes(entry['category'] as DebtCategory)
           );
