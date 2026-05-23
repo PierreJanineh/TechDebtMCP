@@ -5,7 +5,9 @@
  *
  * One assertion per key in `VALID_CONFIG_KEYS` (the canonical set declared by
  * `src/server/configValidator.ts`). If that set grows, the meta-check at the
- * bottom of this file fails until a fixture + assertion is added here.
+ * bottom of this file fails until a fixture directory and `.techdebtrc.json`
+ * are added here. Adding the per-key `it()` assertion is a manual step — the
+ * meta-check does not enforce that.
  *
  * All 8 assertions are expected to pass — `customPatterns` / TEC-49,
  * `severity` / TEC-56, `include` / TEC-57, and `languageOverrides` / TEC-58
