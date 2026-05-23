@@ -193,7 +193,7 @@ for (const repo of manifest.repos) {
   // Dependency inventory — call the real handler, capture text report
   let depsReport = null;
   try {
-    const res = await handleCheckDependencies({ path, includeDev: false });
+    const res = await handleCheckDependencies({ path });
     depsReport = res?.content?.[0]?.text ?? null;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
