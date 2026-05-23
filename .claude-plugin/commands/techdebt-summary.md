@@ -21,7 +21,6 @@ Fetch and display the aggregate technical-debt summary for a project.
    - **SQALE rating** (A–E) and debt ratio (note: debt ratio is only calculated when the `developmentTime` parameter is provided; otherwise it will appear as N/A — prompt the user to supply it if they want a percentage).
    - **Issue counts** by severity: critical / high / medium / low.
    - **Total estimated remediation time**.
-   - **Top categories** with the most debt (if available).
 
 5. Suggest running `/techdebt-scan` for the full issue list or `/techdebt-file <path>` to drill into a specific file.
 

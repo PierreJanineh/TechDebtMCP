@@ -15,7 +15,7 @@ Trigger a tech-debt scan automatically in any of these situations:
 |---------|--------|
 | User asks to **open a PR** or **push a branch** | Scan the project root before creating the PR. Summarize findings in the PR description or as a pre-PR comment. |
 | User asks to **review my code** or **what's wrong with this file** | Run `mcp__tech-debt-mcp__analyze_file` on the mentioned file. Weave the findings into the code review. |
-| User **finishes a large refactor** (renamed module, restructured directory) | Scan the affected directory and report any new or resolved debt items. |
+| User **finishes a large refactor** (renamed module, restructured directory) | Scan the affected directory and report the current debt items found. Only describe items as "new" or "resolved" if there is an explicit prior scan result in the current session to compare against. |
 | User asks **is my code ready to merge** | Run `mcp__tech-debt-mcp__get_debt_summary` and `mcp__tech-debt-mcp__get_sqale_metrics`. If the health score is below 70 or there are any critical/high issues, surface them before approving merge-readiness. |
 | User requests a **security audit** | Run `mcp__tech-debt-mcp__get_vulnerability_report` on the project root and fold the **offline dependency inventory** into the security report. Note: this tool does not perform CVE lookups — direct the user to cross-reference with OSV or Snyk for actual vulnerability data. |
 
@@ -35,7 +35,7 @@ Always pass absolute paths to tool arguments. If you only have a relative path, 
 ## How to present findings
 
 - **Before a PR**: include a short "Tech Debt Check" section in the PR description draft with health score, debt score, and any critical/high issues. For SQALE rating, call `mcp__tech-debt-mcp__get_sqale_metrics` in addition to `mcp__tech-debt-mcp__analyze_project`. Offer to fix blockers before the PR is opened.
-- **During code review**: annotate relevant lines with the debt finding and a one-line fix suggestion. Do not flood the review — surface at most the top 5 issues ranked by severity × effort.
+- **During code review**: annotate relevant lines with the debt finding and a one-line fix suggestion. Do not flood the review — surface at most the top 5 issues ranked by severity (critical → high → medium → low).
 - **Merge-readiness check**: give a pass/fail verdict. Pass = health ≥ 70 and no critical or high issues. Fail = list the blockers.
 
 ## When NOT to run proactively
