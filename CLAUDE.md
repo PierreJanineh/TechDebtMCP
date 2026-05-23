@@ -78,6 +78,11 @@ src/
 └── utils/
     ├── fileUtils.ts            # fs helpers (readFile, fileExists, getFileStats, getRelativePath)
     └── regexUtils.ts           # escapeRegExp() — safe RegExp construction helper
+.claude/                        # (repo root — contributor automation, gitignored from npm)
+├── hooks/                      # PreToolUse hooks (block-npm-publish.sh, check-tools-manifest-sync.sh)
+├── rules/                      # Markdown rule files loaded by Claude Code (code-quality, docs-maintenance, etc.)
+├── skills/                     # Project-specific skills (add-config-block, refresh-self-scan)
+└── settings.json               # Claude Code project settings (hook registrations, permissions)
 .claude-plugin/                 # (repo root — sibling of src/)
 ├── plugin.json                 # Claude Code plugin manifest (mcpServers → npx -y tech-debt-mcp@latest)
 ├── marketplace.json            # Marketplace entry so this repo doubles as its own marketplace

@@ -57,7 +57,7 @@ The consumer **must** be reachable from `analyzeProject`. Trace the call graph m
 
 ### 5. Add the self-scan fixture + assertion
 
-Test infrastructure lives at `src/core/__tests__/selfScan.test.ts` with fixtures under `tests/fixtures/self-scan/<block>/`. Pattern (one directory per existing block as reference: `customPatterns/`, `ignore/`, `include/`, `languageOverrides/`, `ruleExclusions/`, `rules/`, `severity/`):
+Place the new test in `src/core/__tests__/selfScan.test.ts` (create it if it does not yet exist) and fixtures under `tests/fixtures/self-scan/<block>/` (create the directory). Once the first block is added, the pattern becomes: one directory per block (e.g. `customPatterns/`, `ignore/`, `include/`, `languageOverrides/`, `ruleExclusions/`, `rules/`, `severity/`):
 
 - Create `tests/fixtures/self-scan/X/.techdebtrc.json` containing **only** X, set to a value with an observable effect.
 - Create one or more source files under that directory that trigger the observable effect.
