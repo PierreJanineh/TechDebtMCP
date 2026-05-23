@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
 import { AnalysisEngine } from '../analysisEngine.js';
+import type { TechDebtConfig, FileAnalysisResult } from '../../types/index.js';
 
 jest.mock('../../utils/fileUtils.js', () => ({
   getProjectFiles: jest.fn(),
@@ -36,9 +37,9 @@ const FILES = [
 describe('AnalysisEngine.analyzeProject – include glob filtering', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetProjectFiles.mockResolvedValue(FILES as any);
-    mockLoadConfig.mockResolvedValue({} as any);
-    mockAnalyzeFile.mockResolvedValue({ issues: [] } as any);
+    mockGetProjectFiles.mockResolvedValue(FILES);
+    mockLoadConfig.mockResolvedValue({} as TechDebtConfig);
+    mockAnalyzeFile.mockResolvedValue({ issues: [] } as unknown as FileAnalysisResult);
   });
 
   it('passes all files through when include is absent', async () => {
@@ -75,13 +76,13 @@ describe('AnalysisEngine.analyzeProject – include glob filtering', () => {
 });
 
 describe('AnalysisEngine.analyzeProject – include glob POSIX normalization', () => {
-  const { getRelativePath } = jest.requireMock('../../utils/fileUtils.js') as any;
+  const { getRelativePath } = jest.requireMock('../../utils/fileUtils.js') as jest.Mocked<typeof import('../../utils/fileUtils.js')>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetProjectFiles.mockResolvedValue(FILES as any);
-    mockLoadConfig.mockResolvedValue({} as any);
-    mockAnalyzeFile.mockResolvedValue({ issues: [] } as any);
+    mockGetProjectFiles.mockResolvedValue(FILES);
+    mockLoadConfig.mockResolvedValue({} as TechDebtConfig);
+    mockAnalyzeFile.mockResolvedValue({ issues: [] } as unknown as FileAnalysisResult);
   });
 
   it('matches even when getRelativePath returns Windows-style separators', async () => {
