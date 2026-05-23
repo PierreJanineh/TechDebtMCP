@@ -7,6 +7,10 @@ __tests__/
 tsconfig.json
 jest.config.js
 
+# Claude Code contributor tooling (contributor-only; not for npm consumers)
+.claude/
+.claude-plugin/
+
 # Git and GitHub
 .git/
 .github/

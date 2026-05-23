@@ -8,7 +8,16 @@
 
 set -euo pipefail
 
-FILE_PATH=$(echo "${TOOL_INPUT:-}" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"file_path"[[:space:]]*:[[:space:]]*"//;s/"$//' || true)
+# Use python3 to safely parse the JSON tool input — grep/sed breaks on
+# values that contain escaped quotes or other JSON special characters.
+FILE_PATH=$(echo "${TOOL_INPUT:-}" | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    print(data.get('file_path', ''))
+except Exception:
+    pass
+" 2>/dev/null || true)
 
 if [ -z "$FILE_PATH" ]; then
   exit 0

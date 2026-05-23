@@ -84,6 +84,36 @@ src/
     └── regexUtils.ts           # escapeRegExp() — safe RegExp construction helper
 ```
 
+## Claude Code Contributor Tooling
+
+The repository ships a small set of Claude Code automation files that improve the contributor workflow. These are **contributor-only** — they are excluded from npm, the MCPB bundle, and the Claude Code plugin marketplace; end users who install `tech-debt-mcp` via any of those channels are not affected.
+
+### Scoping
+
+| Distribution channel | `.claude/` included? | Why not |
+|---|---|---|
+| npm (`npm publish`) | No | `.npmignore` excludes the entire `.claude/` directory |
+| MCPB bundle (`npm run mcpb:pack`) | No | `scripts/build-mcpb.mjs` only stages `package.json`, `package-lock.json`, `README.md`, `LICENSE`, `dist/`, and the MCPB manifest/icon |
+| Claude Code plugin marketplace | No | Plugin install distributes `.claude-plugin/plugin.json` (which runs `npx -y tech-debt-mcp@latest`); it does not load the source repo's `.claude/settings.json` into end users' sessions |
+
+### Distributed files
+
+The following files are force-added (`git add -f`) so contributors get them on checkout:
+
+- **`.claude/settings.json`** — enables `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` (required for the multi-agent PR review and feature-dev automations used by maintainers) and registers the two hooks below.
+- **`.claude/hooks/block-npm-publish.sh`** — PreToolUse hook that hard-blocks any Bash tool call containing `npm publish` without `--dry-run`. Prevents accidental local publishes that would bypass the OIDC tag workflow.
+- **`.claude/hooks/check-tools-manifest-sync.sh`** — PostToolUse hook that warns when `src/server/tools.ts` is edited but `mcpb/manifest.json` has no pending changes, prompting you to keep them in sync.
+- **`.claude/skills/`** — contributor skills (`add-config-block`, `refresh-self-scan`) that encode project-specific procedures for Claude Code.
+- **`.claude/rules/git-workflow.md`, `.claude/rules/docs-maintenance.md`, `.claude/rules/code-quality.md`** — rule files referenced by the skills and loaded into Claude Code's context automatically.
+
+### Local-only (gitignored)
+
+The following remain personal/local and are never committed:
+
+- `.claude/settings.local.json` — personal overrides
+- `.claude/hookify.*.local.md` — personal hookify rules
+- `.claude/hooks/pre-pr-docs-check.sh` — personal pre-PR docs gate
+
 ## How to Contribute
 
 ### Types of Contributions

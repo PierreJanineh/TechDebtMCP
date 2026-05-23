@@ -7,11 +7,20 @@
 # also re-run the build chain in a non-CI environment.
 #
 # Exit 2 = hard block. The user can still run `npm publish --dry-run` because
-# `--dry-run` is allowlisted below.
+# `--dry-run` is allowlisted below (in any argument position).
 
 set -euo pipefail
 
-COMMAND=$(echo "${TOOL_INPUT:-}" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"command"[[:space:]]*:[[:space:]]*"//;s/"$//' || true)
+# Use python3 to safely parse the JSON tool input — grep/sed breaks on
+# values that contain escaped quotes (e.g. bash -lc \"npm publish\").
+COMMAND=$(echo "${TOOL_INPUT:-}" | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    print(data.get('command', ''))
+except Exception:
+    pass
+" 2>/dev/null || true)
 
 if [ -z "$COMMAND" ]; then
   exit 0
@@ -21,11 +30,17 @@ if ! echo "$COMMAND" | grep -qE '(^|[;&|[:space:]])npm[[:space:]]+publish([[:spa
   exit 0
 fi
 
-# Allow only if every npm publish invocation in the command is followed by
-# --dry-run or --help (i.e. no bare publish slips through after a separator).
-# Strip all allowlisted invocations and re-check: if any npm publish remains,
-# it is a bare publish that must be blocked.
-STRIPPED=$(echo "$COMMAND" | sed -E 's/(^|[;&|[:space:]])npm[[:space:]]+publish[[:space:]]+(--dry-run|--help)([[:space:]]|$)/ /g')
+# Allow only if every npm publish invocation in the command contains
+# --dry-run or --help anywhere in its argument list (not necessarily as the
+# first flag). Strip all such allowlisted invocations and re-check: if any
+# npm publish remains, it is a bare publish that must be blocked.
+#
+# The sed pattern removes npm publish … up to the next command separator
+# (or end of string), provided --dry-run or --help appears somewhere in
+# that segment.
+STRIPPED=$(echo "$COMMAND" | \
+  sed -E 's/(^|[;&|[:space:]])npm[[:space:]]+publish([[:space:]]+--[a-z][a-z-]*)*[[:space:]]+(--dry-run|--help)([[:space:]].*)?([;&|]|$)/\1/g' | \
+  sed -E 's/(^|[;&|[:space:]])npm[[:space:]]+publish[[:space:]]+(--dry-run|--help)([[:space:]]|$)/ /g')
 if ! echo "$STRIPPED" | grep -qE '(^|[;&|[:space:]])npm[[:space:]]+publish([[:space:]]|$)'; then
   exit 0
 fi
