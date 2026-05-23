@@ -81,6 +81,7 @@ TechDebtMCP/
 ├── docs/site/
 │   ├── .vitepress/              # VitePress config + custom slate theme
 │   ├── public/                  # Static assets (icon.png + inverted icon-light.png)
+│   ├── .showcase.json           # Pinned-SHA manifest consumed by scripts/scan-showcase.mjs
 │   ├── index.md                 # Landing hero
 │   └── install.md, languages.md, custom-rules.md, security.md, privacy.md
 ├── scripts/

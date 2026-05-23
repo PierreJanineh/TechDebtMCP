@@ -26,6 +26,11 @@ const examplesDir = resolve(siteRoot, 'examples');
 const manifestPath = resolve(siteRoot, '.showcase.json');
 const cacheDir = resolve(repoRoot, 'node_modules/.cache/td-showcase');
 
+if (process.env.SKIP_SHOWCASE === '1') {
+  console.log('[scan-showcase] SKIP_SHOWCASE=1 — skipping showcase generation.');
+  process.exit(0);
+}
+
 if (!existsSync(distAnalysis) || !existsSync(distSqale) || !existsSync(distDeps)) {
   console.error('[scan-showcase] dist not built. Run `npm run build` first.');
   process.exit(1);
@@ -128,7 +133,8 @@ for (const repo of manifest.repos) {
     slug, owner, name, language, sha, blurb,
     scannedAt: new Date().toISOString(),
     scanMs,
-    totalFiles: result.totalFiles ?? null,
+    totalFiles: result.project?.totalFiles ?? null,
+    analyzedFiles: result.project?.analyzedFiles ?? null,
     totalIssues: result.issues.length,
     bySeverity: bySev,
     sqale: {

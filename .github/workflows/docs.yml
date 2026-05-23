@@ -44,6 +44,13 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
+      - name: Cache showcase clones
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.cache/td-showcase
+          key: td-showcase-${{ hashFiles('docs/site/.showcase.json') }}
+          restore-keys: td-showcase-
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
