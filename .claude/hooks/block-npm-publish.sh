@@ -39,7 +39,7 @@ fi
 # (or end of string), provided --dry-run or --help appears somewhere in
 # that segment.
 STRIPPED=$(echo "$COMMAND" | \
-  sed -E 's/(^|[;&|[:space:]])npm[[:space:]]+publish([[:space:]]+--[a-z][a-z-]*)*[[:space:]]+(--dry-run|--help)([[:space:]].*)?([;&|]|$)/\1/g' | \
+  sed -E 's/(^|[;&|[:space:]])npm[[:space:]]+publish([[:space:]]+--[a-z][a-z-]*)*[[:space:]]+(--dry-run|--help)([[:space:]]+[^;&|]*)?([;&|]|$)/\1/g' | \
   sed -E 's/(^|[;&|[:space:]])npm[[:space:]]+publish[[:space:]]+(--dry-run|--help)([[:space:]]|$)/ /g')
 if ! echo "$STRIPPED" | grep -qE '(^|[;&|[:space:]])npm[[:space:]]+publish([[:space:]]|$)'; then
   exit 0

@@ -90,11 +90,26 @@ The repository ships a small set of Claude Code automation files that improve th
 
 ### Scoping
 
-| Distribution channel | `.claude/` included? | Why not |
+| Distribution channel | Dev files included? | Mechanism |
 |---|---|---|
-| npm (`npm publish`) | No | `.npmignore` excludes the entire `.claude/` directory |
+| npm (`npm publish`) | No | `package.json` `files` allowlist (`dist/`, `README.md`, `LICENSE`) — deny-by-default; everything else is excluded |
 | MCPB bundle (`npm run mcpb:pack`) | No | `scripts/build-mcpb.mjs` only stages `package.json`, `package-lock.json`, `README.md`, `LICENSE`, `dist/`, and the MCPB manifest/icon |
 | Claude Code plugin marketplace | No | Plugin install distributes `.claude-plugin/plugin.json` (which runs `npx -y tech-debt-mcp@latest`); it does not load the source repo's `.claude/settings.json` into end users' sessions |
+
+The following contributor-only and dev-only files are excluded from the npm package (and by extension, the plugin marketplace):
+
+- **`.claude/`** — Claude Code contributor automation (hooks, rules, skills, settings)
+- **`.claude-plugin/`** — Claude Code plugin/marketplace manifest
+- **`CLAUDE.md`**, **`CONTRIBUTING.md`**, **`ARCHITECTURE.md`**, **`ROADMAP.md`**, **`TECH_DEBT_SCAN.md`**, **`CHANGELOG.md`**, **`RELEASE.md`**, **`QUICK_RELEASE.md`**, **`GITHUB_PACKAGES.md`**, **`CODE_OF_CONDUCT.md`**, **`SECURITY.md`**, **`PRIVACY.md`**
+- **`src/`** (TypeScript source — compiled output ships as `dist/`)
+- **`tests/`**, **`src/**/__tests__/`**, **`*.test.ts`** (test infrastructure)
+- **`scripts/`** — build helpers (`build-mcpb.mjs`, `gen-docs-tools.mjs`)
+- **`docs/`** — VitePress docs site (served via GitHub Pages, not npm)
+- **`mcpb/`** — MCPB bundle source (separate distribution channel, not npm)
+- **`.github/`** — CI workflows and GitHub configuration
+- **`eslint.config.mjs`**, **`jest.config.js`**, **`tsconfig.json`** — dev tool configuration
+- **`.techdebtrc.json`** — project's own self-scan config (not useful to library consumers)
+- **`.env.example`**, **`npm-deps.txt`** — development helpers
 
 ### Distributed files
 
