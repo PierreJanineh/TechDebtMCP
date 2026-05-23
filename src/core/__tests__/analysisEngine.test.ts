@@ -34,9 +34,9 @@ const mockLoadConfig = loadConfig as jest.MockedFunction<typeof loadConfig>;
 const mockAnalyzeFile = analyzeFileContent as jest.MockedFunction<typeof analyzeFileContent>;
 
 const FILES = [
-  'src/foo.ts',
-  'src/bar.ts',
-  'lib/baz.ts',
+  '/project/src/foo.ts',
+  '/project/src/bar.ts',
+  '/project/lib/baz.ts',
 ];
 
 describe('AnalysisEngine.analyzeProject – include glob filtering', () => {
