@@ -151,10 +151,19 @@ export class AnalysisEngine {
     const projectConfig = await loadConfig(projectPath);
     const mergedConfig = { ...this.config, ...projectConfig };
 
-    // Build a per-call custom rules engine from config patterns (if any)
-    const customRulesEngine = Array.isArray(mergedConfig.customPatterns) && mergedConfig.customPatterns.length > 0
-      ? new CustomRulesEngine(mergedConfig.customPatterns)
-      : null;
+    // Build a per-call custom rules engine from config patterns (if any).
+    // Wrap construction in try/catch: loadConfig() does not validate entries, so a
+    // malformed element (e.g. null, missing id) would otherwise throw inside the
+    // constructor and abort the entire scan.
+    let customRulesEngine: CustomRulesEngine | null = null;
+    if (Array.isArray(mergedConfig.customPatterns) && mergedConfig.customPatterns.length > 0) {
+      try {
+        customRulesEngine = new CustomRulesEngine(mergedConfig.customPatterns);
+      } catch {
+        // Invalid pattern entries — skip custom rules for this scan rather than aborting
+        customRulesEngine = null;
+      }
+    }
 
     // Build override map once — O(1) per-file language detection in both loops below
     const overrideMap = buildOverrideExtensionMap(mergedConfig);

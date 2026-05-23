@@ -277,7 +277,7 @@ Every tool declares a [tool annotation](https://modelcontextprotocol.io/specific
 | `list_custom_rules` | — | — | — | — | No parameters |
 | `execute_custom_rules` | `path` | string | ◐ | absolute path, max 500,000 bytes | File to analyze |
 | | `code` | string | ◐ | 1-500,000 chars | Source code to analyze directly |
-| | `language` | string | | | Filter rules by language |
+| | `language` | string | | must be a supported language ID (same set as `list_supported_languages`) | Filter rules by language |
 | `validate_custom_pattern` | `id` | string | ✓ | | Unique rule identifier |
 | | `pattern` | string | ✓ | max 1,000 chars | Regex to validate |
 | | `message` | string | ✓ | | Issue title/message |
@@ -427,6 +427,8 @@ issues.push(...this.checkPattern(filePath, content, /@ts-ignore/g, { ... }));
 Without a rule name, all rules are suppressed. Blocks can be nested. Suppression comments must appear on their own line.
 
 ### Example Custom Rules
+
+> **Scope note:** `customPatterns` defined in `.techdebtrc.json` are applied only by `analyze_project`, which loads the project config before scanning. `analyze_file` invokes the language analyzer directly without loading `.techdebtrc.json`, so config-defined patterns are not applied on that path. Use `add_custom_rule` at runtime (or call `execute_custom_rules` directly) to run custom patterns against a single file.
 
 Define patterns in `.techdebtrc.json` under `customPatterns`, or register them at runtime via the `add_custom_rule` MCP tool:
 
