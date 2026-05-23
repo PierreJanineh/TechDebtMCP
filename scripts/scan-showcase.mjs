@@ -28,8 +28,10 @@ const cacheDir = resolve(repoRoot, 'node_modules/.cache/td-showcase');
 
 if (process.env.SKIP_SHOWCASE === '1') {
   console.log('[scan-showcase] SKIP_SHOWCASE=1 — skipping showcase generation.');
-  // Emit a minimal examples/index.md so nav/sidebar links remain valid when
-  // showcase generation is bypassed (offline builds, CI opt-out, etc.).
+  // Clear any previously generated examples/ content so stale pages don't
+  // get served alongside the "skipped" index, then emit a minimal index.md
+  // so nav/sidebar links remain valid (offline builds, CI opt-out, etc.).
+  await rm(resolve(repoRoot, 'docs/site/examples'), { recursive: true, force: true });
   await mkdir(resolve(repoRoot, 'docs/site/examples'), { recursive: true });
   await writeFile(
     resolve(repoRoot, 'docs/site/examples/index.md'),
@@ -65,10 +67,16 @@ const run = (cmd, args, opts = {}) => {
   return r.stdout;
 };
 
-const cloneAtSha = (owner, name, sha) => {
+const cloneAtSha = async (owner, name, sha) => {
   const target = join(cacheDir, `${owner}-${name}-${sha.slice(0, 12)}`);
   if (existsSync(join(target, '.git'))) {
     return target;
+  }
+  // If the target directory exists without a .git, pre-existing files would
+  // remain as untracked content after checkout and pollute scan results.
+  // Remove it entirely so the working tree exactly matches the pinned SHA.
+  if (existsSync(target)) {
+    await rm(target, { recursive: true, force: true });
   }
   console.log(`[scan-showcase] cloning ${owner}/${name}@${sha.slice(0, 7)}...`);
   run('git', ['init', '-q', target]);
@@ -82,7 +90,7 @@ const scanResults = [];
 
 for (const repo of manifest.repos) {
   const { slug, owner, name, language, sha, blurb } = repo;
-  const path = cloneAtSha(owner, name, sha);
+  const path = await cloneAtSha(owner, name, sha);
 
   console.log(`[scan-showcase] scanning ${owner}/${name}...`);
   const t0 = Date.now();
@@ -182,11 +190,11 @@ function formatMinutes(mins) {
   return hours ? `${days}d ${hours}h` : `${days}d`;
 }
 
-// Trim the dep report to the high-signal head — drop the trailing
-// "next steps" advice section so the bubble stays tight.
+// Trim the dep report to the high-signal head — drop trailing footer sections
+// (Next Steps, Notes, Recommendations, Tips) so the bubble stays tight.
 function trimDepsReport(text) {
   if (!text) return null;
-  // Cut at the first "##" appearing after line 5 (skips title) or known footer
+  // Cut at the first known footer heading appearing after line 5 (skips the report title)
   const lines = text.split('\n');
   const cutoff = lines.findIndex((l, i) => i > 5 && /^## (Next steps|Notes|Recommendations|Tips)/i.test(l));
   const sliced = cutoff > 0 ? lines.slice(0, cutoff).join('\n') : text;
