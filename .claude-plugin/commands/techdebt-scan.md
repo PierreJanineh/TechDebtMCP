@@ -17,7 +17,7 @@ Scan the project for technical debt using the tech-debt-mcp analyzer.
 3. Call `mcp__tech-debt-mcp__get_sqale_metrics` with `{ "path": "<resolved-path>" }`.
 
 4. Present a concise summary:
-   - Health score and SQALE rating (from `get_sqale_metrics`).
+   - Health score (from `analyze_project`) and SQALE rating (from `get_sqale_metrics`).
    - Total issue count broken down by severity (critical / high / medium / low).
    - Estimated total remediation time.
    - Top 5 issues ranked by severity from the `analyze_project` results, including file, line, and a one-line fix hint.

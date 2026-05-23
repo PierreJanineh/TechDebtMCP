@@ -21,5 +21,5 @@ Analyze a single file for technical debt using the tech-debt-mcp analyzer.
 
 ## Notes
 
-- Do not duplicate MCP tool logic — all analysis is performed by `analyze_file`.
+- Do not duplicate MCP tool logic — all analysis is performed by `mcp__tech-debt-mcp__analyze_file`.
 - If no argument is provided, ask the user for the absolute path to the file they want to analyze.

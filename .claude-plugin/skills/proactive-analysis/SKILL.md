@@ -34,7 +34,7 @@ Always pass absolute paths to tool arguments. If you only have a relative path, 
 
 ## How to present findings
 
-- **Before a PR**: include a short "Tech Debt Check" section in the PR description draft with health score, debt score, and any critical/high issues. For SQALE rating, call `mcp__tech-debt-mcp__get_sqale_metrics` in addition to `analyze_project`. Offer to fix blockers before the PR is opened.
+- **Before a PR**: include a short "Tech Debt Check" section in the PR description draft with health score, debt score, and any critical/high issues. For SQALE rating, call `mcp__tech-debt-mcp__get_sqale_metrics` in addition to `mcp__tech-debt-mcp__analyze_project`. Offer to fix blockers before the PR is opened.
 - **During code review**: annotate relevant lines with the debt finding and a one-line fix suggestion. Do not flood the review — surface at most the top 5 issues ranked by severity × effort.
 - **Merge-readiness check**: give a pass/fail verdict. Pass = health ≥ 70 and no critical or high issues. Fail = list the blockers.
 
