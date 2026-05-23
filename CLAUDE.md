@@ -126,7 +126,7 @@ npm run docs:build    # full build: tsc → gen-docs-tools.mjs → vitepress bui
 
 ### Request flow
 
-**Tools:** `MCP client` → `handlers.ts` (`CallToolRequestSchema` switch) → `AnalysisEngine` → `createAnalyzer()` (per file language) → `[Language]Analyzer.performLanguageSpecificChecks()` → issues array (inline suppression applied per-line in `checkPattern`/`checkTodoComments`) → `applyRuleExclusions()` (filter by config globs) → `formatters.ts` → response.
+**Tools:** `MCP client` → `handlers.ts` (`CallToolRequestSchema` switch) → `AnalysisEngine` → `createAnalyzer()` (per file language) → `[Language]Analyzer.performLanguageSpecificChecks()` → issues array (inline suppression applied per-line in `checkPattern`/`checkTodoComments`) → `applyRuleExclusions()` (filter by config globs) → `CustomRulesEngine.executeRules()` (called once per file; internally iterates all `customPatterns` entries from `.techdebtrc.json`, applying inline suppression to each match) → `AnalysisEngine.applyCustomRuleExclusions()` (filter custom-pattern issues by `ruleExclusions` config globs) → `AnalysisEngine.applyCustomSeverityOverrides()` (apply per-rule severity overrides from `config.severity`) → `AnalysisEngine.filterIssues()` (filter by requested severity/category) → `formatters.ts` → response.
 
 **Resources:** `MCP client` → `resourceHandlers.ts` (via `McpServer.registerResource()`) → `AnalysisEngine.analyzeProject()` → JSON response.
 

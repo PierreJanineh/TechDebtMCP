@@ -34,9 +34,9 @@ const mockLoadConfig = loadConfig as jest.MockedFunction<typeof loadConfig>;
 const mockAnalyzeFile = analyzeFileContent as jest.MockedFunction<typeof analyzeFileContent>;
 
 const FILES = [
-  '/project/src/foo.ts',
-  '/project/src/bar.ts',
-  '/project/lib/baz.ts',
+  'src/foo.ts',
+  'src/bar.ts',
+  'lib/baz.ts',
 ];
 
 describe('AnalysisEngine.analyzeProject – include glob filtering', () => {
@@ -65,18 +65,18 @@ describe('AnalysisEngine.analyzeProject – include glob filtering', () => {
     // Only src/foo.ts and src/bar.ts match src/**; lib/baz.ts does not
     expect(mockAnalyzeFile).toHaveBeenCalledTimes(2);
     const analyzed = mockAnalyzeFile.mock.calls.map(c => c[0] as string);
-    expect(analyzed).toContain('/project/src/foo.ts');
-    expect(analyzed).toContain('/project/src/bar.ts');
-    expect(analyzed).not.toContain('/project/lib/baz.ts');
+    expect(analyzed).toContain('src/foo.ts');
+    expect(analyzed).toContain('src/bar.ts');
+    expect(analyzed).not.toContain('lib/baz.ts');
   });
 
   it('accepts a file when any include pattern matches', async () => {
     const engine = new AnalysisEngine({ include: ['lib/**', 'src/foo.ts'] });
     await engine.analyzeProject({ path: '/project' });
     const analyzed = mockAnalyzeFile.mock.calls.map(c => c[0] as string);
-    expect(analyzed).toContain('/project/src/foo.ts');
-    expect(analyzed).toContain('/project/lib/baz.ts');
-    expect(analyzed).not.toContain('/project/src/bar.ts');
+    expect(analyzed).toContain('src/foo.ts');
+    expect(analyzed).toContain('lib/baz.ts');
+    expect(analyzed).not.toContain('src/bar.ts');
   });
 });
 
@@ -102,8 +102,8 @@ describe('AnalysisEngine.analyzeProject – include glob POSIX normalization', (
     // Both src files should still match after normalization
     expect(mockAnalyzeFile).toHaveBeenCalledTimes(2);
     const analyzed = mockAnalyzeFile.mock.calls.map(c => c[0] as string);
-    expect(analyzed).toContain('/project/src/foo.ts');
-    expect(analyzed).toContain('/project/src/bar.ts');
+    expect(analyzed).toContain('src\\foo.ts');
+    expect(analyzed).toContain('src\\bar.ts');
   });
 });
 
@@ -167,7 +167,7 @@ describe('AnalysisEngine.analyzeProject – languageOverrides language detection
 describe('AnalysisEngine.analyzeProject – languageOverrides config merging', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetProjectFiles.mockResolvedValue(['/project/src/foo.ts']);
+    mockGetProjectFiles.mockResolvedValue(['src/foo.ts']);
     mockLoadConfig.mockResolvedValue({} as TechDebtConfig);
     mockAnalyzeFile.mockResolvedValue({ issues: [] } as unknown as FileAnalysisResult);
   });

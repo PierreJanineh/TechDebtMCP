@@ -20,6 +20,7 @@ import {
   getSupportedLanguages,
 } from '../config/languages.js';
 import { SQALEEngine } from './sqaleEngine.js';
+import { CustomRulesEngine } from './customRulesEngine.js';
 import {
   getProjectFiles,
   loadConfig,
@@ -150,6 +151,11 @@ export class AnalysisEngine {
     const projectConfig = await loadConfig(projectPath);
     const mergedConfig = { ...this.config, ...projectConfig };
 
+    // Build a per-call custom rules engine from config patterns (if any)
+    const customRulesEngine = Array.isArray(mergedConfig.customPatterns) && mergedConfig.customPatterns.length > 0
+      ? new CustomRulesEngine(mergedConfig.customPatterns)
+      : null;
+
     // Build override map once — O(1) per-file language detection in both loops below
     const overrideMap = buildOverrideExtensionMap(mergedConfig);
     const baseExtensions = getAllExtensions();
@@ -203,10 +209,25 @@ export class AnalysisEngine {
       const lang = detectLanguageWithOverrides(file, overrideMap);
       if (!lang || !targetLanguages.has(lang)) continue;
 
-      const fileIssues = await this.analyzeFileSafe(file, projectPath, lang, mergedConfig, options);
+      // Read file once; reuse for both the language analyzer and custom patterns.
+      let content: string;
+      try {
+        content = await readFile(file);
+      } catch {
+        continue;
+      }
+
+      const fileIssues = await this.analyzeFileSafe(file, content, lang, projectPath, mergedConfig, options);
       if (fileIssues === null) continue;
 
       allIssues.push(...fileIssues);
+
+      if (customRulesEngine) {
+        const customIssues = this.applyCustomPatterns(
+          customRulesEngine, file, content, projectPath, lang, mergedConfig, options
+        );
+        allIssues.push(...customIssues);
+      }
       analyzedCount++;
     }
 
@@ -245,30 +266,89 @@ export class AnalysisEngine {
   }
 
   /**
-   * Analyze a single file, returning filtered issues or null on failure.
-   * The caller passes the detected language and the base merged config; this
-   * method applies the per-language override internally via mergeLanguageOverride()
-   * before creating the analyzer, so callers are not responsible for pre-merging.
+   * Analyze a single file using pre-read content, returning filtered issues or null on failure.
+   * Content is read once in the caller and shared with custom-pattern processing to avoid
+   * duplicate filesystem I/O per file. The per-language override is applied here via
+   * mergeLanguageOverride() before delegating to analyzeFileContent().
    */
   private async analyzeFileSafe(
     file: string,
-    projectPath: string,
+    content: string,
     language: SupportedLanguage,
+    projectPath: string,
     config: TechDebtConfig,
     options: AnalysisOptions
   ): Promise<TechDebtIssue[] | null> {
     try {
       const effectiveConfig = mergeLanguageOverride(config, language);
-      const content = await readFile(file);
-      const result = await analyzeFileContent(file, content, language, effectiveConfig);
       const relativePath = getRelativePath(projectPath, file);
-      const issues = result.issues.map(issue => ({ ...issue, file: relativePath }));
-      return this.filterIssues(issues, options);
+      const result = await analyzeFileContent(relativePath, content, language, effectiveConfig);
+      return this.filterIssues(result.issues, options);
     } catch {
       // Skip files that cannot be analyzed (e.g., encoding or permission errors).
       // Individual file failures should not abort the whole project scan.
       return null;
     }
+  }
+
+  /**
+   * Run custom patterns from the config against a single file using pre-read content.
+   * Stamps `language` on each issue so they contribute to `summary.byLanguage`,
+   * applies `ruleExclusions` and `severity` overrides, and filters by severity/category.
+   */
+  private applyCustomPatterns(
+    engine: CustomRulesEngine,
+    file: string,
+    content: string,
+    projectPath: string,
+    lang: SupportedLanguage,
+    config: TechDebtConfig,
+    options: AnalysisOptions
+  ): TechDebtIssue[] {
+    const relativePath = getRelativePath(projectPath, file);
+    const rawIssues = engine.executeRules(relativePath, content, lang);
+    const stampedIssues = rawIssues.map(issue => ({ ...issue, language: lang }));
+    const excluded = this.applyCustomRuleExclusions(relativePath, stampedIssues, config);
+    const withSeverity = this.applyCustomSeverityOverrides(excluded, config);
+    return this.filterIssues(withSeverity, options);
+  }
+
+  /**
+   * Apply ruleExclusions from config to custom-pattern issues.
+   * Mirrors the logic in BaseAnalyzer.applyRuleExclusions so that config-defined
+   * `ruleExclusions` work consistently for both built-in and custom rules.
+   */
+  private applyCustomRuleExclusions(
+    relativePath: string,
+    issues: TechDebtIssue[],
+    config: TechDebtConfig
+  ): TechDebtIssue[] {
+    const exclusions = config.ruleExclusions;
+    if (!exclusions || Object.keys(exclusions).length === 0) {
+      return issues;
+    }
+    const normalizedPath = relativePath.replace(/\\/g, '/');
+    return issues.filter(issue => {
+      const patterns = exclusions[issue.rule];
+      if (!patterns || patterns.length === 0) return true;
+      return !patterns.some(pattern => minimatch(normalizedPath, pattern));
+    });
+  }
+
+  /**
+   * Apply severity overrides from `config.severity` to custom-pattern issues.
+   * Mirrors BaseAnalyzer.applySeverityOverrides so custom rules respect the same
+   * per-rule severity config that built-in analyzer rules honor.
+   */
+  private applyCustomSeverityOverrides(issues: TechDebtIssue[], config: TechDebtConfig): TechDebtIssue[] {
+    const overrides = config.severity;
+    if (!overrides || Object.keys(overrides).length === 0) {
+      return issues;
+    }
+    return issues.map(issue => {
+      const override = overrides[issue.rule];
+      return override !== undefined ? { ...issue, severity: override } : issue;
+    });
   }
 
   /**
