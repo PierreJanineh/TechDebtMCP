@@ -21,7 +21,12 @@ if ! echo "$COMMAND" | grep -qE '(^|[;&|[:space:]])npm[[:space:]]+publish([[:spa
   exit 0
 fi
 
-if echo "$COMMAND" | grep -qE '(--dry-run|--help)'; then
+# Allow only if every npm publish invocation in the command is followed by
+# --dry-run or --help (i.e. no bare publish slips through after a separator).
+# Strip all allowlisted invocations and re-check: if any npm publish remains,
+# it is a bare publish that must be blocked.
+STRIPPED=$(echo "$COMMAND" | sed -E 's/(^|[;&|[:space:]])npm[[:space:]]+publish[[:space:]]+(--dry-run|--help)([[:space:]]|$)/ /g')
+if ! echo "$STRIPPED" | grep -qE '(^|[;&|[:space:]])npm[[:space:]]+publish([[:space:]]|$)'; then
   exit 0
 fi
 
