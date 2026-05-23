@@ -139,7 +139,7 @@ for (const repo of manifest.repos) {
   for (const cfgName of ['.techdebtrc.json', '.techdebtrc', 'techdebt.config.json', '.techdebt.json']) {
     const cfgPath = join(path, cfgName);
     if (existsSync(cfgPath)) {
-      await rm(cfgPath, { force: true });
+      await rm(cfgPath, { force: true, recursive: true });
       console.log(`[scan-showcase] removed ${cfgName} from ${owner}/${name} to ensure default scan settings`);
     }
   }
