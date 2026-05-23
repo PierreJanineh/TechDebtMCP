@@ -2,6 +2,8 @@ import { jest } from '@jest/globals';
 import { AnalysisEngine } from '../analysisEngine.js';
 import type { TechDebtConfig, FileAnalysisResult } from '../../types/index.js';
 
+const mockAnalyze = jest.fn(() => Promise.resolve({ issues: [] }));
+
 jest.mock('../../utils/fileUtils.js', () => ({
   getProjectFiles: jest.fn(),
   loadConfig: jest.fn(() => Promise.resolve({})),
@@ -10,23 +12,26 @@ jest.mock('../../utils/fileUtils.js', () => ({
     // Simulate platform-agnostic relative path
     return file.replace('/project/', '');
   }),
+  readFile: jest.fn(() => Promise.resolve('')),
 }));
 jest.mock('../../analyzers/index.js', () => ({
-  analyzeFile: jest.fn(() => Promise.resolve({ issues: [] })),
+  createAnalyzer: jest.fn(() => ({ analyze: mockAnalyze })),
+  analyzeFileContent: jest.fn(() => Promise.resolve({ issues: [] })),
 }));
 jest.mock('../../config/languages.js', () => ({
-  LANGUAGE_CONFIGS: {},
+  LANGUAGE_CONFIGS: { typescript: { extensions: ['.ts'] } },
   getAllExtensions: jest.fn(() => ['.ts']),
   detectLanguageFromExtension: jest.fn((file: string) => (file.endsWith('.ts') ? 'typescript' : null)),
   getSupportedLanguages: jest.fn(() => ['typescript']),
 }));
 
 import { getProjectFiles, loadConfig } from '../../utils/fileUtils.js';
-import { analyzeFile } from '../../analyzers/index.js';
+import { analyzeFileContent } from '../../analyzers/index.js';
 
 const mockGetProjectFiles = getProjectFiles as jest.MockedFunction<typeof getProjectFiles>;
 const mockLoadConfig = loadConfig as jest.MockedFunction<typeof loadConfig>;
-const mockAnalyzeFile = analyzeFile as jest.MockedFunction<typeof analyzeFile>;
+// analyzeFileContent is mocked inline in jest.mock factory above; cast to access jest mock API
+const mockAnalyzeFile = analyzeFileContent as jest.MockedFunction<typeof analyzeFileContent>;
 
 const FILES = [
   '/project/src/foo.ts',
@@ -99,5 +104,97 @@ describe('AnalysisEngine.analyzeProject – include glob POSIX normalization', (
     const analyzed = mockAnalyzeFile.mock.calls.map(c => c[0] as string);
     expect(analyzed).toContain('/project/src/foo.ts');
     expect(analyzed).toContain('/project/src/bar.ts');
+  });
+});
+
+describe('AnalysisEngine.analyzeProject – languageOverrides extensions', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetProjectFiles.mockResolvedValue(FILES);
+    mockLoadConfig.mockResolvedValue({} as TechDebtConfig);
+    mockAnalyzeFile.mockResolvedValue({ issues: [] } as unknown as FileAnalysisResult);
+  });
+
+  it('passes extra override extensions to getProjectFiles', async () => {
+    const config: TechDebtConfig = {
+      languageOverrides: {
+        typescript: { extensions: ['.mts'] },
+      },
+    };
+    const engine = new AnalysisEngine(config);
+    await engine.analyzeProject({ path: '/project' });
+    const [, extensions] = mockGetProjectFiles.mock.calls[0] as [string, string[], unknown];
+    expect(extensions).toContain('.ts');   // from base LANGUAGE_CONFIGS
+    expect(extensions).toContain('.mts');  // from languageOverrides
+  });
+
+  it('does not duplicate extensions already in the base list', async () => {
+    const config: TechDebtConfig = {
+      languageOverrides: {
+        typescript: { extensions: ['.ts'] }, // .ts already in base
+      },
+    };
+    const engine = new AnalysisEngine(config);
+    await engine.analyzeProject({ path: '/project' });
+    const [, extensions] = mockGetProjectFiles.mock.calls[0] as [string, string[], unknown];
+    const count = extensions.filter(e => e === '.ts').length;
+    expect(count).toBe(1);
+  });
+});
+
+describe('AnalysisEngine.analyzeProject – languageOverrides language detection', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockLoadConfig.mockResolvedValue({} as TechDebtConfig);
+    mockAnalyzeFile.mockResolvedValue({ issues: [] } as unknown as FileAnalysisResult);
+  });
+
+  it('override extension takes precedence over static detectLanguageFromExtension', async () => {
+    // .myts is not in the base config; detectLanguageFromExtension returns null for it
+    mockGetProjectFiles.mockResolvedValue(['/project/src/foo.myts']);
+    const config: TechDebtConfig = {
+      languageOverrides: {
+        typescript: { extensions: ['.myts'] },
+      },
+    };
+    const engine = new AnalysisEngine(config);
+    await engine.analyzeProject({ path: '/project' });
+    // analyzeFileContent should be invoked with the override-detected language
+    expect(mockAnalyzeFile).toHaveBeenCalledWith(expect.any(String), expect.any(String), 'typescript', expect.any(Object));
+  });
+});
+
+describe('AnalysisEngine.analyzeProject – languageOverrides config merging', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetProjectFiles.mockResolvedValue(['/project/src/foo.ts']);
+    mockLoadConfig.mockResolvedValue({} as TechDebtConfig);
+    mockAnalyzeFile.mockResolvedValue({ issues: [] } as unknown as FileAnalysisResult);
+  });
+
+  it('per-language severity override is merged into the config passed to analyzeFileContent', async () => {
+    const config: TechDebtConfig = {
+      languageOverrides: {
+        typescript: { severity: { 'todo-comment': 'critical' } },
+      },
+    };
+    const engine = new AnalysisEngine(config);
+    await engine.analyzeProject({ path: '/project' });
+    // analyzeFileContent(filePath, content, language, config) — config is arg index 3
+    const calledConfig = (mockAnalyzeFile.mock.calls[0] as unknown[])[3] as TechDebtConfig;
+    expect(calledConfig.severity?.['todo-comment']).toBe('critical');
+  });
+
+  it('per-language rules override is merged into the config passed to analyzeFileContent', async () => {
+    const config: TechDebtConfig = {
+      languageOverrides: {
+        typescript: { rules: { maxFileLines: 200 } },
+      },
+    };
+    const engine = new AnalysisEngine(config);
+    await engine.analyzeProject({ path: '/project' });
+    // analyzeFileContent(filePath, content, language, config) — config is arg index 3
+    const calledConfig = (mockAnalyzeFile.mock.calls[0] as unknown[])[3] as TechDebtConfig;
+    expect(calledConfig.rules?.maxFileLines).toBe(200);
   });
 });
