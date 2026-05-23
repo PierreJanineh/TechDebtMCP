@@ -1,6 +1,6 @@
 {
   "name": "tech-debt-mcp",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "mcpName": "io.github.PierreJanineh/tech-debt-mcp",
   "description": "MCP Server for analyzing technical debt across multiple programming languages",
   "main": "dist/index.js",

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-05-24
+
 ### Changed (breaking)
 - **Renamed MCP tool `list_custom_rules` → `list_session_custom_rules`** (TEC-51) — the previous name promised "all active custom rules" but the handler only returned rules added via `add_custom_rule` in the current session, omitting any `customPatterns` defined in `.techdebtrc.json` (which are still executed inside `analyze_project`). The tool was renamed rather than expanded so the name matches its actual scope. **Migration:** clients calling `list_custom_rules` will now receive `MethodNotFound` — update calls to `list_session_custom_rules`. To inspect `.techdebtrc.json` `customPatterns`, read the config file directly or invoke `validate_config`. Searchable: `list_custom_rules` was renamed to `list_session_custom_rules`.
 
