@@ -83,11 +83,13 @@ TechDebtMCP/
 ├── docs/site/
 │   ├── .vitepress/              # VitePress config + custom slate theme
 │   ├── public/                  # Static assets (icon.png + inverted icon-light.png)
+│   ├── .showcase.json           # Pinned-SHA manifest consumed by scripts/scan-showcase.mjs
 │   ├── index.md                 # Landing hero
 │   └── install.md, languages.md, custom-rules.md, security.md, privacy.md
 ├── scripts/
 │   ├── build-mcpb.mjs           # Stages + packs the .mcpb (npm run mcpb:pack)
-│   └── gen-docs-tools.mjs       # Generates docs/site/tools/*.md from TOOL_DEFINITIONS
+│   ├── gen-docs-tools.mjs       # Generates docs/site/tools/*.md from TOOL_DEFINITIONS
+│   └── scan-showcase.mjs        # Clones repos in docs/site/.showcase.json at pinned SHAs, calls AnalysisEngine.analyzeProject() directly (not the MCP tool handler), emits docs/site/examples/*.md chat-style pages
 ├── package.json
 ├── tsconfig.json
 ├── .github/copilot-instructions.md

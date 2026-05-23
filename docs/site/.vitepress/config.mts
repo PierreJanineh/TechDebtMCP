@@ -45,6 +45,7 @@ export default defineConfig({
     nav: [
       { text: 'Install', link: '/install' },
       { text: 'Tools', link: '/tools/' },
+      { text: 'Examples', link: '/examples/' },
       { text: 'Custom Rules', link: '/custom-rules' },
       { text: 'Security', link: '/security' },
       {
@@ -70,6 +71,12 @@ export default defineConfig({
             { text: 'Overview', link: '/' },
             { text: 'Install', link: '/install' },
             { text: 'Language Coverage', link: '/languages' },
+          ],
+        },
+        {
+          text: 'Showcase',
+          items: [
+            { text: 'Example Scans', link: '/examples/' },
           ],
         },
         {

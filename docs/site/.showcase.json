@@ -1,0 +1,29 @@
+{
+  "description": "Pinned manifest for showcase scans. Bump SHAs manually at release time, then run `npm run docs:scan-showcase` to regenerate pages.",
+  "repos": [
+    {
+      "slug": "gson",
+      "owner": "google",
+      "name": "gson",
+      "language": "Java",
+      "sha": "abfef5e8455483b878a8dea14dd42fa55832a56c",
+      "blurb": "Google's JSON serialization library for Java. Mature, focused, widely deployed."
+    },
+    {
+      "slug": "serilog",
+      "owner": "serilog",
+      "name": "serilog",
+      "language": "C#",
+      "sha": "2ef63645cf0d0edd4b187510b238754249c4348f",
+      "blurb": "Structured logging library for .NET. Mid-sized, well-maintained."
+    },
+    {
+      "slug": "slim",
+      "owner": "slimphp",
+      "name": "Slim",
+      "language": "PHP",
+      "sha": "e12cb05ca2a14e8f459d019e87a31dc915b80470",
+      "blurb": "Micro-framework for PHP. Small, focused codebase."
+    }
+  ]
+}

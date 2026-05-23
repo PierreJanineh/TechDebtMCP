@@ -104,12 +104,15 @@ docs/site/                      # (repo root — VitePress docs site for GitHub 
 │   ├── config.mts              # Nav, sidebar, base = '/TechDebtMCP/', local search
 │   └── theme/                  # Custom slate palette + home-scoped --home-* vars
 ├── public/                     # Static assets (icon.png + inverted icon-light.png)
+├── .showcase.json              # Pinned-SHA manifest consumed by scripts/scan-showcase.mjs (Gson, Serilog, Slim today)
 ├── index.md                    # Landing hero
 ├── install.md, languages.md, custom-rules.md, security.md, privacy.md
+├── examples/                   # gitignored — regenerated each build by scan-showcase.mjs
 └── tools/                      # gitignored — regenerated each build by gen-docs-tools.mjs
 scripts/
 ├── build-mcpb.mjs              # `npm run mcpb:pack` driver — stages, runs `npm ci --omit=dev --ignore-scripts`, packs
-└── gen-docs-tools.mjs          # `npm run docs:gen-tools` — imports dist/server/tools.js TOOL_DEFINITIONS, emits docs/site/tools/*.md + mirrors of ARCHITECTURE/ROADMAP/CHANGELOG
+├── gen-docs-tools.mjs          # `npm run docs:gen-tools` — imports dist/server/tools.js TOOL_DEFINITIONS, emits docs/site/tools/*.md + mirrors of ARCHITECTURE/ROADMAP/CHANGELOG
+└── scan-showcase.mjs           # `npm run docs:scan-showcase` — clones repos in .showcase.json at their pinned SHAs, calls AnalysisEngine.analyzeProject() directly + handleCheckDependencies() tool handler, emits docs/site/examples/*.md as chat-style audit pages
 ```
 
 ### Building the MCPB bundle
@@ -126,10 +129,10 @@ The build script asserts `mcpb/manifest.json.version === package.json.version` �
 
 ```bash
 npm run docs:dev      # local dev server at http://localhost:5173/TechDebtMCP/
-npm run docs:build    # full build: tsc → gen-docs-tools.mjs → vitepress build
+npm run docs:build    # full build: tsc → gen-docs-tools.mjs → scan-showcase.mjs → vitepress build
 ```
 
-`docs:build` runs `npm run build` first so `dist/server/tools.js` exists, then `scripts/gen-docs-tools.mjs` imports `TOOL_DEFINITIONS` directly and emits one Markdown page per tool plus mirrors of `ARCHITECTURE.md`, `ROADMAP.md`, and `CHANGELOG.md` into `docs/site/`. The whole generated tree is gitignored — root docs stay the canonical source. Deploys to GitHub Pages via `.github/workflows/docs.yml` on path-filtered pushes to `develop` (triggers on `docs/site/**`, `src/server/tools.ts`, `scripts/gen-docs-tools.mjs`, `ARCHITECTURE.md`, `ROADMAP.md`, `CHANGELOG.md`, `package.json`, `package-lock.json`, and `.github/workflows/docs.yml`).
+`docs:build` runs `npm run build` first so `dist/` exists, then `scripts/gen-docs-tools.mjs` imports `TOOL_DEFINITIONS` directly (emits one Markdown page per tool plus mirrors of `ARCHITECTURE.md`, `ROADMAP.md`, and `CHANGELOG.md`), then `scripts/scan-showcase.mjs` clones the repos listed in `docs/site/.showcase.json` at their pinned SHAs and emits `docs/site/examples/*.md` as chat-style audit pages. SHAs are bumped manually at release time. The whole generated tree (`tools/`, `examples/`, the three mirrored MDs) is gitignored — root docs stay the canonical source. Deploys to GitHub Pages via `.github/workflows/docs.yml` on path-filtered pushes to `develop` (triggers on `docs/site/**`, `src/server/tools.ts`, `scripts/gen-docs-tools.mjs`, `scripts/scan-showcase.mjs`, `ARCHITECTURE.md`, `ROADMAP.md`, `CHANGELOG.md`, `package.json`, `package-lock.json`, and `.github/workflows/docs.yml`).
 
 ### Request flow
 

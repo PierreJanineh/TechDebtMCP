@@ -19,8 +19,9 @@
     "prepare": "npm run build",
     "mcpb:pack": "node scripts/build-mcpb.mjs",
     "docs:gen-tools": "node scripts/gen-docs-tools.mjs",
-    "docs:dev": "npm run build && npm run docs:gen-tools && vitepress dev docs/site",
-    "docs:build": "npm run build && npm run docs:gen-tools && vitepress build docs/site",
+    "docs:scan-showcase": "npm run build && node scripts/scan-showcase.mjs",
+    "docs:dev": "npm run build && npm run docs:gen-tools && node scripts/scan-showcase.mjs && vitepress dev docs/site",
+    "docs:build": "npm run build && npm run docs:gen-tools && node scripts/scan-showcase.mjs && vitepress build docs/site",
     "docs:preview": "vitepress preview docs/site",
     "webhook": "PROJECT_ROOT=\"$(pwd)\"; if [ -z \"${PR_AUTOMATION_ROOT}\" ]; then echo 'Error: PR_AUTOMATION_ROOT is not set. Export it to the root of your pr-automation repo (containing scripts/webhook-listener.mjs).' >&2; exit 1; fi; node \"${PR_AUTOMATION_ROOT}/scripts/webhook-listener.mjs\""
   },

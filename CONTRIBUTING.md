@@ -103,7 +103,7 @@ The following contributor-only and dev-only files are excluded from the npm pack
 - **`CLAUDE.md`**, **`CONTRIBUTING.md`**, **`ARCHITECTURE.md`**, **`ROADMAP.md`**, **`TECH_DEBT_SCAN.md`**, **`CHANGELOG.md`**, **`RELEASE.md`**, **`QUICK_RELEASE.md`**, **`GITHUB_PACKAGES.md`**, **`CODE_OF_CONDUCT.md`**, **`SECURITY.md`**, **`PRIVACY.md`**
 - **`src/`** (TypeScript source — compiled output ships as `dist/`)
 - **`tests/`**, **`src/**/__tests__/`**, **`*.test.ts`** (test infrastructure)
-- **`scripts/`** — build helpers (`build-mcpb.mjs`, `gen-docs-tools.mjs`)
+- **`scripts/`** — build helpers (`build-mcpb.mjs`, `gen-docs-tools.mjs`, `scan-showcase.mjs`)
 - **`docs/`** — VitePress docs site (served via GitHub Pages, not npm)
 - **`mcpb/`** — MCPB bundle source (separate distribution channel, not npm)
 - **`.github/`** — CI workflows and GitHub configuration
