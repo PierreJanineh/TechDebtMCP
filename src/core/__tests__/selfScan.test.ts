@@ -7,11 +7,9 @@
  * `src/server/configValidator.ts`). If that set grows, the meta-check at the
  * bottom of this file fails until a fixture + assertion is added here.
  *
- * NOTE: until TEC-49 lands, the `customPatterns` assertion is expected to
- * fail — the config schema accepts the key, but the engine never reads it
- * during analysis. That is the contract TEC-49 must satisfy. See TEC-55.
- * (`severity` / TEC-56, `include` / TEC-57, and `languageOverrides` / TEC-58
- * have already landed and their assertions pass.)
+ * All 8 assertions are expected to pass — `customPatterns` / TEC-49,
+ * `severity` / TEC-56, `include` / TEC-57, and `languageOverrides` / TEC-58
+ * have all landed and their respective PRs are merged.
  */
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -79,8 +77,6 @@ describe('self-scan: each VALID_CONFIG_KEYS block has an observable effect', () 
     const report = await analyzeFixture('languageOverrides');
     expect(issuesIn(report, 'sample.special').length).toBeGreaterThan(0);
   });
-
-  // ---- Expected-failing blocks (TEC-49) ----
 
   it('customPatterns: user-defined pattern fires during project analysis', async () => {
     const report = await analyzeFixture('customPatterns');
