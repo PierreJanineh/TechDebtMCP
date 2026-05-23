@@ -56,6 +56,9 @@ await mkdir(cacheDir, { recursive: true });
 
 const run = (cmd, args, opts = {}) => {
   const r = spawnSync(cmd, args, { stdio: 'pipe', encoding: 'utf-8', ...opts });
+  if (r.error) {
+    throw new Error(`${cmd} ${args.join(' ')} failed to spawn: ${r.error.message}`);
+  }
   if (r.status !== 0) {
     throw new Error(`${cmd} ${args.join(' ')} failed: ${r.stderr || r.stdout}`);
   }
@@ -90,11 +93,16 @@ for (const repo of manifest.repos) {
   const bySev = { critical: 0, high: 0, medium: 0, low: 0 };
   for (const i of result.issues) bySev[i.severity] = (bySev[i.severity] || 0) + 1;
 
+  const SEV_RANK = { critical: 0, high: 1, medium: 2, low: 3 };
   const ruleCounts = {};
   for (const i of result.issues) {
     const k = i.rule || i.title;
     if (!ruleCounts[k]) ruleCounts[k] = { rule: k, count: 0, severity: i.severity, sample: i.description };
     ruleCounts[k].count++;
+    // Track worst (highest-rank) severity seen for this rule
+    if (SEV_RANK[i.severity] < SEV_RANK[ruleCounts[k].severity]) {
+      ruleCounts[k].severity = i.severity;
+    }
   }
   const topRules = Object.values(ruleCounts).sort((a, b) => b.count - a.count).slice(0, 8);
 
