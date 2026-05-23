@@ -17,7 +17,7 @@
 
 ```
 /plugin marketplace add PierreJanineh/TechDebtMCP
-/plugin install tech-debt-mcp@tech-debt-mcp
+/plugin install tech-debt-mcp@techdebtmcp
 ```
 
 After install, the MCP server is launched on demand via `npx -y tech-debt-mcp@latest` — no separate npm install needed.

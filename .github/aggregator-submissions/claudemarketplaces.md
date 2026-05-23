@@ -12,7 +12,7 @@
 - **Install command (for users):**
   ```
   /plugin marketplace add PierreJanineh/TechDebtMCP
-  /plugin install tech-debt-mcp@tech-debt-mcp
+  /plugin install tech-debt-mcp@techdebtmcp
   ```
 
 ## Plugin entry

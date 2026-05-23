@@ -90,7 +90,7 @@ src/
 └── settings.json               # Claude Code project settings (hook registrations, permissions)
 .claude-plugin/                 # (repo root — sibling of src/)
 ├── plugin.json                 # Claude Code plugin manifest (mcpServers → npx -y tech-debt-mcp@latest)
-├── marketplace.json            # Marketplace entry so this repo doubles as its own marketplace
+├── marketplace.json            # Marketplace entry so this repo doubles as its own marketplace. Top-level `version` and the plugin entry's `version` are enforced equal to `package.json.version` by `src/server/__tests__/pluginManifest.test.ts` and `scripts/build-mcpb.mjs:assertVersionsMatch()`.
 ├── README.md                   # User-facing plugin README shown in the Claude Code marketplace
 ├── commands/                   # Claude Code slash commands (/techdebt-scan, /techdebt-file, /techdebt-summary)
 └── skills/                     # Claude Code skills (proactive-analysis — context-triggered analysis)

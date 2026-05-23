@@ -55,11 +55,16 @@ function assertVersionsMatch() {
   }
   const marketplace = readJson(join(REPO_ROOT, '.claude-plugin', 'marketplace.json'));
   const marketplaceEntry = (marketplace.plugins ?? []).find((p) => p.name === pkg.name);
-  if (marketplace.version !== pkg.version || marketplaceEntry?.version !== pkg.version) {
+  if (!marketplaceEntry) {
+    throw new Error(
+      `No marketplace plugin entry found with name "${pkg.name}" in .claude-plugin/marketplace.json.`,
+    );
+  }
+  if (marketplace.version !== pkg.version || marketplaceEntry.version !== pkg.version) {
     throw new Error(
       `Version mismatch: package.json=${pkg.version}, ` +
         `.claude-plugin/marketplace.json=${marketplace.version}, ` +
-        `plugin entry=${marketplaceEntry?.version}. ` +
+        `plugin entry=${marketplaceEntry.version}. ` +
         `Update .claude-plugin/marketplace.json before packing.`,
     );
   }

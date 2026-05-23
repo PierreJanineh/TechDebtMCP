@@ -1,6 +1,6 @@
-# Dogfood notes — release cycle ending v2.0.2 → v2.1.0
+# Dogfood notes — template (release cycle ending v2.0.2 → v2.1.0)
 
-> Comment template for issue #177. Update each cycle; the latest version is what gets posted.
+> **This file is a template.** A maintainer copies it into a comment on issue #177 at the end of each release cycle, after filling in `#TBD` placeholders (the follow-up issue link in §6) and updating numbers in §5 from a fresh scan. The version below reflects the v2.0.2 → v2.1.0 cycle.
 
 This is the per-acceptance-criterion writeup from TEC-37: install the plugin from this repo's own marketplace entry, use it for at least one workflow cycle, file findings, then move forward with claude-plugins-official submission.
 
@@ -18,7 +18,7 @@ The plugin installs cleanly from `PierreJanineh/TechDebtMCP` and the three slash
 
 - All three commands are discoverable via tab-completion after install.
 - `/techdebt-summary` is the right "first call" — it gives the SQALE rating and category breakdown in one screen. Good entry point.
-- `/techdebt-file <path>` works but requires an absolute path; a relative-path attempt errors deep inside `loadConfig` with a generic Node `ERR_INVALID_ARG_TYPE` rather than a friendly "path must be absolute" message. The MCP tool layer (`requireAbsolutePath`) catches this for tool calls, but slash-command users hit the raw error.
+- `/techdebt-file <path>` works as expected. The slash command's own instructions tell Claude to demand an absolute path before invoking the MCP tool, so users never see the engine-level `ERR_INVALID_ARG_TYPE`. The raw error is still reachable via **direct programmatic use** of `AnalysisEngine.analyzeProject({path})` — not a user-facing issue, but worth a defensive check at the engine entry point.
 
 ## 3. Output gaps
 

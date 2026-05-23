@@ -20,17 +20,12 @@
       "author": {
         "name": "Pierre Janineh"
       },
-      "keywords": [
+      "tags": [
         "mcp",
         "tech-debt",
         "static-analysis",
-        "code-quality"
-      ],
-      "tags": [
-        "mcp",
-        "static-analysis",
-        "sqale",
         "code-quality",
+        "sqale",
         "dependency-scanning"
       ]
     }
