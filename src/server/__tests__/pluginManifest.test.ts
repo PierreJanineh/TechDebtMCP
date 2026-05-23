@@ -33,6 +33,7 @@ describe('.claude-plugin/plugin.json', () => {
 
   it('mcpServers entry points at the published npm package', () => {
     const entry = plugin.mcpServers['tech-debt-mcp'];
+    expect(entry).toBeDefined();
     expect(entry.command).toBe('npx');
     expect(entry.args).toEqual(['-y', 'tech-debt-mcp@latest']);
   });

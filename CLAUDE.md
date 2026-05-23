@@ -123,7 +123,7 @@ npm run mcpb:pack
 # -> mcpb/tech-debt-mcp-<version>.mcpb
 ```
 
-The build script asserts `mcpb/manifest.json.version === package.json.version` — bump both in lockstep at release time. `src/server/__tests__/mcpbManifest.test.ts` enforces the manifest's tool list matches `TOOL_DEFINITIONS`, so adding/removing a tool requires updating `mcpb/manifest.json` in the same PR.
+The build script's `assertVersionsMatch()` asserts that `mcpb/manifest.json`, `.claude-plugin/plugin.json`, and `.claude-plugin/marketplace.json` (both top-level `version` and the plugin entry's `version`) all equal `package.json.version` — bump all four in lockstep at release time. `src/server/__tests__/mcpbManifest.test.ts` enforces the manifest's tool list matches `TOOL_DEFINITIONS`, so adding/removing a tool requires updating `mcpb/manifest.json` in the same PR.
 
 ### Building the docs site
 

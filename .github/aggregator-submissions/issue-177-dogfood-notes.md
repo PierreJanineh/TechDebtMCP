@@ -11,7 +11,7 @@ The plugin installs cleanly from `PierreJanineh/TechDebtMCP` and the three slash
 ## 1. Install friction
 
 - `/plugin marketplace add PierreJanineh/TechDebtMCP` → fast, no surprises.
-- `/plugin install tech-debt-mcp@tech-debt-mcp` → also clean.
+- `/plugin install tech-debt-mcp@techdebtmcp` → also clean.
 - **First scan time:** the plugin's `mcpServers.command` resolves to `npx -y tech-debt-mcp@latest`, so the very first invocation downloads + extracts the npm package before doing anything. On a cold cache this added ~6–8s before any output. Not a blocker, but worth a one-line note in the readme so users don't think it's hung.
 
 ## 2. Command UX
