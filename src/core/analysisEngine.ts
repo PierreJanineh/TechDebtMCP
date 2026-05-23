@@ -56,11 +56,13 @@ export class AnalysisEngine {
       mergedConfig.ignore
     );
 
-    // Honor the include allowlist when present — filter against relative paths
+    // Honor the include allowlist when present — filter against relative paths.
+    // Normalize to POSIX separators so patterns work on Windows too (same
+    // convention as BaseAnalyzer.applyRuleExclusions).
     const includeGlobs = mergedConfig.include;
     const files = (includeGlobs && includeGlobs.length > 0)
       ? allFiles.filter(file => {
-          const rel = getRelativePath(projectPath, file);
+          const rel = getRelativePath(projectPath, file).replace(/\\/g, '/');
           return includeGlobs.some(pattern => minimatch(rel, pattern, { dot: true }));
         })
       : allFiles;
