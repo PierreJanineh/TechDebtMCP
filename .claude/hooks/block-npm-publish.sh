@@ -2,7 +2,7 @@
 # PreToolUse hook: block local `npm publish` invocations.
 #
 # Releases publish via the OIDC workflow on tag push (see .github/workflows/
-# release.yml). A local `npm publish` would bypass that and is almost always
+# publish.yml). A local `npm publish` would bypass that and is almost always
 # a mistake — `package.json` declares "prepare": "npm run build", so it would
 # also re-run the build chain in a non-CI environment.
 #
@@ -29,7 +29,7 @@ cat >&2 <<'MSG'
 BLOCK: Do not run `npm publish` locally.
 
 Releases for this package go through the OIDC workflow in
-.github/workflows/release.yml, triggered by a tag push. Local publish would
+.github/workflows/publish.yml, triggered by a tag push. Local publish would
 bypass tag/version validation and would also fire the `prepare` hook, which
 re-runs `npm run build` outside CI.
 
