@@ -148,8 +148,12 @@ git push origin develop
    - ✅ Build TypeScript
    - ✅ Verify dist directory
    - ✅ Verify version matches tag
+   - ✅ Verify `mcpb/manifest.json` version matches `package.json`
+   - ✅ Build MCPB bundle (`npm run mcpb:pack`)
+   - ✅ Upload MCPB as workflow artifact
    - ✅ Publish to npm with provenance
    - ✅ Create GitHub Release
+   - ✅ Attach `tech-debt-mcp-<version>.mcpb` to the GitHub Release
 
 **Expected Duration:** 2-3 minutes
 
@@ -211,6 +215,8 @@ Once the workflow completes successfully, you'll see:
 📦 Package: https://www.npmjs.com/package/tech-debt-mcp
 🎉 GitHub Release: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v2.0.0
 ```
+
+The GitHub Release will also include a `tech-debt-mcp-<version>.mcpb` asset — the Claude Desktop one-click bundle, built from a clean prod tree by `scripts/build-mcpb.mjs`. Users can download it from the Releases page and install via Claude Desktop's "Install from file" flow. The same artifact is uploaded as a workflow artifact for diagnostic retention.
 
 ## Post-Release Verification
 
@@ -432,6 +438,7 @@ Release:
 - [ ] GitHub Actions workflow succeeded
 - [ ] npm package published
 - [ ] GitHub Release created
+- [ ] MCPB bundle attached to GitHub Release
 
 Post-Release:
 - [ ] npm package verified: npm view tech-debt-mcp
@@ -483,7 +490,7 @@ Follow [Semantic Versioning](https://semver.org/):
 
 ---
 
-**Last Updated:** 2026-04-11
+**Last Updated:** 2026-05-22
 
 For questions or issues, see [CONTRIBUTING.md](CONTRIBUTING.md) or open an issue.
 
