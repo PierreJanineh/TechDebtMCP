@@ -342,7 +342,7 @@ Show me the worst issues — top high-severity findings with file paths.
   <div class="avatar"><img src="/TechDebtMCP/icon-light.png" alt="" class="avatar-light"/><img src="/TechDebtMCP/icon.png" alt="" class="avatar-dark"/></div>
   <div class="bubble">
 
-<div class="role">tech-debt-mcp · get_issues_by_severity</div>
+<div class="role">tech-debt-mcp · get_issues_by_severity (derived from full scan — combined high + critical)</div>
 
 ${d.topHigh.length === 0 ? '_No high- or critical-severity issues._' : `Top ${d.topHigh.length} ${d.topHigh.some(h => h.severity === 'critical') ? 'critical/' : ''}high-severity findings:
 
@@ -386,7 +386,7 @@ What should I fix first?
   <div class="avatar"><img src="/TechDebtMCP/icon-light.png" alt="" class="avatar-light"/><img src="/TechDebtMCP/icon.png" alt="" class="avatar-dark"/></div>
   <div class="bubble">
 
-<div class="role">tech-debt-mcp · get_recommendations</div>
+<div class="role">tech-debt-mcp · get_recommendations (simplified view — title + description from AnalysisEngine.analyzeProject())</div>
 
 ${d.recommendations.length === 0 ? '_No specific recommendations — codebase is clean enough that no heuristic triggered._' : d.recommendations.map((r, i) => `${i + 1}. **${r.title}** — ${r.description}`).join('\n\n')}
 
@@ -462,7 +462,7 @@ outline: deep
 
 # Example Scans
 
-Real scans of well-maintained open-source libraries, run with the same \`analyze_project\` tool you'd use locally. Each entry pins a specific commit so the numbers are reproducible.
+Real scans of well-maintained open-source libraries, generated using \`AnalysisEngine.analyzeProject()\` directly (with \`check_dependencies\` run via the real tool handler). Each entry pins a specific commit so the numbers are reproducible.
 
 | Repo | Language | Issues | Critical | High | SQALE |
 |---|---|---|---|---|---|
