@@ -368,7 +368,7 @@ Create a `.techdebtrc.json` file in your project root:
 
 ### Language Overrides
 
-Override rules, severity, or file extensions on a per-language basis using `languageOverrides`. Keys must be valid [supported language](#languages) identifiers.
+Override rules, severity, or file extensions on a per-language basis using `languageOverrides`. Keys must be valid [supported language](#supported-languages) identifiers.
 
 ```json
 {
