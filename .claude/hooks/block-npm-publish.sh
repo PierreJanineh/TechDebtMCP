@@ -11,7 +11,7 @@
 
 set -euo pipefail
 
-COMMAND=$(echo "${TOOL_INPUT:-}" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"command"[[:space:]]*:[[:space:]]*"//;s/"$//')
+COMMAND=$(echo "${TOOL_INPUT:-}" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"command"[[:space:]]*:[[:space:]]*"//;s/"$//' || true)
 
 if [ -z "$COMMAND" ]; then
   exit 0
