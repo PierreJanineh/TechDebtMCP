@@ -49,6 +49,22 @@ Read tools are flagged `readOnlyHint: true`; `add_custom_rule` / `remove_custom_
 
 Full per-tool reference: <https://pierrejanineh.github.io/TechDebtMCP/tools/>.
 
+## Slash commands
+
+The plugin registers three slash commands for on-demand invocation:
+
+| Command | Argument | Purpose |
+|---------|----------|---------|
+| `/techdebt-scan [project-path]` | Optional absolute path (defaults to cwd) | Full project scan — health score, SQALE rating, issue breakdown, and top recommendations |
+| `/techdebt-file <file-path>` | Absolute path to a source file | Single-file analysis — line-by-line issue table sorted by severity |
+| `/techdebt-summary [project-path]` | Optional absolute path (defaults to cwd) | Aggregate dashboard — health score, SQALE rating, counts by severity, remediation estimate |
+
+Commands delegate to the MCP tools listed above — no logic is duplicated.
+
+### Proactive analysis skill
+
+The plugin also installs a **proactive-analysis** skill: Claude will automatically run the analyzer before you open a pull request, during code review, or when you ask "is my code ready to merge?" — without you needing to type a command. The skill governs event-triggered invocations; the slash commands above handle explicit on-demand requests.
+
 ## Example transcripts
 
 You don't call tools by name — Claude routes your prompts to them. Here are two representative sessions.
