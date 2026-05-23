@@ -246,7 +246,7 @@ describe('Handlers', () => {
         'get_issues_by_category',
         'add_custom_rule',
         'remove_custom_rule',
-        'list_custom_rules',
+        'list_session_custom_rules',
         'execute_custom_rules',
         'validate_custom_pattern',
         'check_dependencies',

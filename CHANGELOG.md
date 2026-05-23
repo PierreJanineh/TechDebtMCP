@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (breaking)
+- **Renamed MCP tool `list_custom_rules` → `list_session_custom_rules`** (TEC-51) — the previous name promised "all active custom rules" but the handler only returned rules added via `add_custom_rule` in the current session, omitting any `customPatterns` defined in `.techdebtrc.json` (which are still executed inside `analyze_project`). The tool was renamed rather than expanded so the name matches its actual scope. **Migration:** clients calling `list_custom_rules` will now receive `MethodNotFound` — update calls to `list_session_custom_rules`. To inspect `.techdebtrc.json` `customPatterns`, read the config file directly or invoke `validate_config`. Searchable: `list_custom_rules` was renamed to `list_session_custom_rules`.
+
 ### Added
 - **Distributed Claude Code automation** (#215) — `.claude/settings.json`, `.claude/hooks/block-npm-publish.sh`, `.claude/hooks/check-tools-manifest-sync.sh`, and `.claude/skills/` are now force-added to the repository (`git add -f`) and distributed with the codebase. This supersedes the earlier model (first established in v2.0.2 / #130) where `.claude/` was gitignored and hooks were local-only. The `pre-pr-docs-check.sh` hook and developer-personal config (`settings.local.json`, `hookify.*.local.md`) remain local-only and gitignored.
 - **Plugin-user-facing README** (TEC-34, #173) — `.claude-plugin/README.md` covers install flow (`/plugin marketplace add` + `/plugin install`), the available MCP tools surfaced to Claude, two example transcripts (project scan, vulnerability report), security posture, troubleshooting, and cross-links to the canonical docs site. Main `README.md` cross-links to it from the plugin install collapsible and Documentation index. Screenshots / asciinema captures are deferred to the TEC-48 manual smoke pass, which exercises the install flow on a clean machine.

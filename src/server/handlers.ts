@@ -18,7 +18,7 @@ import { handleCheckDependencies, handleGetVulnerabilityReport } from './depende
 import {
   handleAddCustomRule,
   handleRemoveCustomRule,
-  handleListCustomRules,
+  handleListSessionCustomRules,
   handleExecuteCustomRules,
   handleValidateCustomPattern,
 } from './customRulesHandlers.js';
@@ -65,8 +65,8 @@ async function dispatchTool(
       return handleAddCustomRule(customRulesEngine, args);
     case 'remove_custom_rule':
       return handleRemoveCustomRule(customRulesEngine, args);
-    case 'list_custom_rules':
-      return handleListCustomRules(customRulesEngine);
+    case 'list_session_custom_rules':
+      return handleListSessionCustomRules(customRulesEngine);
     case 'execute_custom_rules':
       return handleExecuteCustomRules(customRulesEngine, args);
     case 'validate_custom_pattern':

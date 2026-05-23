@@ -287,7 +287,7 @@ The server is split into focused modules under `src/server/`:
 
 **16 MCP Tools:**
 - Core: `analyze_project`, `analyze_file`, `get_debt_summary`, `list_supported_languages`, `get_recommendations`, `get_issues_by_severity`, `get_issues_by_category`, `get_sqale_metrics`
-- Custom Rules (Phase 5): `add_custom_rule`, `remove_custom_rule`, `list_custom_rules`, `execute_custom_rules`, `validate_custom_pattern`
+- Custom Rules (Phase 5): `add_custom_rule`, `remove_custom_rule`, `list_session_custom_rules` (renamed from `list_custom_rules` in TEC-51), `execute_custom_rules`, `validate_custom_pattern`
 - Dependencies (Phase 2): `check_dependencies`, `validate_config`, `get_vulnerability_report`
 
 **2 MCP Resources (Phase 6):**
