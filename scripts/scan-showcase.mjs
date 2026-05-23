@@ -26,7 +26,7 @@ const examplesDir = resolve(siteRoot, 'examples');
 const manifestPath = resolve(siteRoot, '.showcase.json');
 const cacheDir = resolve(repoRoot, 'node_modules/.cache/td-showcase');
 
-if (!existsSync(distAnalysis) || !existsSync(distSqale)) {
+if (!existsSync(distAnalysis) || !existsSync(distSqale) || !existsSync(distDeps)) {
   console.error('[scan-showcase] dist not built. Run `npm run build` first.');
   process.exit(1);
 }
@@ -88,6 +88,14 @@ for (const repo of manifest.repos) {
   // Top 5 high-severity issues for the drill-down turn
   const topHigh = result.issues
     .filter((i) => i.severity === 'high' || i.severity === 'critical')
+    .sort((a, b) => {
+      const sevOrder = { critical: 0, high: 1 };
+      const sevDiff = sevOrder[a.severity] - sevOrder[b.severity];
+      if (sevDiff !== 0) return sevDiff;
+      // Stable tie-breakers: file then line
+      if (a.file !== b.file) return (a.file ?? '').localeCompare(b.file ?? '');
+      return (a.line ?? 0) - (b.line ?? 0);
+    })
     .slice(0, 5)
     .map((i) => ({
       severity: i.severity,
@@ -106,7 +114,8 @@ for (const repo of manifest.repos) {
     const res = await handleCheckDependencies({ path, includeDev: false });
     depsReport = res?.content?.[0]?.text ?? null;
   } catch (e) {
-    depsReport = `_Dependency scan failed: ${e.message}_`;
+    const msg = e instanceof Error ? e.message : String(e);
+    depsReport = `_Dependency scan failed: ${msg}_`;
   }
 
   // SQALE category breakdown (minutes → human format)

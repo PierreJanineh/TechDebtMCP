@@ -1,5 +1,4 @@
 {
-  "$schema": "./.showcase.schema.json",
   "description": "Pinned manifest for showcase scans. Bump SHAs manually at release time, then run `npm run docs:scan-showcase` to regenerate pages.",
   "repos": [
     {
