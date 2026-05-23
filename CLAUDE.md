@@ -86,7 +86,9 @@ src/
 .claude-plugin/                 # (repo root — sibling of src/)
 ├── plugin.json                 # Claude Code plugin manifest (mcpServers → npx -y tech-debt-mcp@latest)
 ├── marketplace.json            # Marketplace entry so this repo doubles as its own marketplace
-└── README.md                   # User-facing plugin README shown in the Claude Code marketplace
+├── README.md                   # User-facing plugin README shown in the Claude Code marketplace
+├── commands/                   # Claude Code slash commands (/techdebt-scan, /techdebt-file, /techdebt-summary)
+└── skills/                     # Claude Code skills (proactive-analysis — context-triggered analysis)
 mcpb/                           # (repo root — Claude Desktop one-click bundle)
 ├── manifest.json               # MCPB v0.3 manifest (mirrors TOOL_DEFINITIONS, version pinned to package.json)
 ├── icon.png                    # 512×512 bundle icon

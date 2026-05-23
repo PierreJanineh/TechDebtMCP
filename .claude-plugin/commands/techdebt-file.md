@@ -15,8 +15,7 @@ Analyze a single file for technical debt using the tech-debt-mcp analyzer.
 
 3. Present the results:
    - File name, detected language, and total issue count.
-   - A table of issues sorted by severity (critical first), including: line number, severity, category, title, and suggested fix.
-   - Estimated remediation time for all issues combined.
+   - A table of issues sorted by severity (critical first), including: line number, severity, category, title, effort (if present), and suggested fix.
 
 4. If no issues are found, say so — do not invent issues.
 
