@@ -155,6 +155,9 @@ export abstract class BaseAnalyzer {
     // Apply rule exclusions
     const filteredIssues = this.applyRuleExclusions(filePath, issues);
 
+    // Apply severity overrides from config
+    this.applySeverityOverrides(filteredIssues);
+
     // Calculate metrics
     const metrics = this.calculateMetrics(content);
 
@@ -384,6 +387,23 @@ export abstract class BaseAnalyzer {
       }
       return !patterns.some(pattern => minimatch(normalizedPath, pattern));
     });
+  }
+
+  /**
+   * Apply severity overrides from `config.severity` to a list of issues in-place.
+   * Only overrides severity for rules explicitly listed in the config; unknown rules are unchanged.
+   */
+  private applySeverityOverrides(issues: TechDebtIssue[]): void {
+    const overrides = this.config.severity;
+    if (!overrides || Object.keys(overrides).length === 0) {
+      return;
+    }
+    for (const issue of issues) {
+      const override = overrides[issue.rule];
+      if (override !== undefined) {
+        issue.severity = override;
+      }
+    }
   }
 
   /**
