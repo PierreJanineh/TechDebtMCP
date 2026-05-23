@@ -18,7 +18,7 @@
     "prepare": "npm run build",
     "mcpb:pack": "node scripts/build-mcpb.mjs",
     "docs:gen-tools": "node scripts/gen-docs-tools.mjs",
-    "docs:scan-showcase": "npm run build && node scripts/scan-showcase.mjs",
+    "docs:scan-showcase": "node scripts/scan-showcase.mjs",
     "docs:dev": "npm run build && npm run docs:gen-tools && npm run docs:scan-showcase && vitepress dev docs/site",
     "docs:build": "npm run build && npm run docs:gen-tools && npm run docs:scan-showcase && vitepress build docs/site",
     "docs:preview": "vitepress preview docs/site",
