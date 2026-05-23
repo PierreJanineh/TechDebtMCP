@@ -176,7 +176,8 @@ export interface TechDebtConfig {
   };
   customPatterns?: CustomPattern[];
   languageOverrides?: {
-    [K in SupportedLanguage]?: Partial<LanguageConfig> & {
+    [K in SupportedLanguage]?: {
+      extensions?: string[];
       rules?: {
         maxFileLines?: number;
         maxFunctionLines?: number;

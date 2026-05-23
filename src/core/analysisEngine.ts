@@ -36,8 +36,10 @@ function getOverrideExtensions(config: TechDebtConfig): string[] {
   if (!overrides) return [];
   const base = getAllExtensions();
   const extra = new Set<string>();
-  for (const partial of Object.values(overrides)) {
-    for (const ext of partial?.extensions ?? []) {
+  for (const [lang, partial] of Object.entries(overrides)) {
+    if (!(lang in LANGUAGE_CONFIGS)) continue;
+    if (!Array.isArray(partial?.extensions)) continue;
+    for (const ext of partial.extensions) {
       const normalized = ext.toLowerCase();
       if (!base.includes(normalized)) extra.add(normalized);
     }
@@ -60,7 +62,7 @@ function detectLanguageWithOverrides(
       ? filePath.slice(filePath.lastIndexOf('.')).toLowerCase()
       : '';
     for (const [lang, partial] of Object.entries(overrides)) {
-      if (partial?.extensions?.map(e => e.toLowerCase()).includes(ext) && lang in LANGUAGE_CONFIGS) {
+      if (Array.isArray(partial?.extensions) && partial.extensions.map(e => e.toLowerCase()).includes(ext) && lang in LANGUAGE_CONFIGS) {
         return lang as SupportedLanguage;
       }
     }

@@ -383,7 +383,7 @@ Override rules, severity, or file extensions on a per-language basis using `lang
       }
     },
     "python": {
-      "extensions": [".pyw"],
+      "extensions": [".pyx"],
       "rules": {
         "maxComplexity": 15
       }
