@@ -18,7 +18,7 @@ Fetch and display the aggregate technical-debt summary for a project.
 
 4. Present a concise dashboard:
    - **Health score** (0–100) and its human-readable grade.
-   - **SQALE rating** (A–E) and debt ratio.
+   - **SQALE rating** (A–E) and debt ratio (note: debt ratio is only calculated when the `developmentTime` parameter is provided; otherwise it will appear as N/A — prompt the user to supply it if they want a percentage).
    - **Issue counts** by severity: critical / high / medium / low.
    - **Total estimated remediation time**.
    - **Top categories** with the most debt (if available).
