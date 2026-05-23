@@ -305,11 +305,15 @@ export class AnalysisEngine {
     config: TechDebtConfig,
     options: AnalysisOptions
   ): TechDebtIssue[] {
+    // Apply per-language overrides so `languageOverrides[lang].severity` reaches
+    // custom-pattern issues the same way it reaches built-in analyzer issues
+    // (which go through mergeLanguageOverride inside analyzeFileSafe).
+    const effectiveConfig = mergeLanguageOverride(config, lang);
     const relativePath = getRelativePath(projectPath, file);
     const rawIssues = engine.executeRules(relativePath, content, lang);
     const stampedIssues = rawIssues.map(issue => ({ ...issue, language: lang }));
-    const excluded = this.applyCustomRuleExclusions(relativePath, stampedIssues, config);
-    const withSeverity = this.applyCustomSeverityOverrides(excluded, config);
+    const excluded = this.applyCustomRuleExclusions(relativePath, stampedIssues, effectiveConfig);
+    const withSeverity = this.applyCustomSeverityOverrides(excluded, effectiveConfig);
     return this.filterIssues(withSeverity, options);
   }
 
