@@ -98,9 +98,10 @@ const cloneAtSha = async (owner, name, sha) => {
       console.log(`[scan-showcase] cached ${owner}/${name} has local modifications, re-cloning...`);
       await rm(target, { recursive: true, force: true });
       // Fall through to fresh clone below.
+    } else {
+      console.log(`[scan-showcase] cached ${owner}/${name} HEAD (${headSha.slice(0, 7)}) ≠ requested (${sha.slice(0, 7)}), re-cloning...`);
+      await rm(target, { recursive: true, force: true });
     }
-    console.log(`[scan-showcase] cached ${owner}/${name} HEAD (${headSha.slice(0, 7)}) ≠ requested (${sha.slice(0, 7)}), re-cloning...`);
-    await rm(target, { recursive: true, force: true });
   }
   // If the target directory exists without a .git, pre-existing files would
   // remain as untracked content after checkout and pollute scan results.
