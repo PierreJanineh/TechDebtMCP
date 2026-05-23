@@ -68,7 +68,8 @@ TechDebtMCP/
 ├── dist/                        # Compiled output
 ├── .claude-plugin/
 │   ├── plugin.json              # Claude Code plugin manifest (mcpServers → npx -y tech-debt-mcp@latest)
-│   └── marketplace.json         # Marketplace entry so this repo doubles as its own marketplace
+│   ├── marketplace.json         # Marketplace entry so this repo doubles as its own marketplace
+│   └── README.md                # User-facing plugin README shown in the Claude Code marketplace
 ├── mcpb/
 │   ├── manifest.json            # MCPB v0.3 manifest for Claude Desktop one-click bundle
 │   └── icon.png                 # 512×512 bundle icon
