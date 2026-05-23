@@ -28,8 +28,21 @@ import {
 } from '../utils/fileUtils.js';
 
 /**
+ * Returns true if ext is a safe file extension that won't corrupt the glob
+ * pattern in getProjectFiles() (`**\/*{ext1,ext2}`). An extension must start
+ * with '.' and must not contain glob metacharacters (`,`, `{`, `}`, `[`, `]`,
+ * `(`, `)`, `?`, `*`, `!`).
+ */
+function isValidExtension(ext: string): boolean {
+  return ext.startsWith('.') && !/[,{}()[\]?*!]/.test(ext);
+}
+
+/**
  * Collect extra file extensions declared in languageOverrides that are not
- * already covered by the static LANGUAGE_CONFIGS.
+ * already covered by the static LANGUAGE_CONFIGS. Only extensions that are
+ * strings, have a leading '.', and contain no glob metacharacters are accepted;
+ * invalid values are silently skipped so a malformed config cannot corrupt the
+ * discovery glob.
  */
 function getOverrideExtensions(config: TechDebtConfig): string[] {
   const overrides = config.languageOverrides;
@@ -40,7 +53,9 @@ function getOverrideExtensions(config: TechDebtConfig): string[] {
     if (!(lang in LANGUAGE_CONFIGS)) continue;
     if (!Array.isArray(partial?.extensions)) continue;
     for (const ext of partial.extensions) {
+      if (typeof ext !== 'string') continue;
       const normalized = ext.toLowerCase();
+      if (!isValidExtension(normalized)) continue;
       if (!base.includes(normalized)) extra.add(normalized);
     }
   }
@@ -62,7 +77,13 @@ function detectLanguageWithOverrides(
       ? filePath.slice(filePath.lastIndexOf('.')).toLowerCase()
       : '';
     for (const [lang, partial] of Object.entries(overrides)) {
-      if (Array.isArray(partial?.extensions) && partial.extensions.map(e => e.toLowerCase()).includes(ext) && lang in LANGUAGE_CONFIGS) {
+      if (
+        lang in LANGUAGE_CONFIGS &&
+        Array.isArray(partial?.extensions) &&
+        partial.extensions.some(
+          e => typeof e === 'string' && isValidExtension(e.toLowerCase()) && e.toLowerCase() === ext
+        )
+      ) {
         return lang as SupportedLanguage;
       }
     }
@@ -70,12 +91,24 @@ function detectLanguageWithOverrides(
   return detectLanguageFromExtension(filePath);
 }
 
+/** Valid severity values — mirrors the Severity union type. */
+const VALID_SEVERITY_VALUES = new Set<string>(['low', 'medium', 'high', 'critical']);
+
+/** Returns true if v is a non-null, non-array plain object. */
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v);
+}
+
 /**
  * Deep-merge a single languageOverride entry into the base config.
- * The override's `rules` and `severity` objects are merged (override wins per key),
- * while all other Partial<LanguageConfig> properties (extensions, etc.) are
- * structural metadata that the analyzer factory already handles via the language
- * parameter — they do not need to propagate into TechDebtConfig.
+ * The override's `rules` and `severity` objects are merged (override wins per
+ * key), but invalid inner values are silently dropped so a malformed config
+ * can't corrupt analysis:
+ *   - `rules` values must be numbers (non-numeric entries are ignored).
+ *   - `severity` values must be a valid Severity string; unknown strings
+ *     (e.g. "extreme") are ignored.
+ * All other properties (extensions, etc.) are structural metadata that the
+ * analyzer factory already handles via the language parameter.
  */
 function mergeLanguageOverride(
   config: TechDebtConfig,
@@ -83,11 +116,28 @@ function mergeLanguageOverride(
 ): TechDebtConfig {
   const override = config.languageOverrides?.[language];
   if (!override) return config;
-  return {
-    ...config,
-    rules: override.rules ? { ...config.rules, ...override.rules } : config.rules,
-    severity: override.severity ? { ...config.severity, ...override.severity } : config.severity,
-  };
+
+  const mergedRules: typeof config.rules = isPlainObject(override.rules)
+    ? {
+        ...config.rules,
+        ...Object.fromEntries(
+          Object.entries(override.rules).filter(([, v]) => typeof v === 'number')
+        ) as typeof config.rules,
+      }
+    : config.rules;
+
+  const mergedSeverity: typeof config.severity = isPlainObject(override.severity)
+    ? {
+        ...config.severity,
+        ...Object.fromEntries(
+          Object.entries(override.severity).filter(
+            ([, v]) => typeof v === 'string' && VALID_SEVERITY_VALUES.has(v)
+          )
+        ),
+      }
+    : config.severity;
+
+  return { ...config, rules: mergedRules, severity: mergedSeverity };
 }
 
 /**
