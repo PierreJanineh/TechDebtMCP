@@ -19,7 +19,6 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, '..');
 const distAnalysis = resolve(repoRoot, 'dist/core/analysisEngine.js');
-const distSqale = resolve(repoRoot, 'dist/core/sqaleEngine.js');
 const distDeps = resolve(repoRoot, 'dist/server/dependencyHandlers.js');
 const siteRoot = resolve(repoRoot, 'docs/site');
 const examplesDir = resolve(siteRoot, 'examples');
@@ -41,7 +40,7 @@ if (process.env.SKIP_SHOWCASE === '1') {
   process.exit(0);
 }
 
-if (!existsSync(distAnalysis) || !existsSync(distSqale) || !existsSync(distDeps)) {
+if (!existsSync(distAnalysis) || !existsSync(distDeps)) {
   console.error('[scan-showcase] dist not built. Run `npm run build` first.');
   process.exit(1);
 }
@@ -137,7 +136,7 @@ for (const repo of manifest.repos) {
   // Remove any tech-debt config files present in the cloned repo so the
   // showcase scan uses default settings and is not influenced by the repo's
   // own config (severity overrides, ignore globs, customPatterns, etc.).
-  for (const cfgName of ['.techdebtrc.json', '.techdebtrc', 'techdebt.config.json']) {
+  for (const cfgName of ['.techdebtrc.json', '.techdebtrc', 'techdebt.config.json', '.techdebt.json']) {
     const cfgPath = join(path, cfgName);
     if (existsSync(cfgPath)) {
       await rm(cfgPath, { force: true });
@@ -237,9 +236,9 @@ console.log(`[scan-showcase] wrote ${scanResults.length} pages to ${examplesDir}
 
 function formatMinutes(mins) {
   if (mins < 60) return `${mins}m`;
-  if (mins < 60 * 8) return `${Math.round(mins / 60)}h`;
+  if (mins < 60 * 8) return `${Math.floor(mins / 60)}h`;
   const days = Math.floor(mins / (60 * 8));
-  const hours = Math.round((mins % (60 * 8)) / 60);
+  const hours = Math.floor((mins % (60 * 8)) / 60);
   return hours ? `${days}d ${hours}h` : `${days}d`;
 }
 
