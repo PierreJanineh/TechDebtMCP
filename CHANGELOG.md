@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Privacy policy** (TEC-44, #183) — new `PRIVACY.md` at repo root and a hosted mirror at <https://pierrejanineh.github.io/TechDebtMCP/privacy> covering data handling, telemetry posture, and third-party services. README gains a Privacy section linking to both. The hosted URL is the stable link for the Anthropic MCP directory submission form (TEC-45).
 
 ### Fixed
+- **`customPatterns` wired into `analyze_project`** (TEC-49, #204) — patterns defined in `.techdebtrc.json` under `customPatterns` were previously validated but never executed during project analysis. `AnalysisEngine.analyzeProject()` now instantiates a per-call `CustomRulesEngine` from `mergedConfig.customPatterns` and runs it against every analyzed file, respecting the optional `languages` filter on each pattern. Custom-pattern issues also honor `ruleExclusions` and `severity` overrides. Note: the `analyze_file` tool invokes the language analyzer directly without loading `.techdebtrc.json`, so config-defined `customPatterns` are applied only in `analyze_project`.
 - **`include` glob ignored in `analyze_project`** (TEC-57, #212) — `mergedConfig.include` patterns are now applied as a post-discovery allowlist filter in `analysisEngine.ts` using `minimatch` against relative paths. Previously the `include` array was validated but never consulted during file discovery, causing all files to be analyzed regardless of the allowlist.
 
 ### Security

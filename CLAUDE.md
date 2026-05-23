@@ -126,7 +126,7 @@ npm run docs:build    # full build: tsc → gen-docs-tools.mjs → vitepress bui
 
 ### Request flow
 
-**Tools:** `MCP client` → `handlers.ts` (`CallToolRequestSchema` switch) → `AnalysisEngine` → `createAnalyzer()` (per file language) → `[Language]Analyzer.performLanguageSpecificChecks()` → issues array (inline suppression applied per-line in `checkPattern`/`checkTodoComments`) → `applyRuleExclusions()` (filter by config globs) → `formatters.ts` → response.
+**Tools:** `MCP client` → `handlers.ts` (`CallToolRequestSchema` switch) → `AnalysisEngine` → per file, two independent branches run and their results are combined: **[built-in]** `createAnalyzer()` (per file language) → `[Language]Analyzer.performLanguageSpecificChecks()` → issues array (inline suppression applied per-line in `checkPattern`/`checkTodoComments`) → `applyRuleExclusions()` (filter by config globs) → `filterIssues()` (filter by requested severity/category); **[custom-patterns]** `CustomRulesEngine.executeRules()` (called once per file; internally iterates all `customPatterns` entries from `.techdebtrc.json`, applying inline suppression to each match) → `AnalysisEngine.applyCustomRuleExclusions()` (filter custom-pattern issues by `ruleExclusions` config globs) → `AnalysisEngine.applyCustomSeverityOverrides()` (apply per-rule severity overrides from `config.severity`) → `filterIssues()` (filter by requested severity/category); combined results → `formatters.ts` → response.
 
 **Resources:** `MCP client` → `resourceHandlers.ts` (via `McpServer.registerResource()`) → `AnalysisEngine.analyzeProject()` → JSON response.
 

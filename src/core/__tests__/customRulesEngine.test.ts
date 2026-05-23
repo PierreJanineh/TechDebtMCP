@@ -559,5 +559,120 @@ console.log("test3");`;
       expect(issues).toEqual([]);
     });
   });
+
+  describe('Inline Suppression', () => {
+    const noFixmePattern: CustomPattern = {
+      id: 'no-fixme-tickets',
+      pattern: 'FIXME',
+      severity: 'high',
+      category: 'code-quality',
+      message: 'FIXME comment found',
+    };
+
+    beforeEach(() => {
+      engine.addRule(noFixmePattern);
+    });
+
+    it('suppresses a custom-pattern match when techdebt-ignore-next-line precedes the line', () => {
+      const content = [
+        '// techdebt-ignore-next-line',
+        'const x = "FIXME: clean this up";',
+        'const y = "FIXME: also flagged";',
+      ].join('\n');
+
+      const issues = engine.executeRules('test.ts', content);
+      expect(issues).toHaveLength(1);
+      expect(issues[0].line).toBe(3);
+    });
+
+    it('suppresses only the matching rule when rule ID is specified', () => {
+      const otherPattern: CustomPattern = {
+        id: 'no-todo',
+        pattern: 'TODO',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'TODO found',
+      };
+      engine.addRule(otherPattern);
+
+      const content = [
+        '// techdebt-ignore-next-line no-fixme-tickets',
+        'const x = "FIXME and TODO both here";',
+      ].join('\n');
+
+      const issues = engine.executeRules('test.ts', content);
+      // FIXME suppressed, TODO still reported
+      const fixmeIssues = issues.filter(i => i.rule === 'no-fixme-tickets');
+      const todoIssues = issues.filter(i => i.rule === 'no-todo');
+      expect(fixmeIssues).toHaveLength(0);
+      expect(todoIssues).toHaveLength(1);
+    });
+
+    it('does not suppress a different rule when rule ID is specified', () => {
+      const content = [
+        '// techdebt-ignore-next-line some-other-rule',
+        'const x = "FIXME: should still be reported";',
+      ].join('\n');
+
+      const issues = engine.executeRules('test.ts', content);
+      expect(issues).toHaveLength(1);
+      expect(issues[0].rule).toBe('no-fixme-tickets');
+    });
+
+    it('suppresses all matches within a blanket techdebt-ignore-start/end block', () => {
+      const content = [
+        'const a = "FIXME: flagged";',
+        '// techdebt-ignore-start',
+        'const b = "FIXME: suppressed";',
+        'const c = "FIXME: also suppressed";',
+        '// techdebt-ignore-end',
+        'const d = "FIXME: flagged again";',
+      ].join('\n');
+
+      const issues = engine.executeRules('test.ts', content);
+      expect(issues).toHaveLength(2);
+      expect(issues[0].line).toBe(1);
+      expect(issues[1].line).toBe(6);
+    });
+
+    it('suppresses only the specified rule within a rule-specific block', () => {
+      const noTodoPattern: CustomPattern = {
+        id: 'no-todo',
+        pattern: 'TODO',
+        severity: 'low',
+        category: 'code-quality',
+        message: 'TODO found',
+      };
+      engine.addRule(noTodoPattern);
+
+      const content = [
+        '// techdebt-ignore-start no-fixme-tickets',
+        'const x = "FIXME: suppressed by block";',
+        'const y = "TODO: still reported";',
+        '// techdebt-ignore-end no-fixme-tickets',
+      ].join('\n');
+
+      const issues = engine.executeRules('test.ts', content);
+      const fixmeIssues = issues.filter(i => i.rule === 'no-fixme-tickets');
+      const todoIssues = issues.filter(i => i.rule === 'no-todo');
+      expect(fixmeIssues).toHaveLength(0);
+      expect(todoIssues).toHaveLength(1);
+    });
+
+    it('does not suppress lines before or after the block', () => {
+      const content = [
+        'const a = "FIXME: before block";',
+        '// techdebt-ignore-start no-fixme-tickets',
+        'const b = "FIXME: inside block";',
+        '// techdebt-ignore-end no-fixme-tickets',
+        'const c = "FIXME: after block";',
+      ].join('\n');
+
+      const issues = engine.executeRules('test.ts', content);
+      expect(issues).toHaveLength(2);
+      expect(issues[0].line).toBe(1);
+      expect(issues[1].line).toBe(5);
+    });
+  });
 });
 

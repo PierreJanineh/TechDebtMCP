@@ -354,6 +354,7 @@ The server is split into focused modules under `src/server/`:
 **Features:**
 - Regex pattern matching with configurable flags (allowlist: `dgimsuvy` — includes the `v` unicodeSets flag; `u` and `v` are mutually exclusive; patterns capped at 1,000 characters; inline `code` capped at 500,000 characters; `path` inputs capped at 500,000 bytes before reading). Node.js >=20.19.0 required as of v2.0.2 (project minimum, including tooling such as ESLint).
 - Language-specific rule filtering
+- Inline suppression (`techdebt-ignore-next-line [rule]` / `techdebt-ignore-start/end [rule]`) — consistent with `BaseAnalyzer`; block map built once per file, checked per matched line
 - Multiple matches per line support
 - Cross-platform line ending support (\r\n and \n)
 - Column information for precise issue location
@@ -371,10 +372,13 @@ addRule()
 executeRules(filePath, content, language)
   ├─ Filter by language (if specified)
   ├─ Split content by lines (/\r?\n/)
-  ├─ For each line:
-  │   ├─ Apply regex with exec loop
-  │   ├─ Capture match index & column
-  │   └─ Create TechDebtIssue
+  ├─ buildBlockSuppressionMap(lines)  [once per file]
+  ├─ For each pattern:
+  │   └─ executePattern(filePath, lines, blockMap, pattern)
+  │       ├─ Apply regex with exec loop per line
+  │       ├─ isLineSuppressed(lines, index, rule, blockMap)  ← skip suppressed lines
+  │       ├─ Capture match index & column
+  │       └─ Create TechDebtIssue
   └─ Return issues array
 ```
 

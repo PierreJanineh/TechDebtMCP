@@ -73,7 +73,7 @@ export interface RemoveCustomRuleInput {
 export interface ExecuteCustomRulesInput {
   path?: string;
   code?: string;
-  language?: string;
+  language?: SupportedLanguage;
 }
 
 /** Typed input for validate_custom_pattern tool */
@@ -181,6 +181,25 @@ function requireCategory(args: Record<string, unknown>, key: string): DebtCatego
     );
   }
   return value;
+}
+
+/**
+ * Optionally narrow a string to SupportedLanguage.
+ * Returns undefined if the field is absent; throws McpError for unrecognized values.
+ */
+function optionalLanguage(
+  args: Record<string, unknown>,
+  key: string,
+): SupportedLanguage | undefined {
+  const value = optionalString(args, key);
+  if (value === undefined) return undefined;
+  if (!VALID_LANGUAGES.includes(value as SupportedLanguage)) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      `Invalid language '${value}': must be one of ${VALID_LANGUAGES.join(', ')}`,
+    );
+  }
+  return value as SupportedLanguage;
 }
 
 /**
@@ -444,7 +463,7 @@ export function parseExecuteCustomRulesInput(
   return {
     path: optionalAbsolutePath(a, 'path'),
     code,
-    language: optionalString(a, 'language'),
+    language: optionalLanguage(a, 'language'),
   };
 }
 

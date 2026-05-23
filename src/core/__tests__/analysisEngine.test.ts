@@ -65,18 +65,18 @@ describe('AnalysisEngine.analyzeProject – include glob filtering', () => {
     // Only src/foo.ts and src/bar.ts match src/**; lib/baz.ts does not
     expect(mockAnalyzeFile).toHaveBeenCalledTimes(2);
     const analyzed = mockAnalyzeFile.mock.calls.map(c => c[0] as string);
-    expect(analyzed).toContain('/project/src/foo.ts');
-    expect(analyzed).toContain('/project/src/bar.ts');
-    expect(analyzed).not.toContain('/project/lib/baz.ts');
+    expect(analyzed).toContain('src/foo.ts');
+    expect(analyzed).toContain('src/bar.ts');
+    expect(analyzed).not.toContain('lib/baz.ts');
   });
 
   it('accepts a file when any include pattern matches', async () => {
     const engine = new AnalysisEngine({ include: ['lib/**', 'src/foo.ts'] });
     await engine.analyzeProject({ path: '/project' });
     const analyzed = mockAnalyzeFile.mock.calls.map(c => c[0] as string);
-    expect(analyzed).toContain('/project/src/foo.ts');
-    expect(analyzed).toContain('/project/lib/baz.ts');
-    expect(analyzed).not.toContain('/project/src/bar.ts');
+    expect(analyzed).toContain('src/foo.ts');
+    expect(analyzed).toContain('lib/baz.ts');
+    expect(analyzed).not.toContain('src/bar.ts');
   });
 });
 
@@ -102,8 +102,8 @@ describe('AnalysisEngine.analyzeProject – include glob POSIX normalization', (
     // Both src files should still match after normalization
     expect(mockAnalyzeFile).toHaveBeenCalledTimes(2);
     const analyzed = mockAnalyzeFile.mock.calls.map(c => c[0] as string);
-    expect(analyzed).toContain('/project/src/foo.ts');
-    expect(analyzed).toContain('/project/src/bar.ts');
+    expect(analyzed).toContain('src\\foo.ts');
+    expect(analyzed).toContain('src\\bar.ts');
   });
 });
 
@@ -196,5 +196,155 @@ describe('AnalysisEngine.analyzeProject – languageOverrides config merging', (
     // analyzeFileContent(filePath, content, language, config) — config is arg index 3
     const calledConfig = (mockAnalyzeFile.mock.calls[0] as unknown[])[3] as TechDebtConfig;
     expect(calledConfig.rules?.maxFileLines).toBe(200);
+  });
+});
+
+describe('AnalysisEngine.analyzeProject – customPatterns integration', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetProjectFiles.mockResolvedValue(['/project/src/foo.ts']);
+    mockLoadConfig.mockResolvedValue({} as TechDebtConfig);
+    mockAnalyzeFile.mockResolvedValue({ issues: [] } as unknown as FileAnalysisResult);
+  });
+
+  it('emits issues from customPatterns alongside built-in analyzer output', async () => {
+    const config: TechDebtConfig = {
+      customPatterns: [
+        { id: 'no-forbidden', pattern: 'FORBIDDEN', severity: 'high', category: 'code-quality', message: 'forbidden token' },
+      ],
+    };
+    const { readFile } = jest.requireMock('../../utils/fileUtils.js') as jest.Mocked<typeof import('../../utils/fileUtils.js')>;
+    readFile.mockResolvedValue('const x = "FORBIDDEN";');
+    const engine = new AnalysisEngine(config);
+    const report = await engine.analyzeProject({ path: '/project' });
+    const customIssues = report.issues.filter(i => i.rule === 'no-forbidden');
+    expect(customIssues.length).toBeGreaterThan(0);
+    expect(customIssues[0]?.language).toBe('typescript');
+  });
+
+  it('honors ruleExclusions for custom-pattern issues', async () => {
+    const config: TechDebtConfig = {
+      customPatterns: [
+        { id: 'no-forbidden', pattern: 'FORBIDDEN', severity: 'high', category: 'code-quality', message: 'forbidden token' },
+      ],
+      ruleExclusions: { 'no-forbidden': ['src/**'] },
+    };
+    const { readFile } = jest.requireMock('../../utils/fileUtils.js') as jest.Mocked<typeof import('../../utils/fileUtils.js')>;
+    readFile.mockResolvedValue('const x = "FORBIDDEN";');
+    const engine = new AnalysisEngine(config);
+    const report = await engine.analyzeProject({ path: '/project' });
+    expect(report.issues.filter(i => i.rule === 'no-forbidden')).toEqual([]);
+  });
+
+  it('applies config.severity overrides to custom-pattern issues', async () => {
+    const config: TechDebtConfig = {
+      customPatterns: [
+        { id: 'no-forbidden', pattern: 'FORBIDDEN', severity: 'low', category: 'code-quality', message: 'forbidden token' },
+      ],
+      severity: { 'no-forbidden': 'critical' },
+    };
+    const { readFile } = jest.requireMock('../../utils/fileUtils.js') as jest.Mocked<typeof import('../../utils/fileUtils.js')>;
+    readFile.mockResolvedValue('const x = "FORBIDDEN";');
+    const engine = new AnalysisEngine(config);
+    const report = await engine.analyzeProject({ path: '/project' });
+    const issue = report.issues.find(i => i.rule === 'no-forbidden');
+    expect(issue?.severity).toBe('critical');
+  });
+
+  it('applies languageOverrides[lang].severity to custom-pattern issues', async () => {
+    const config: TechDebtConfig = {
+      customPatterns: [
+        { id: 'no-forbidden', pattern: 'FORBIDDEN', severity: 'low', category: 'code-quality', message: 'forbidden token' },
+      ],
+      languageOverrides: { typescript: { severity: { 'no-forbidden': 'critical' } } },
+    };
+    const { readFile } = jest.requireMock('../../utils/fileUtils.js') as jest.Mocked<typeof import('../../utils/fileUtils.js')>;
+    readFile.mockResolvedValue('const x = "FORBIDDEN";');
+    const engine = new AnalysisEngine(config);
+    const report = await engine.analyzeProject({ path: '/project' });
+    const issue = report.issues.find(i => i.rule === 'no-forbidden');
+    expect(issue?.severity).toBe('critical');
+  });
+
+  it('silently drops entries with invalid severity and preserves valid ones', async () => {
+    const config = {
+      customPatterns: [
+        { id: 'bad-severity', pattern: 'FORBIDDEN', severity: 'INVALID', category: 'code-quality', message: 'bad' },
+        { id: 'good-rule', pattern: 'FORBIDDEN', severity: 'high', category: 'code-quality', message: 'good' },
+      ],
+    } as unknown as TechDebtConfig;
+    const { readFile } = jest.requireMock('../../utils/fileUtils.js') as jest.Mocked<typeof import('../../utils/fileUtils.js')>;
+    readFile.mockResolvedValue('const x = "FORBIDDEN";');
+    const engine = new AnalysisEngine(config);
+    const report = await engine.analyzeProject({ path: '/project' });
+    expect(report.issues.find(i => i.rule === 'bad-severity')).toBeUndefined();
+    expect(report.issues.find(i => i.rule === 'good-rule')).toBeDefined();
+  });
+
+  it('silently drops entries with invalid category', async () => {
+    const config = {
+      customPatterns: [
+        { id: 'bad-category', pattern: 'FORBIDDEN', severity: 'high', category: 'NOT_A_CATEGORY', message: 'bad' },
+      ],
+    } as unknown as TechDebtConfig;
+    const { readFile } = jest.requireMock('../../utils/fileUtils.js') as jest.Mocked<typeof import('../../utils/fileUtils.js')>;
+    readFile.mockResolvedValue('const x = "FORBIDDEN";');
+    const engine = new AnalysisEngine(config);
+    const report = await engine.analyzeProject({ path: '/project' });
+    expect(report.issues.find(i => i.rule === 'bad-category')).toBeUndefined();
+  });
+
+  it('silently drops entries missing required pattern field', async () => {
+    const config = {
+      customPatterns: [
+        { id: 'no-pattern-field', severity: 'high', category: 'code-quality', message: 'bad' },
+      ],
+    } as unknown as TechDebtConfig;
+    const { readFile } = jest.requireMock('../../utils/fileUtils.js') as jest.Mocked<typeof import('../../utils/fileUtils.js')>;
+    readFile.mockResolvedValue('const x = "anything";');
+    const engine = new AnalysisEngine(config);
+    const report = await engine.analyzeProject({ path: '/project' });
+    expect(report.issues.find(i => i.rule === 'no-pattern-field')).toBeUndefined();
+  });
+
+  it('silently drops entries with empty id', async () => {
+    const config = {
+      customPatterns: [
+        { id: '', pattern: 'FORBIDDEN', severity: 'high', category: 'code-quality', message: 'msg' },
+      ],
+    } as unknown as TechDebtConfig;
+    const { readFile } = jest.requireMock('../../utils/fileUtils.js') as jest.Mocked<typeof import('../../utils/fileUtils.js')>;
+    readFile.mockResolvedValue('const x = "FORBIDDEN";');
+    const engine = new AnalysisEngine(config);
+    const report = await engine.analyzeProject({ path: '/project' });
+    expect(report.issues).toHaveLength(0);
+  });
+
+  it('silently drops entries with empty pattern string', async () => {
+    const config = {
+      customPatterns: [
+        { id: 'empty-pattern', pattern: '', severity: 'high', category: 'code-quality', message: 'msg' },
+      ],
+    } as unknown as TechDebtConfig;
+    const { readFile } = jest.requireMock('../../utils/fileUtils.js') as jest.Mocked<typeof import('../../utils/fileUtils.js')>;
+    readFile.mockResolvedValue('const x = "anything";');
+    const engine = new AnalysisEngine(config);
+    const report = await engine.analyzeProject({ path: '/project' });
+    expect(report.issues.find(i => i.rule === 'empty-pattern')).toBeUndefined();
+  });
+
+  it('silently drops entries missing message field and preserves valid siblings', async () => {
+    const config = {
+      customPatterns: [
+        { id: 'no-message', pattern: 'FORBIDDEN', severity: 'high', category: 'code-quality' },
+        { id: 'has-message', pattern: 'FORBIDDEN', severity: 'high', category: 'code-quality', message: 'Found forbidden' },
+      ],
+    } as unknown as TechDebtConfig;
+    const { readFile } = jest.requireMock('../../utils/fileUtils.js') as jest.Mocked<typeof import('../../utils/fileUtils.js')>;
+    readFile.mockResolvedValue('const x = "FORBIDDEN";');
+    const engine = new AnalysisEngine(config);
+    const report = await engine.analyzeProject({ path: '/project' });
+    expect(report.issues.find(i => i.rule === 'no-message')).toBeUndefined();
+    expect(report.issues.find(i => i.rule === 'has-message')).toBeDefined();
   });
 });

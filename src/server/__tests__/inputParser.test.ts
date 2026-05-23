@@ -350,6 +350,12 @@ describe('inputParser', () => {
       expect(() => parseExecuteCustomRulesInput({ code: 123 })).toThrow(McpError);
     });
 
+    it('throws McpError for unrecognized language value', () => {
+      expect(() =>
+        parseExecuteCustomRulesInput({ language: 'klingon' }),
+      ).toThrow(McpError);
+    });
+
     it('throws McpError when code exceeds MAX_CODE_LENGTH characters', () => {
       expect(() =>
         parseExecuteCustomRulesInput({ code: 'a'.repeat(MAX_CODE_LENGTH + 1) }),
