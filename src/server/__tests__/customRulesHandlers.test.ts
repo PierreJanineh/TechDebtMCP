@@ -35,7 +35,9 @@ describe('handleExecuteCustomRules — language inference (TEC-50)', () => {
   });
 
   it('still respects explicit language override when path is given', async () => {
-    const res = await handleExecuteCustomRules(engine, { path: '/tmp/sample.ts', language: 'typescript' });
+    // path is .rb (infers ruby), but explicit language: 'typescript' must win
+    mockReadFile.mockResolvedValue('const x = foo;');
+    const res = await handleExecuteCustomRules(engine, { path: '/tmp/sample.rb', language: 'typescript' });
     expect(res.content[0].text).toContain('no-foo');
   });
 
