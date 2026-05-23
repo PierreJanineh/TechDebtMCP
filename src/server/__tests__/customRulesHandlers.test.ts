@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import type { Stats } from 'node:fs';
 import { handleExecuteCustomRules } from '../customRulesHandlers.js';
 import { CustomRulesEngine, MAX_FILE_SIZE_BYTES } from '../../core/customRulesEngine.js';
 import { getFileStats, readFile } from '../../utils/fileUtils.js';
@@ -25,7 +26,7 @@ describe('handleExecuteCustomRules — language inference (TEC-50)', () => {
       category: 'code-quality',
       languages: ['typescript'],
     });
-    mockGetFileStats.mockResolvedValue({ size: 16, isFile: () => true } as any);
+    mockGetFileStats.mockResolvedValue({ size: 16, isFile: () => true } as unknown as Stats);
     mockReadFile.mockResolvedValue('const x = foo;');
   });
 
