@@ -134,6 +134,17 @@ for (const repo of manifest.repos) {
   }
   const path = await cloneAtSha(owner, name, sha);
 
+  // Remove any tech-debt config files present in the cloned repo so the
+  // showcase scan uses default settings and is not influenced by the repo's
+  // own config (severity overrides, ignore globs, customPatterns, etc.).
+  for (const cfgName of ['.techdebtrc.json', '.techdebtrc', 'techdebt.config.json']) {
+    const cfgPath = join(path, cfgName);
+    if (existsSync(cfgPath)) {
+      await rm(cfgPath, { force: true });
+      console.log(`[scan-showcase] removed ${cfgName} from ${owner}/${name} to ensure default scan settings`);
+    }
+  }
+
   console.log(`[scan-showcase] scanning ${owner}/${name}...`);
   const t0 = Date.now();
   const result = await new AnalysisEngine().analyzeProject({ path });
@@ -144,7 +155,7 @@ for (const repo of manifest.repos) {
   for (const i of result.issues) bySev[i.severity] = (bySev[i.severity] || 0) + 1;
 
   const SEV_RANK = { critical: 0, high: 1, medium: 2, low: 3 };
-  const ruleCounts = {};
+  const ruleCounts = Object.create(null);
   for (const i of result.issues) {
     const k = i.rule || i.title;
     if (!ruleCounts[k]) ruleCounts[k] = { rule: k, count: 0, severity: i.severity, sample: i.description };
