@@ -45,7 +45,6 @@ describe('.claude-plugin/marketplace.json', () => {
 
   it('plugin entry version tracks package.json', () => {
     const entry = marketplace.plugins.find((p) => p.name === pkg.name);
-    expect(entry).toBeDefined();
-    expect(entry!.version).toBe(pkg.version);
+    expect(entry?.version).toBe(pkg.version);
   });
 });

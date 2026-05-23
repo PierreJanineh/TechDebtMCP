@@ -54,7 +54,12 @@ function assertVersionsMatch() {
     );
   }
   const marketplace = readJson(join(REPO_ROOT, '.claude-plugin', 'marketplace.json'));
-  const marketplaceEntry = (marketplace.plugins ?? []).find((p) => p.name === pkg.name);
+  if (!Array.isArray(marketplace.plugins)) {
+    throw new Error(
+      `.claude-plugin/marketplace.json is missing a top-level "plugins" array.`,
+    );
+  }
+  const marketplaceEntry = marketplace.plugins.find((p) => p.name === pkg.name);
   if (!marketplaceEntry) {
     throw new Error(
       `No marketplace plugin entry found with name "${pkg.name}" in .claude-plugin/marketplace.json.`,
