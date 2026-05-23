@@ -9,6 +9,7 @@ import {
   TechDebtConfig,
   Severity,
   DebtCategory,
+  CustomPattern,
 } from '../types/index.js';
 import { minimatch } from 'minimatch';
 import { analyzeFileContent } from '../analyzers/index.js';
@@ -152,16 +153,20 @@ export class AnalysisEngine {
     const mergedConfig = { ...this.config, ...projectConfig };
 
     // Build a per-call custom rules engine from config patterns (if any).
-    // Wrap construction in try/catch: loadConfig() does not validate entries, so a
-    // malformed element (e.g. null, missing id) would otherwise throw inside the
-    // constructor and abort the entire scan.
+    // Pre-filter to only entries that are plain objects with a string id — loadConfig()
+    // does not validate schema, so null entries or entries missing id would otherwise
+    // throw inside the constructor.  Valid entries are preserved so one bad entry
+    // does not silence all custom patterns.
     let customRulesEngine: CustomRulesEngine | null = null;
     if (Array.isArray(mergedConfig.customPatterns) && mergedConfig.customPatterns.length > 0) {
-      try {
-        customRulesEngine = new CustomRulesEngine(mergedConfig.customPatterns);
-      } catch {
-        // Invalid pattern entries — skip custom rules for this scan rather than aborting
-        customRulesEngine = null;
+      const validPatterns = mergedConfig.customPatterns.filter(
+        (p): p is CustomPattern =>
+          p !== null &&
+          typeof p === 'object' &&
+          typeof (p as CustomPattern).id === 'string'
+      );
+      if (validPatterns.length > 0) {
+        customRulesEngine = new CustomRulesEngine(validPatterns);
       }
     }
 

@@ -167,7 +167,7 @@ describe('AnalysisEngine.analyzeProject – languageOverrides language detection
 describe('AnalysisEngine.analyzeProject – languageOverrides config merging', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetProjectFiles.mockResolvedValue(['src/foo.ts']);
+    mockGetProjectFiles.mockResolvedValue(['/project/src/foo.ts']);
     mockLoadConfig.mockResolvedValue({} as TechDebtConfig);
     mockAnalyzeFile.mockResolvedValue({ issues: [] } as unknown as FileAnalysisResult);
   });
