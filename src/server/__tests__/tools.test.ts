@@ -9,7 +9,7 @@ const READ_ONLY_TOOLS = new Set([
   'get_recommendations',
   'get_issues_by_severity',
   'get_issues_by_category',
-  'list_custom_rules',
+  'list_session_custom_rules',
   'execute_custom_rules',
   'validate_custom_pattern',
   'check_dependencies',

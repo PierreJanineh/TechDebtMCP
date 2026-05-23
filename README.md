@@ -217,7 +217,7 @@ Every tool declares a [tool annotation](https://modelcontextprotocol.io/specific
 | | `list_supported_languages` | Read | All languages with their checks |
 | **Custom Rules** | `add_custom_rule` | Write | Add regex-based tech debt rule |
 | | `remove_custom_rule` | Write | Remove a custom rule by ID |
-| | `list_custom_rules` | Read | List active rules with stats |
+| | `list_session_custom_rules` | Read | List rules added via `add_custom_rule` this session (does not include `.techdebtrc.json` `customPatterns`) |
 | | `execute_custom_rules` | Read | Run custom rules against code or file |
 | | `validate_custom_pattern` | Read | Test a pattern before adding it |
 | **Dependencies** | `check_dependencies` | Read | Scan package manifests across 10 ecosystems |
@@ -274,7 +274,7 @@ Every tool declares a [tool annotation](https://modelcontextprotocol.io/specific
 | | `languages` | string[] | | | Restrict to specific languages |
 | | `flags` | string | | allowed: `d g i m s u v y`; `u` / `v` mutually exclusive | Regex flags |
 | `remove_custom_rule` | `id` | string | ✓ | | Rule ID to remove |
-| `list_custom_rules` | — | — | — | — | No parameters |
+| `list_session_custom_rules` | — | — | — | — | No parameters. Renamed from `list_custom_rules` in the v2.0.3 cycle (TEC-51) to clarify scope: only session-registered rules. |
 | `execute_custom_rules` | `path` | string | ◐ | absolute path, max 500,000 bytes | File to analyze |
 | | `code` | string | ◐ | 1-500,000 chars | Source code to analyze directly |
 | | `language` | string | | must be a supported language ID (same set as `list_supported_languages`) | Filter rules by language |

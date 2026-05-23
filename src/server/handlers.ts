@@ -65,7 +65,7 @@ async function dispatchTool(
       return handleAddCustomRule(customRulesEngine, args);
     case 'remove_custom_rule':
       return handleRemoveCustomRule(customRulesEngine, args);
-    case 'list_custom_rules':
+    case 'list_session_custom_rules':
       return handleListCustomRules(customRulesEngine);
     case 'execute_custom_rules':
       return handleExecuteCustomRules(customRulesEngine, args);
