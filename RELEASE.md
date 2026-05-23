@@ -149,10 +149,10 @@ git push origin develop
    - ✅ Verify dist directory
    - ✅ Verify version matches tag
    - ✅ Verify `mcpb/manifest.json` version matches `package.json`
-   - ✅ Publish to npm with provenance
-   - ✅ Create GitHub Release
    - ✅ Build MCPB bundle (`npm run mcpb:pack`)
    - ✅ Upload MCPB as workflow artifact
+   - ✅ Publish to npm with provenance
+   - ✅ Create GitHub Release
    - ✅ Attach `tech-debt-mcp-<version>.mcpb` to the GitHub Release
 
 **Expected Duration:** 2-3 minutes
