@@ -300,7 +300,7 @@ Analyze \`${d.owner}/${d.name}\` (${d.language}) at commit \`${d.sha.slice(0, 7)
 </div>
 
 <div class="chat-turn assistant">
-  <div class="avatar"><img src="/TechDebtMCP/icon-light.png" alt="" class="avatar-light"/><img src="/TechDebtMCP/icon.png" alt="" class="avatar-dark"/></div>
+  <div class="avatar"><img src="/icon-light.png" alt="" class="avatar-light"/><img src="/icon.png" alt="" class="avatar-dark"/></div>
   <div class="bubble">
 
 <div class="role">tech-debt-mcp</div>
@@ -340,7 +340,7 @@ What kind of debt is this? Show the SQALE breakdown by category.
 </div>
 
 <div class="chat-turn assistant">
-  <div class="avatar"><img src="/TechDebtMCP/icon-light.png" alt="" class="avatar-light"/><img src="/TechDebtMCP/icon.png" alt="" class="avatar-dark"/></div>
+  <div class="avatar"><img src="/icon-light.png" alt="" class="avatar-light"/><img src="/icon.png" alt="" class="avatar-dark"/></div>
   <div class="bubble">
 
 <div class="role">tech-debt-mcp · get_sqale_metrics (full scan — no maxFiles cap)</div>
@@ -366,7 +366,7 @@ Show me the worst issues — top high-severity findings with file paths.
 </div>
 
 <div class="chat-turn assistant">
-  <div class="avatar"><img src="/TechDebtMCP/icon-light.png" alt="" class="avatar-light"/><img src="/TechDebtMCP/icon.png" alt="" class="avatar-dark"/></div>
+  <div class="avatar"><img src="/icon-light.png" alt="" class="avatar-light"/><img src="/icon.png" alt="" class="avatar-dark"/></div>
   <div class="bubble">
 
 <div class="role">tech-debt-mcp · get_issues_by_severity (derived from full scan — combined high + critical)</div>
@@ -390,7 +390,7 @@ What dependencies does it use?
 </div>
 
 <div class="chat-turn assistant">
-  <div class="avatar"><img src="/TechDebtMCP/icon-light.png" alt="" class="avatar-light"/><img src="/TechDebtMCP/icon.png" alt="" class="avatar-dark"/></div>
+  <div class="avatar"><img src="/icon-light.png" alt="" class="avatar-light"/><img src="/icon.png" alt="" class="avatar-dark"/></div>
   <div class="bubble">
 
 <div class="role">tech-debt-mcp · check_dependencies</div>
@@ -410,7 +410,7 @@ What should I fix first?
 </div>
 
 <div class="chat-turn assistant">
-  <div class="avatar"><img src="/TechDebtMCP/icon-light.png" alt="" class="avatar-light"/><img src="/TechDebtMCP/icon.png" alt="" class="avatar-dark"/></div>
+  <div class="avatar"><img src="/icon-light.png" alt="" class="avatar-light"/><img src="/icon.png" alt="" class="avatar-dark"/></div>
   <div class="bubble">
 
 <div class="role">tech-debt-mcp · get_recommendations (simplified view — title + description from AnalysisEngine.analyzeProject())</div>
@@ -430,7 +430,7 @@ How do I reproduce this locally?
 </div>
 
 <div class="chat-turn assistant">
-  <div class="avatar"><img src="/TechDebtMCP/icon-light.png" alt="" class="avatar-light"/><img src="/TechDebtMCP/icon.png" alt="" class="avatar-dark"/></div>
+  <div class="avatar"><img src="/icon-light.png" alt="" class="avatar-light"/><img src="/icon.png" alt="" class="avatar-dark"/></div>
   <div class="bubble">
 
 <div class="role">tech-debt-mcp</div>
