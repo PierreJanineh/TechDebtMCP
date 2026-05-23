@@ -70,7 +70,22 @@ const run = (cmd, args, opts = {}) => {
 const cloneAtSha = async (owner, name, sha) => {
   const target = join(cacheDir, `${owner}-${name}-${sha.slice(0, 12)}`);
   if (existsSync(join(target, '.git'))) {
-    return target;
+    // Verify the cached working tree is actually at the requested SHA.
+    // A previous run may have been interrupted after `git init` but before
+    // `git checkout`, or the directory may have been manually modified — in
+    // either case HEAD will differ from the pinned SHA and scan results would
+    // be wrong.  Re-clone from scratch when the SHAs don't match.
+    let headSha = '';
+    try {
+      headSha = run('git', ['-C', target, 'rev-parse', 'HEAD']).trim();
+    } catch {
+      // rev-parse failed (e.g. empty repo) — treat as mismatch
+    }
+    if (headSha === sha) {
+      return target;
+    }
+    console.log(`[scan-showcase] cached ${owner}/${name} HEAD (${headSha.slice(0, 7)}) ≠ requested (${sha.slice(0, 7)}), re-cloning...`);
+    await rm(target, { recursive: true, force: true });
   }
   // If the target directory exists without a .git, pre-existing files would
   // remain as untracked content after checkout and pollute scan results.
@@ -90,6 +105,9 @@ const scanResults = [];
 
 for (const repo of manifest.repos) {
   const { slug, owner, name, language, sha, blurb } = repo;
+  if (!/^[a-z0-9-]+$/.test(slug)) {
+    throw new Error(`[scan-showcase] invalid slug "${slug}" — slugs must match [a-z0-9-]+`);
+  }
   const path = await cloneAtSha(owner, name, sha);
 
   console.log(`[scan-showcase] scanning ${owner}/${name}...`);
