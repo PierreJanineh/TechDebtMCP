@@ -82,7 +82,22 @@ const cloneAtSha = async (owner, name, sha) => {
       // rev-parse failed (e.g. empty repo) — treat as mismatch
     }
     if (headSha === sha) {
-      return target;
+      // Also verify the working tree is clean — local modifications would
+      // silently pollute scan results even though HEAD matches the pinned SHA.
+      let dirty = false;
+      try {
+        const status = run('git', ['-C', target, 'status', '--porcelain']).trim();
+        dirty = status.length > 0;
+      } catch {
+        // status check failed — treat as dirty to be safe
+        dirty = true;
+      }
+      if (!dirty) {
+        return target;
+      }
+      console.log(`[scan-showcase] cached ${owner}/${name} has local modifications, re-cloning...`);
+      await rm(target, { recursive: true, force: true });
+      // Fall through to fresh clone below.
     }
     console.log(`[scan-showcase] cached ${owner}/${name} HEAD (${headSha.slice(0, 7)}) ≠ requested (${sha.slice(0, 7)}), re-cloning...`);
     await rm(target, { recursive: true, force: true });
@@ -110,6 +125,12 @@ for (const repo of manifest.repos) {
   }
   if (!/^[0-9a-f]{40}$/.test(sha)) {
     throw new Error(`[scan-showcase] invalid sha "${sha}" for ${owner}/${name} — must be a full 40-hex commit SHA`);
+  }
+  if (!/^[A-Za-z0-9_.-]+$/.test(owner)) {
+    throw new Error(`[scan-showcase] invalid owner "${owner}" — must match [A-Za-z0-9_.-]+`);
+  }
+  if (!/^[A-Za-z0-9_.-]+$/.test(name)) {
+    throw new Error(`[scan-showcase] invalid name "${name}" — must match [A-Za-z0-9_.-]+`);
   }
   const path = await cloneAtSha(owner, name, sha);
 

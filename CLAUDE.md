@@ -100,6 +100,7 @@ docs/site/                      # (repo root — VitePress docs site for GitHub 
 ├── .showcase.json              # Pinned-SHA manifest consumed by scripts/scan-showcase.mjs (Gson, Serilog, Slim today)
 ├── index.md                    # Landing hero
 ├── install.md, languages.md, custom-rules.md, security.md, privacy.md
+├── examples/                   # gitignored — regenerated each build by scan-showcase.mjs
 └── tools/                      # gitignored — regenerated each build by gen-docs-tools.mjs
 scripts/
 ├── build-mcpb.mjs              # `npm run mcpb:pack` driver — stages, runs `npm ci --omit=dev --ignore-scripts`, packs
