@@ -176,7 +176,19 @@ export interface TechDebtConfig {
   };
   customPatterns?: CustomPattern[];
   languageOverrides?: {
-    [lang: string]: Partial<LanguageConfig>;
+    [lang: string]: Partial<LanguageConfig> & {
+      rules?: {
+        maxFileLines?: number;
+        maxFunctionLines?: number;
+        maxComplexity?: number;
+        maxParameters?: number;
+        maxNestingDepth?: number;
+        minCommentRatio?: number;
+      };
+      severity?: {
+        [rule: string]: Severity;
+      };
+    };
   };
 }
 

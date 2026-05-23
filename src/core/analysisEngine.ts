@@ -11,7 +11,8 @@ import {
   DebtCategory,
 } from '../types/index.js';
 import { minimatch } from 'minimatch';
-import { analyzeFile } from '../analyzers/index.js';
+import { createAnalyzer } from '../analyzers/index.js';
+import { readFile } from '../utils/fileUtils.js';
 import {
   LANGUAGE_CONFIGS,
   detectLanguageFromExtension,
@@ -25,6 +26,66 @@ import {
   findPackageFiles,
   getRelativePath,
 } from '../utils/fileUtils.js';
+
+/**
+ * Collect extra file extensions declared in languageOverrides that are not
+ * already covered by the static LANGUAGE_CONFIGS.
+ */
+function getOverrideExtensions(config: TechDebtConfig): string[] {
+  const overrides = config.languageOverrides;
+  if (!overrides) return [];
+  const base = getAllExtensions();
+  const extra: string[] = [];
+  for (const partial of Object.values(overrides)) {
+    for (const ext of partial.extensions ?? []) {
+      if (!base.includes(ext)) extra.push(ext);
+    }
+  }
+  return extra;
+}
+
+/**
+ * Detect the language for a file path, consulting languageOverrides extensions
+ * before falling back to the static LANGUAGE_CONFIGS map.
+ * Override wins when the file extension matches an override's extensions array.
+ */
+function detectLanguageWithOverrides(
+  filePath: string,
+  config: TechDebtConfig
+): SupportedLanguage | null {
+  const overrides = config.languageOverrides;
+  if (overrides) {
+    const ext = filePath.includes('.')
+      ? filePath.slice(filePath.lastIndexOf('.')).toLowerCase()
+      : '';
+    for (const [lang, partial] of Object.entries(overrides)) {
+      if (partial.extensions?.includes(ext)) {
+        return lang as SupportedLanguage;
+      }
+    }
+  }
+  return detectLanguageFromExtension(filePath);
+}
+
+/**
+ * Deep-merge a single languageOverride entry into the base config.
+ * The override's `rules` and `severity` objects are merged (override wins per key),
+ * while all other Partial<LanguageConfig> properties (extensions, etc.) are
+ * structural metadata that the analyzer factory already handles via the language
+ * parameter — they do not need to propagate into TechDebtConfig.
+ */
+function mergeLanguageOverride(
+  config: TechDebtConfig,
+  language: SupportedLanguage
+): TechDebtConfig {
+  const override = config.languageOverrides?.[language];
+  if (!override) return config;
+  return {
+    ...config,
+    rules: override.rules ? { ...config.rules, ...override.rules } : config.rules,
+    severity: override.severity ? { ...config.severity, ...override.severity } : config.severity,
+  };
+}
 
 /**
  * Main analysis engine
@@ -46,8 +107,11 @@ export class AnalysisEngine {
     const projectConfig = await loadConfig(projectPath);
     const mergedConfig = { ...this.config, ...projectConfig };
 
-    // Get all relevant file extensions
-    const extensions = getAllExtensions();
+    // Get all relevant file extensions, including any added by languageOverrides
+    const extensions = [
+      ...getAllExtensions(),
+      ...getOverrideExtensions(mergedConfig),
+    ];
 
     // Find all files to analyze
     const allFiles = await getProjectFiles(
@@ -72,10 +136,10 @@ export class AnalysisEngine {
       ? files.slice(0, options.maxFiles)
       : files;
 
-    // Detect languages used in project
+    // Detect languages used in project (override-aware)
     const languagesUsed = new Set<SupportedLanguage>();
     for (const file of filesToAnalyze) {
-      const lang = detectLanguageFromExtension(file);
+      const lang = detectLanguageWithOverrides(file, mergedConfig);
       if (lang) {
         languagesUsed.add(lang);
       }
@@ -91,10 +155,10 @@ export class AnalysisEngine {
     let analyzedCount = 0;
 
     for (const file of filesToAnalyze) {
-      const lang = detectLanguageFromExtension(file);
+      const lang = detectLanguageWithOverrides(file, mergedConfig);
       if (!lang || !targetLanguages.has(lang)) continue;
 
-      const fileIssues = await this.analyzeFileSafe(file, projectPath, mergedConfig, options);
+      const fileIssues = await this.analyzeFileSafe(file, projectPath, lang, mergedConfig, options);
       if (fileIssues === null) continue;
 
       allIssues.push(...fileIssues);
@@ -136,16 +200,22 @@ export class AnalysisEngine {
   }
 
   /**
-   * Analyze a single file, returning filtered issues or null on failure
+   * Analyze a single file, returning filtered issues or null on failure.
+   * The detected language and a pre-merged config (with languageOverrides applied)
+   * are passed in so callers drive both language resolution and config merging.
    */
   private async analyzeFileSafe(
     file: string,
     projectPath: string,
+    language: SupportedLanguage,
     config: TechDebtConfig,
     options: AnalysisOptions
   ): Promise<TechDebtIssue[] | null> {
     try {
-      const result = await analyzeFile(file, config);
+      const effectiveConfig = mergeLanguageOverride(config, language);
+      const content = await readFile(file);
+      const analyzer = createAnalyzer(language, effectiveConfig);
+      const result = await analyzer.analyze(file, content);
       const relativePath = getRelativePath(projectPath, file);
       const issues = result.issues.map(issue => ({ ...issue, file: relativePath }));
       return this.filterIssues(issues, options);
