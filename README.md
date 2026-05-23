@@ -336,6 +336,7 @@ Create a `.techdebtrc.json` file in your project root:
 
 ```json
 {
+  "include": ["src/**", "lib/**"],
   "ignore": ["vendor/**", "generated/**"],
   "rules": {
     "maxFileLines": 500,

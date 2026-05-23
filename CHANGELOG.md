@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Plugin-user-facing README** (TEC-34, #173) — `.claude-plugin/README.md` covers install flow (`/plugin marketplace add` + `/plugin install`), the available MCP tools surfaced to Claude, two example transcripts (project scan, vulnerability report), security posture, troubleshooting, and cross-links to the canonical docs site. Main `README.md` cross-links to it from the plugin install collapsible and Documentation index. Screenshots / asciinema captures are deferred to the TEC-48 manual smoke pass, which exercises the install flow on a clean machine.
 - **Privacy policy** (TEC-44, #183) — new `PRIVACY.md` at repo root and a hosted mirror at <https://pierrejanineh.github.io/TechDebtMCP/privacy> covering data handling, telemetry posture, and third-party services. README gains a Privacy section linking to both. The hosted URL is the stable link for the Anthropic MCP directory submission form (TEC-45).
 
+### Fixed
+- **`include` glob ignored in `analyze_project`** (TEC-57, #212) — `mergedConfig.include` patterns are now applied as a post-discovery allowlist filter in `analysisEngine.ts` using `minimatch` against relative paths. Previously the `include` array was validated but never consulted during file discovery, causing all files to be analyzed regardless of the allowlist.
+
 ### Security
 - **Dependabot alert sweep — 13 alerts triaged (TEC-46, #189): 10 dismissed (patched version present), 3 dev-only tracked via `dependabot.yml` ignore entries (alerts remain open until upstream patches).** `npm audit --omit=dev` confirmed 0 runtime vulnerabilities throughout. Per-alert trace:
   - **#45** `fast-uri` ≤3.1.1 (high, GHSA path-traversal) — lockfile already installs `fast-uri@3.1.2` (patched) via `@modelcontextprotocol/sdk`. Dismissed: patched version present.
