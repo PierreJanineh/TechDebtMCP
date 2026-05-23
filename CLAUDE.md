@@ -78,7 +78,7 @@ src/
 └── utils/
     ├── fileUtils.ts            # fs helpers (readFile, fileExists, getFileStats, getRelativePath)
     └── regexUtils.ts           # escapeRegExp() — safe RegExp construction helper
-.claude/                        # (repo root — contributor automation, gitignored from npm)
+.claude/                        # (repo root — contributor automation, excluded from npm package)
 ├── hooks/                      # PreToolUse hooks (block-npm-publish.sh, check-tools-manifest-sync.sh)
 ├── rules/                      # Markdown rule files loaded by Claude Code (code-quality, docs-maintenance, etc.)
 ├── skills/                     # Project-specific skills (add-config-block, refresh-self-scan)
