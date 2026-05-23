@@ -6,6 +6,7 @@ import { basename } from 'node:path';
 import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
 import { CustomRulesEngine, MAX_FILE_SIZE_BYTES } from '../core/customRulesEngine.js';
 import { readFile, getFileStats } from '../utils/fileUtils.js';
+import { detectLanguageFromExtension } from '../config/languages.js';
 import { CustomPattern } from '../types/index.js';
 import {
   parseAddCustomRuleInput,
@@ -162,11 +163,12 @@ export async function handleExecuteCustomRules(
     throw new McpError(ErrorCode.InvalidParams, 'Could not read code from path or input');
   }
 
-  const filePath = path || 'inline-code';
-  const issues = customRulesEngine.executeRules(filePath, code, language);
+  const displayPath = path ? basename(path) : 'inline-code';
+  const effectiveLanguage = language ?? (path ? detectLanguageFromExtension(path) ?? undefined : undefined);
+  const issues = customRulesEngine.executeRules(displayPath, code, effectiveLanguage);
   if (issues.length === 0) {
     return {
-      content: [{ type: 'text', text: `✅ No custom rule violations found in ${filePath}.` }],
+      content: [{ type: 'text', text: `✅ No custom rule violations found in ${displayPath}.` }],
     };
   }
 
@@ -183,7 +185,7 @@ export async function handleExecuteCustomRules(
     .join('\n\n---\n\n');
 
   const formatted =
-    `# Custom Rule Violations in ${filePath}\n\n` +
+    `# Custom Rule Violations in ${displayPath}\n\n` +
     `Found ${issues.length} issue(s):\n\n` +
     issueLines;
 
