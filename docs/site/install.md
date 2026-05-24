@@ -45,7 +45,7 @@ The repository ships its own marketplace via [`.claude-plugin/marketplace.json`]
 /plugin install tech-debt-mcp@techdebtmcp
 ```
 
-The plugin registers the MCP server via [`plugin.json → mcpServers`](https://github.com/PierreJanineh/TechDebtMCP/blob/develop/.claude-plugin/plugin.json), so there's nothing else to wire up.
+The plugin registers the MCP server via [`plugin.json → mcpServers`](https://github.com/PierreJanineh/TechDebtMCP/blob/develop/plugin/.claude-plugin/plugin.json), so there's nothing else to wire up.
 
 ## MCPB bundle (Claude Desktop one-click)
 

@@ -40,7 +40,7 @@ function readJson(path) {
 function assertVersionsMatch() {
   const pkg = readJson(join(REPO_ROOT, 'package.json'));
   const manifest = readJson(join(MCPB_DIR, 'manifest.json'));
-  const plugin = readJson(join(REPO_ROOT, '.claude-plugin', 'plugin.json'));
+  const plugin = readJson(join(REPO_ROOT, 'plugin', '.claude-plugin', 'plugin.json'));
   if (pkg.version !== manifest.version) {
     throw new Error(
       `Version mismatch: package.json=${pkg.version}, mcpb/manifest.json=${manifest.version}. ` +
@@ -49,8 +49,8 @@ function assertVersionsMatch() {
   }
   if (pkg.version !== plugin.version) {
     throw new Error(
-      `Version mismatch: package.json=${pkg.version}, .claude-plugin/plugin.json=${plugin.version}. ` +
-        `Update .claude-plugin/plugin.json before packing.`,
+      `Version mismatch: package.json=${pkg.version}, plugin/.claude-plugin/plugin.json=${plugin.version}. ` +
+        `Update plugin/.claude-plugin/plugin.json before packing.`,
     );
   }
   const marketplace = readJson(join(REPO_ROOT, '.claude-plugin', 'marketplace.json'));

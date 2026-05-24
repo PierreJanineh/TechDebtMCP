@@ -86,7 +86,7 @@ src/
 
 ## Claude Code Contributor Tooling
 
-The repository ships a small set of Claude Code automation files that improve the contributor workflow. The `.claude/` contributor automation is **excluded from all end-user distribution channels** (npm tarball, MCPB bundle, and Claude Code plugin marketplace sessions) — end users who install `tech-debt-mcp` via any of those channels are not affected. Note that the plugin marketplace distributes `.claude-plugin/plugin.json` (the plugin manifest, which runs `npx -y tech-debt-mcp@latest`) — that is separate from the `.claude/` contributor automation.
+The repository ships a small set of Claude Code automation files that improve the contributor workflow. The `.claude/` contributor automation is **excluded from all end-user distribution channels** (npm tarball, MCPB bundle, and Claude Code plugin marketplace sessions) — end users who install `tech-debt-mcp` via any of those channels are not affected. The Claude Code plugin marketplace install only copies the `plugin/` subdirectory (per `marketplace.json` `source: "./plugin"`), which contains the plugin manifest (`plugin/.claude-plugin/plugin.json`, wiring `mcpServers.tech-debt-mcp` to `npx -y tech-debt-mcp@latest`), the slash commands, the `proactive-analysis` skill, and the user-facing README — nothing else from the repo (no `.claude/`, no `src/`, no `node_modules/`) is copied. See TEC-242 for the structural enforcement.
 
 ### Scoping
 
@@ -94,12 +94,12 @@ The repository ships a small set of Claude Code automation files that improve th
 |---|---|---|
 | npm (`npm publish`) | No | `package.json` `files` allowlist (`dist/`, `README.md`, `LICENSE`) — deny-by-default; everything else is excluded |
 | MCPB bundle (`npm run mcpb:pack`) | No | `scripts/build-mcpb.mjs` only stages `package.json`, `package-lock.json`, `README.md`, `LICENSE`, `dist/`, and the MCPB manifest/icon |
-| Claude Code plugin marketplace | No | Plugin install distributes `.claude-plugin/plugin.json` (which runs `npx -y tech-debt-mcp@latest`); it does not load the source repo's `.claude/settings.json` into end users' sessions |
+| Claude Code plugin marketplace | No | `marketplace.json` `source: "./plugin"` — only the `plugin/` subtree is copied to user caches (manifest, commands, skills, README). `.claude/`, `src/`, `node_modules/`, etc. never reach end users (TEC-242) |
 
 The following contributor-only and dev-only files are excluded from the npm package:
 
 - **`.claude/`** — Claude Code contributor automation (hooks, rules, skills, settings)
-- **`.claude-plugin/`** — Claude Code plugin/marketplace manifest (excluded from the npm tarball; the plugin marketplace distributes `plugin.json` directly from the repo)
+- **`.claude-plugin/`** and **`plugin/`** — Claude Code marketplace manifest and plugin source tree (excluded from the npm tarball; the marketplace install copies `plugin/` directly from the repo)
 - **`CLAUDE.md`**, **`CONTRIBUTING.md`**, **`ARCHITECTURE.md`**, **`ROADMAP.md`**, **`TECH_DEBT_SCAN.md`**, **`CHANGELOG.md`**, **`RELEASE.md`**, **`QUICK_RELEASE.md`**, **`GITHUB_PACKAGES.md`**, **`CODE_OF_CONDUCT.md`**, **`SECURITY.md`**, **`PRIVACY.md`**
 - **`src/`** (TypeScript source — compiled output ships as `dist/`)
 - **`tests/`**, **`src/**/__tests__/`**, **`*.test.ts`** (test infrastructure)

@@ -204,7 +204,17 @@ function optionalLanguage(
 
 /**
  * Optionally narrow an array of strings to SupportedLanguage[].
- * Returns undefined if the field is absent; throws McpError for null or invalid entries.
+ * Returns undefined if the field is absent or an empty array; throws McpError for
+ * non-array values or invalid entries.
+ *
+ * Empty arrays collapse to `undefined` because MCP Inspector's auto-generated forms
+ * default array fields to `[]`. Treating `[]` as "no filter" matches user intent and
+ * keeps the engine contract literal — callers who pass `[]` get the same result as
+ * omitting the field. See TEC-73 / #240.
+ *
+ * Also consumed by `parseAddCustomRuleInput`, where `[]` → `undefined` means the
+ * stored custom rule "applies to all languages" rather than "applies to none" — the
+ * desired semantics, since a no-language rule would be a configuration footgun.
  */
 function optionalLanguages(
   args: Record<string, unknown>,
@@ -215,6 +225,7 @@ function optionalLanguages(
   if (!Array.isArray(value)) {
     throw new McpError(ErrorCode.InvalidParams, `${key} must be an array`);
   }
+  if (value.length === 0) return undefined;
   for (const lang of value) {
     if (!VALID_LANGUAGES.includes(lang as SupportedLanguage)) {
       throw new McpError(
@@ -228,7 +239,8 @@ function optionalLanguages(
 
 /**
  * Optionally narrow an array of strings to DebtCategory[].
- * Returns undefined if the field is absent; throws McpError for null or invalid entries.
+ * Returns undefined if the field is absent or an empty array; throws McpError for
+ * non-array values or invalid entries. See `optionalLanguages` for the `[]` rationale.
  */
 function optionalCategories(
   args: Record<string, unknown>,
@@ -239,6 +251,7 @@ function optionalCategories(
   if (!Array.isArray(value)) {
     throw new McpError(ErrorCode.InvalidParams, `${key} must be an array`);
   }
+  if (value.length === 0) return undefined;
   for (const cat of value) {
     if (!VALID_CATEGORIES.includes(cat as DebtCategory)) {
       throw new McpError(
