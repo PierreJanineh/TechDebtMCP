@@ -9,8 +9,9 @@ jest.config.js
 
 # Claude Code contributor automation (hooks, rules, skills — not for npm consumers)
 .claude/
-# Claude Code plugin/marketplace manifest (not needed by npm consumers)
+# Claude Code marketplace manifest + plugin source tree (not needed by npm consumers)
 .claude-plugin/
+plugin/
 
 # Git and GitHub
 .git/

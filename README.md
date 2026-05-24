@@ -109,7 +109,7 @@ claude mcp add tech-debt-mcp -- npx -y tech-debt-mcp@latest
 /plugin install tech-debt-mcp@techdebtmcp
 ```
 
-The plugin runs `npx -y tech-debt-mcp@latest` under the hood — no source bundling, always tracks the published npm release. See [`.claude-plugin/README.md`](.claude-plugin/README.md) for plugin-user-facing docs (install flow, example transcripts, security posture).
+The plugin runs `npx -y tech-debt-mcp@latest` under the hood — no source bundling, always tracks the published npm release. See [`plugin/README.md`](plugin/README.md) for plugin-user-facing docs (install flow, example transcripts, security posture).
 
 </details>
 

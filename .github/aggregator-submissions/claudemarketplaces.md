@@ -19,7 +19,7 @@
 
 - **Plugin name:** tech-debt-mcp
 - **Display name:** Tech Debt MCP
-- **Version:** tracks `package.json` (see `.claude-plugin/plugin.json`)
+- **Version:** tracks `package.json` (see `plugin/.claude-plugin/plugin.json`)
 - **License:** MIT
 - **Author:** Pierre Janineh
 - **Homepage / docs:** https://pierrejanineh.github.io/TechDebtMCP/
