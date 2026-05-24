@@ -59,6 +59,9 @@ describe('.claude-plugin/marketplace.json', () => {
 describe('plugin/ install surface', () => {
   it('contains the loader-required components at plugin root (not nested in .claude-plugin/)', () => {
     expect(statSync(join(PLUGIN_DIR, 'commands')).isDirectory()).toBe(true);
+    expect(statSync(join(PLUGIN_DIR, 'commands', 'techdebt-scan.md')).isFile()).toBe(true);
+    expect(statSync(join(PLUGIN_DIR, 'commands', 'techdebt-file.md')).isFile()).toBe(true);
+    expect(statSync(join(PLUGIN_DIR, 'commands', 'techdebt-summary.md')).isFile()).toBe(true);
     expect(statSync(join(PLUGIN_DIR, 'skills', 'proactive-analysis', 'SKILL.md')).isFile()).toBe(
       true,
     );
