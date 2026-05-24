@@ -27,7 +27,7 @@ The plugin installs cleanly from `PierreJanineh/TechDebtMCP` and the three slash
 
 ## 4. Marketplace metadata gaps — **fixed in this PR**
 
-- `.claude-plugin/plugin.json` is now version-locked to `package.json` via `src/server/__tests__/pluginManifest.test.ts` (was previously by-convention only).
+- `plugin/.claude-plugin/plugin.json` (relocated from `.claude-plugin/plugin.json` in TEC-242) is now version-locked to `package.json` via `src/server/__tests__/pluginManifest.test.ts` (was previously by-convention only).
 - `.claude-plugin/marketplace.json` now carries the supported discovery fields: top-level `version`, plus per-plugin `displayName`, `version`, `repository`, `category`, and `tags`. The same test asserts the marketplace `version` + plugin-entry `version` track `package.json`. Schema lookup (https://code.claude.com/docs/en/plugin-marketplaces) confirmed `screenshots` and `changelogUrl` aren't part of the format — once those become supported, add them here too.
 
 ## 5. Self-scan drift

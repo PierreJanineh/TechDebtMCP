@@ -88,12 +88,18 @@ src/
 ├── rules/                      # Markdown rule files loaded by Claude Code (code-quality, docs-maintenance, etc.)
 ├── skills/                     # Project-specific skills (add-config-block, refresh-self-scan)
 └── settings.json               # Claude Code project settings (hook registrations, permissions)
-.claude-plugin/                 # (repo root — sibling of src/)
-├── plugin.json                 # Claude Code plugin manifest (mcpServers → npx -y tech-debt-mcp@latest)
-├── marketplace.json            # Marketplace entry so this repo doubles as its own marketplace. Top-level `version` and the plugin entry's `version` are enforced equal to `package.json.version` by `src/server/__tests__/pluginManifest.test.ts` and `scripts/build-mcpb.mjs:assertVersionsMatch()`.
-├── README.md                   # User-facing plugin README shown in the Claude Code marketplace
+.claude-plugin/                 # (repo root — marketplace manifest ONLY; plugin source lives in plugin/)
+└── marketplace.json            # Marketplace entry: source points at "./plugin". Top-level `version` and the plugin entry's `version` are enforced equal to `package.json.version` by `src/server/__tests__/pluginManifest.test.ts` and `scripts/build-mcpb.mjs:assertVersionsMatch()`.
+plugin/                         # (repo root — the entire Claude Code plugin install surface)
+├── .claude-plugin/
+│   └── plugin.json             # Claude Code plugin manifest (mcpServers → npx -y tech-debt-mcp@latest)
 ├── commands/                   # Claude Code slash commands (/techdebt-scan, /techdebt-file, /techdebt-summary)
-└── skills/                     # Claude Code skills (proactive-analysis — context-triggered analysis)
+├── skills/                     # Claude Code skills (proactive-analysis — context-triggered analysis)
+└── README.md                   # User-facing plugin README shown in the Claude Code marketplace
+                                # WHY a subdir: marketplace install (source: "./plugin") does a filesystem copy of
+                                # this directory; keeping it isolated prevents src/, node_modules/, .claude/, .env,
+                                # .idea/, etc. from leaking into every user's plugin cache. The surface allowlist is
+                                # enforced by src/server/__tests__/pluginManifest.test.ts (#242).
 mcpb/                           # (repo root — Claude Desktop one-click bundle)
 ├── manifest.json               # MCPB v0.3 manifest (mirrors TOOL_DEFINITIONS, version pinned to package.json)
 ├── icon.png                    # 512×512 bundle icon
@@ -123,7 +129,7 @@ npm run mcpb:pack
 # -> mcpb/tech-debt-mcp-<version>.mcpb
 ```
 
-The build script's `assertVersionsMatch()` asserts that `mcpb/manifest.json`, `.claude-plugin/plugin.json`, and `.claude-plugin/marketplace.json` (both top-level `version` and the plugin entry's `version`) all equal `package.json.version` — bump all four in lockstep at release time. `src/server/__tests__/mcpbManifest.test.ts` enforces the manifest's tool list matches `TOOL_DEFINITIONS`, so adding/removing a tool requires updating `mcpb/manifest.json` in the same PR.
+The build script's `assertVersionsMatch()` asserts that `mcpb/manifest.json`, `plugin/.claude-plugin/plugin.json`, and `.claude-plugin/marketplace.json` (both top-level `version` and the plugin entry's `version`) all equal `package.json.version` — bump all four in lockstep at release time. `src/server/__tests__/mcpbManifest.test.ts` enforces the manifest's tool list matches `TOOL_DEFINITIONS`, so adding/removing a tool requires updating `mcpb/manifest.json` in the same PR.
 
 ### Building the docs site
 
