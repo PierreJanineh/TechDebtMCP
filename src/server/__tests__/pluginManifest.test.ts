@@ -70,7 +70,7 @@ describe('plugin/ install surface', () => {
 
   it('contains only the allowlisted top-level entries (prevents repo cruft from shipping)', () => {
     const ALLOWED = new Set(['.claude-plugin', 'commands', 'skills', 'README.md']);
-    const entries = readdirSync(PLUGIN_DIR).filter((name) => !name.startsWith('.DS_Store'));
+    const entries = readdirSync(PLUGIN_DIR).filter((name) => name !== '.DS_Store');
     const unexpected = entries.filter((name) => !ALLOWED.has(name));
     expect(unexpected).toEqual([]);
   });
