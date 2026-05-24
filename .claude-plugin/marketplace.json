@@ -11,7 +11,7 @@
       "name": "tech-debt-mcp",
       "displayName": "Tech Debt MCP",
       "version": "2.1.0",
-      "source": "./",
+      "source": "./plugin",
       "description": "Static technical-debt analysis across 14 languages, exposed as MCP tools and resources.",
       "homepage": "https://pierrejanineh.github.io/TechDebtMCP/",
       "repository": "https://github.com/PierreJanineh/TechDebtMCP",
