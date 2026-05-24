@@ -87,6 +87,29 @@ describe('inputParser', () => {
         parseAnalyzeProjectInput({ path: '/p', languages: 'typescript' }),
       ).toThrow(McpError);
     });
+
+    // TEC-73 / #240: MCP Inspector's auto-form defaults array fields to []. Treat
+    // [] as "no filter" so the three call shapes below are observably identical.
+    it('coerces empty languages/categories arrays to undefined', () => {
+      const omitted = parseAnalyzeProjectInput({ path: '/p' });
+      const explicitUndef = parseAnalyzeProjectInput({
+        path: '/p',
+        languages: undefined,
+        categories: undefined,
+      });
+      const empty = parseAnalyzeProjectInput({
+        path: '/p',
+        languages: [],
+        categories: [],
+      });
+
+      expect(omitted.languages).toBeUndefined();
+      expect(omitted.categories).toBeUndefined();
+      expect(explicitUndef.languages).toBeUndefined();
+      expect(explicitUndef.categories).toBeUndefined();
+      expect(empty.languages).toBeUndefined();
+      expect(empty.categories).toBeUndefined();
+    });
   });
 
   // ---- parseAnalyzeFileInput ----
@@ -294,6 +317,13 @@ describe('inputParser', () => {
       expect(result.suggestion).toBe('fix it');
       expect(result.languages).toEqual(['typescript']);
       expect(result.flags).toBe('gi');
+    });
+
+    // TEC-73: empty languages array collapses to undefined ("applies to all languages")
+    // rather than "applies to none" — pinned to prevent regression of the shared coercion.
+    it('coerces empty languages array to undefined', () => {
+      const result = parseAddCustomRuleInput({ ...valid, languages: [] });
+      expect(result.languages).toBeUndefined();
     });
 
     it('throws McpError when id is missing', () => {
