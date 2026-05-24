@@ -600,7 +600,7 @@ npm test           # Run tests
 - **[TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md)** - Self-scan results with before/after comparison
 - **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** - Community standards
 - **[PRIVACY.md](PRIVACY.md)** - Privacy policy (also hosted at <https://pierrejanineh.github.io/TechDebtMCP/privacy>)
-- **[.claude-plugin/README.md](.claude-plugin/README.md)** - Plugin-user-facing docs (install, example transcripts, security posture)
+- **[plugin/README.md](plugin/README.md)** - Plugin-user-facing docs (install, example transcripts, security posture)
 
 ## Privacy
 
