@@ -1,14 +1,15 @@
-import { TechDebtIssue, CustomPattern, Severity, DebtCategory } from '../types/index.js';
+import { TechDebtIssue, CustomPattern, Severity, DebtCategory, SupportedLanguage } from '../types/index.js';
+import { buildBlockSuppressionMap, isLineSuppressed } from '../analyzers/baseAnalyzer.js';
 
 /**
  * Valid severity levels for validation
  */
-const VALID_SEVERITIES: Severity[] = ['low', 'medium', 'high', 'critical'];
+export const VALID_SEVERITIES: Severity[] = ['low', 'medium', 'high', 'critical'];
 
 /**
  * Valid debt categories for validation
  */
-const VALID_CATEGORIES: DebtCategory[] = [
+export const VALID_CATEGORIES: DebtCategory[] = [
   'dependency',
   'code-quality',
   'architecture',
@@ -114,18 +115,20 @@ export class CustomRulesEngine {
   executeRules(
     filePath: string,
     content: string,
-    language?: string
+    language?: SupportedLanguage
   ): TechDebtIssue[] {
     const issues: TechDebtIssue[] = [];
+    const lines = content.split(/\r?\n/);
+    const blockMap = buildBlockSuppressionMap(lines);
 
     this.rules.forEach(pattern => {
       // Skip if language filter is specified and either language is missing or doesn't match
-      if (pattern.languages && (!language || !pattern.languages.includes(language as any))) {
+      if (Array.isArray(pattern.languages) && (!language || !pattern.languages.includes(language))) {
         return;
       }
 
       // Execute the pattern check
-      const patternIssues = this.executePattern(filePath, content, pattern);
+      const patternIssues = this.executePattern(filePath, lines, blockMap, pattern);
       issues.push(...patternIssues);
     });
 
@@ -137,7 +140,8 @@ export class CustomRulesEngine {
    */
   private executePattern(
     filePath: string,
-    content: string,
+    lines: string[],
+    blockMap: Map<number, Set<string>>,
     pattern: CustomPattern
   ): TechDebtIssue[] {
     try {
@@ -147,7 +151,6 @@ export class CustomRulesEngine {
         }
         return [];
       }
-      const lines = content.split(/\r?\n/);
       const sanitizedFlags = (pattern.flags ?? '').replace(new RegExp(`[^${ALLOWED_FLAGS}]`, 'g'), '');
 
       if (sanitizedFlags.includes('u') && sanitizedFlags.includes('v')) {
@@ -162,9 +165,10 @@ export class CustomRulesEngine {
 
       const safeFlags = sanitizedFlags || 'g';
       const regex = new RegExp(pattern.pattern, safeFlags);
-      return lines.flatMap((line, index) =>
-        this.matchLineIssues(filePath, line, index + 1, regex, pattern)
-      );
+      return lines.flatMap((line, index) => {
+        if (isLineSuppressed(lines, index, pattern.id, blockMap)) return [];
+        return this.matchLineIssues(filePath, line, index + 1, regex, pattern);
+      });
     } catch (error) {
       if (this.onRuleError) {
         this.onRuleError(pattern.id, error instanceof Error ? error : new Error(String(error)));

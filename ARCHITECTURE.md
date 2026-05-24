@@ -66,6 +66,30 @@ TechDebtMCP/
 │       ├── fileUtils.ts         # File system utilities
 │       └── regexUtils.ts        # escapeRegExp() — safe RegExp interpolation helper
 ├── dist/                        # Compiled output
+├── .claude/
+│   ├── hooks/                   # PreToolUse hooks (block-npm-publish.sh, check-tools-manifest-sync.sh)
+│   ├── rules/                   # Markdown rule files loaded by Claude Code (code-quality, docs-maintenance, etc.)
+│   ├── skills/                  # Project-specific skills (add-config-block, refresh-self-scan)
+│   └── settings.json            # Claude Code project settings (hook registrations, permissions)
+├── .claude-plugin/
+│   ├── plugin.json              # Claude Code plugin manifest (mcpServers → npx -y tech-debt-mcp@latest)
+│   ├── marketplace.json         # Marketplace entry so this repo doubles as its own marketplace
+│   ├── README.md                # User-facing plugin README shown in the Claude Code marketplace
+│   ├── commands/                # Slash commands (/techdebt-scan, /techdebt-file, /techdebt-summary)
+│   └── skills/                  # Skills (proactive-analysis — context-triggered analysis)
+├── mcpb/
+│   ├── manifest.json            # MCPB v0.3 manifest for Claude Desktop one-click bundle
+│   └── icon.png                 # 512×512 bundle icon
+├── docs/site/
+│   ├── .vitepress/              # VitePress config + custom slate theme
+│   ├── public/                  # Static assets (icon.png + inverted icon-light.png)
+│   ├── .showcase.json           # Pinned-SHA manifest consumed by scripts/scan-showcase.mjs
+│   ├── index.md                 # Landing hero
+│   └── install.md, languages.md, custom-rules.md, security.md, privacy.md
+├── scripts/
+│   ├── build-mcpb.mjs           # Stages + packs the .mcpb (npm run mcpb:pack)
+│   ├── gen-docs-tools.mjs       # Generates docs/site/tools/*.md from TOOL_DEFINITIONS
+│   └── scan-showcase.mjs        # Clones repos in docs/site/.showcase.json at pinned SHAs, calls AnalysisEngine.analyzeProject() directly (not the MCP tool handler), emits docs/site/examples/*.md chat-style pages
 ├── package.json
 ├── tsconfig.json
 ├── .github/copilot-instructions.md
@@ -206,7 +230,7 @@ graph TD
 **Responsibility:** Orchestrates the entire analysis workflow.
 
 **Key Methods:**
-- `analyzeProject(options)` — Main entry point
+- `analyzeProject(options)` — Main entry point; applies `mergedConfig.include` allowlist filter after `getProjectFiles()` (TEC-57)
 - `calculateSummary(issues)` — Aggregate statistics
 - `generateRecommendations(issues, summary)` — Create actionable suggestions
 - `detectPackageManagers(packageFiles)` — Identify dependency managers
@@ -263,7 +287,7 @@ The server is split into focused modules under `src/server/`:
 
 **16 MCP Tools:**
 - Core: `analyze_project`, `analyze_file`, `get_debt_summary`, `list_supported_languages`, `get_recommendations`, `get_issues_by_severity`, `get_issues_by_category`, `get_sqale_metrics`
-- Custom Rules (Phase 5): `add_custom_rule`, `remove_custom_rule`, `list_custom_rules`, `execute_custom_rules`, `validate_custom_pattern`
+- Custom Rules (Phase 5): `add_custom_rule`, `remove_custom_rule`, `list_session_custom_rules` (renamed from `list_custom_rules` in TEC-51), `execute_custom_rules`, `validate_custom_pattern`
 - Dependencies (Phase 2): `check_dependencies`, `validate_config`, `get_vulnerability_report`
 
 **2 MCP Resources (Phase 6):**
@@ -334,6 +358,7 @@ The server is split into focused modules under `src/server/`:
 **Features:**
 - Regex pattern matching with configurable flags (allowlist: `dgimsuvy` — includes the `v` unicodeSets flag; `u` and `v` are mutually exclusive; patterns capped at 1,000 characters; inline `code` capped at 500,000 characters; `path` inputs capped at 500,000 bytes before reading). Node.js >=20.19.0 required as of v2.0.2 (project minimum, including tooling such as ESLint).
 - Language-specific rule filtering
+- Inline suppression (`techdebt-ignore-next-line [rule]` / `techdebt-ignore-start/end [rule]`) — consistent with `BaseAnalyzer`; block map built once per file, checked per matched line
 - Multiple matches per line support
 - Cross-platform line ending support (\r\n and \n)
 - Column information for precise issue location
@@ -351,10 +376,13 @@ addRule()
 executeRules(filePath, content, language)
   ├─ Filter by language (if specified)
   ├─ Split content by lines (/\r?\n/)
-  ├─ For each line:
-  │   ├─ Apply regex with exec loop
-  │   ├─ Capture match index & column
-  │   └─ Create TechDebtIssue
+  ├─ buildBlockSuppressionMap(lines)  [once per file]
+  ├─ For each pattern:
+  │   └─ executePattern(filePath, lines, blockMap, pattern)
+  │       ├─ Apply regex with exec loop per line
+  │       ├─ isLineSuppressed(lines, index, rule, blockMap)  ← skip suppressed lines
+  │       ├─ Capture match index & column
+  │       └─ Create TechDebtIssue
   └─ Return issues array
 ```
 

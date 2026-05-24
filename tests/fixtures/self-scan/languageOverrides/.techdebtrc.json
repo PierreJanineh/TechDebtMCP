@@ -1,0 +1,7 @@
+{
+  "languageOverrides": {
+    "javascript": {
+      "extensions": [".js", ".special"]
+    }
+  }
+}

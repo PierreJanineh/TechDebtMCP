@@ -20,6 +20,7 @@ export const TOOL_DEFINITIONS = [
       },
       required: ['path'],
     },
+    annotations: { readOnlyHint: true },
   },
   {
     name: 'analyze_file',
@@ -31,6 +32,7 @@ export const TOOL_DEFINITIONS = [
       },
       required: ['path'],
     },
+    annotations: { readOnlyHint: true },
   },
   {
     name: 'get_debt_summary',
@@ -42,6 +44,7 @@ export const TOOL_DEFINITIONS = [
       },
       required: ['path'],
     },
+    annotations: { readOnlyHint: true },
   },
   {
     name: 'get_sqale_metrics',
@@ -54,6 +57,7 @@ export const TOOL_DEFINITIONS = [
       },
       required: ['path'],
     },
+    annotations: { readOnlyHint: true },
   },
   {
     name: 'list_supported_languages',
@@ -62,6 +66,7 @@ export const TOOL_DEFINITIONS = [
       type: 'object',
       properties: {},
     },
+    annotations: { readOnlyHint: true },
   },
   {
     name: 'get_recommendations',
@@ -74,6 +79,7 @@ export const TOOL_DEFINITIONS = [
       },
       required: ['path'],
     },
+    annotations: { readOnlyHint: true },
   },
   {
     name: 'get_issues_by_severity',
@@ -86,6 +92,7 @@ export const TOOL_DEFINITIONS = [
       },
       required: ['path', 'severity'],
     },
+    annotations: { readOnlyHint: true },
   },
   {
     name: 'get_issues_by_category',
@@ -98,6 +105,7 @@ export const TOOL_DEFINITIONS = [
       },
       required: ['path', 'category'],
     },
+    annotations: { readOnlyHint: true },
   },
   {
     name: 'add_custom_rule',
@@ -116,6 +124,7 @@ export const TOOL_DEFINITIONS = [
       },
       required: ['id', 'pattern', 'message', 'severity', 'category'],
     },
+    annotations: { destructiveHint: true },
   },
   {
     name: 'remove_custom_rule',
@@ -127,14 +136,16 @@ export const TOOL_DEFINITIONS = [
       },
       required: ['id'],
     },
+    annotations: { destructiveHint: true },
   },
   {
-    name: 'list_custom_rules',
-    description: 'List all active custom rules with their statistics.',
+    name: 'list_session_custom_rules',
+    description: 'List custom rules registered in this server session via add_custom_rule. Does NOT include customPatterns declared in .techdebtrc.json (those run inside analyze_project via AnalysisEngine but are not surfaced here). Renamed from list_custom_rules (TEC-51) for clarity; the old name is no longer registered.',
     inputSchema: {
       type: 'object',
       properties: {},
     },
+    annotations: { readOnlyHint: true },
   },
   {
     name: 'execute_custom_rules',
@@ -147,6 +158,7 @@ export const TOOL_DEFINITIONS = [
         language: { type: 'string', description: 'Optional: programming language for filtering rules' },
       },
     },
+    annotations: { readOnlyHint: true },
   },
   {
     name: 'validate_custom_pattern',
@@ -162,6 +174,7 @@ export const TOOL_DEFINITIONS = [
       },
       required: ['id', 'pattern', 'message', 'severity', 'category'],
     },
+    annotations: { readOnlyHint: true },
   },
   {
     name: 'check_dependencies',
@@ -174,6 +187,7 @@ export const TOOL_DEFINITIONS = [
       },
       required: ['path'],
     },
+    annotations: { readOnlyHint: true },
   },
   {
     name: 'validate_config',
@@ -185,6 +199,7 @@ export const TOOL_DEFINITIONS = [
       },
       required: ['path'],
     },
+    annotations: { readOnlyHint: true },
   },
   {
     name: 'get_vulnerability_report',
@@ -197,5 +212,6 @@ export const TOOL_DEFINITIONS = [
       },
       required: ['path'],
     },
+    annotations: { readOnlyHint: true },
   },
 ] as const;

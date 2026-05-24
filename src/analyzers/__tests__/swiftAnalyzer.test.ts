@@ -68,7 +68,6 @@ describe('SwiftUI-Specific Analysis', () => {
       `;
 
       const result = await analyzer.analyze('test.swift', code);
-      const bindingIssues = result.issues.filter(i => i.description.includes('binding'));
 
       // Should flag unnecessary Binding wrapping
       expect(result.issues.length).toBeGreaterThan(0);
@@ -111,9 +110,6 @@ describe('SwiftUI-Specific Analysis', () => {
       `;
 
       const result = await analyzer.analyze('test.swift', code);
-      const circularRefIssues = result.issues.filter(i =>
-        i.description.toLowerCase().includes('circular') || i.description.includes('weak')
-      );
 
       // Should flag potential circular reference
       expect(result.issues.length).toBeGreaterThan(0);
@@ -137,9 +133,6 @@ describe('SwiftUI-Specific Analysis', () => {
       `;
 
       const result = await analyzer.analyze('test.swift', code);
-      const timerIssues = result.issues.filter(i =>
-        i.description.toLowerCase().includes('timer') || i.description.toLowerCase().includes('cleanup')
-      );
 
       expect(result.issues.length).toBeGreaterThan(0);
     });
@@ -168,9 +161,6 @@ describe('SwiftUI-Specific Analysis', () => {
       `;
 
       const result = await analyzer.analyze('test.swift', code);
-      const taskIssues = result.issues.filter(i =>
-        i.description.toLowerCase().includes('task') || i.description.includes('async')
-      );
 
       expect(result.issues.length).toBeGreaterThan(0);
     });
@@ -199,9 +189,6 @@ describe('SwiftUI-Specific Analysis', () => {
       `;
 
       const result = await analyzer.analyze('test.swift', code);
-      const mainThreadIssues = result.issues.filter(i =>
-        i.description.toLowerCase().includes('main') || i.description.includes('thread')
-      );
 
       // Should suggest MainActor or DispatchQueue.main
       expect(result.issues.length).toBeGreaterThan(0);
@@ -264,7 +251,6 @@ describe('SwiftUI-Specific Analysis', () => {
       `;
 
       const result = await analyzer.analyze('test.swift', code);
-      const idIssues = result.issues.filter(i => i.description.toLowerCase().includes('.id'));
 
       expect(result.issues.length).toBeGreaterThan(0);
     });
@@ -285,9 +271,6 @@ describe('SwiftUI-Specific Analysis', () => {
       `;
 
       const result = await analyzer.analyze('test.swift', code);
-      const expensiveIssues = result.issues.filter(i =>
-        i.description.toLowerCase().includes('calculation') || i.description.includes('performance')
-      );
 
       expect(result.issues.length).toBeGreaterThan(0);
     });

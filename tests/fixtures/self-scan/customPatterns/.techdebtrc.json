@@ -1,0 +1,12 @@
+{
+  "customPatterns": [
+    {
+      "id": "no-forbidden-token",
+      "pattern": "FORBIDDEN_TOKEN_xyz",
+      "severity": "high",
+      "category": "code-quality",
+      "message": "Forbidden token found",
+      "languages": ["javascript"]
+    }
+  ]
+}

@@ -45,6 +45,11 @@ npm test -- --testPathPatterns=src/analyzers  # run a single suite
 
 Tech Debt MCP is a Model Context Protocol (MCP) server exposing tools and resources for static tech-debt analysis across 14 languages.
 
+**Canonical enumerations** — before listing supported languages, dependency parsers, or tools in any doc/template, read the source instead of paraphrasing:
+- Languages (14): `case` arms in `createAnalyzer()` in `src/analyzers/index.ts`
+- Dependency parsers: files in `src/analyzers/dependencies/` (excluding `baseParser.ts`, `index.ts`, `__tests__/`)
+- Tools (16): `TOOL_DEFINITIONS` in `src/server/tools.ts`
+
 ```
 src/
 ├── index.ts                    # Entry point — creates server, attaches handlers + resources, runs
@@ -62,7 +67,7 @@ src/
 ├── types/index.ts              # Single source of truth for all TypeScript interfaces
 ├── config/languages.ts         # Per-language config: extensions, package files, patterns
 ├── core/
-│   ├── analysisEngine.ts       # Project-level orchestrator: discovers files, fans out to analyzers
+│   ├── analysisEngine.ts       # Project-level orchestrator: discovers files, applies include allowlist, fans out to analyzers
 │   ├── sqaleEngine.ts          # SQALE rating/debt ratio calculation
 │   └── customRulesEngine.ts    # User-defined pattern rules (.techdebtrc.json)
 ├── analyzers/
@@ -78,11 +83,66 @@ src/
 └── utils/
     ├── fileUtils.ts            # fs helpers (readFile, fileExists, getFileStats, getRelativePath)
     └── regexUtils.ts           # escapeRegExp() — safe RegExp construction helper
+.claude/                        # (repo root — contributor automation, excluded from npm package)
+├── hooks/                      # PreToolUse hooks (block-npm-publish.sh, check-tools-manifest-sync.sh)
+├── rules/                      # Markdown rule files loaded by Claude Code (code-quality, docs-maintenance, etc.)
+├── skills/                     # Project-specific skills (add-config-block, refresh-self-scan)
+└── settings.json               # Claude Code project settings (hook registrations, permissions)
+.claude-plugin/                 # (repo root — marketplace manifest ONLY; plugin source lives in plugin/)
+└── marketplace.json            # Marketplace entry: source points at "./plugin". Top-level `version` and the plugin entry's `version` are enforced equal to `package.json.version` by `src/server/__tests__/pluginManifest.test.ts` and `scripts/build-mcpb.mjs:assertVersionsMatch()`.
+plugin/                         # (repo root — the entire Claude Code plugin install surface)
+├── .claude-plugin/
+│   └── plugin.json             # Claude Code plugin manifest (mcpServers → npx -y tech-debt-mcp@latest)
+├── commands/                   # Claude Code slash commands (/techdebt-scan, /techdebt-file, /techdebt-summary)
+├── skills/                     # Claude Code skills (proactive-analysis — context-triggered analysis)
+└── README.md                   # User-facing plugin README shown in the Claude Code marketplace
+                                # WHY a subdir: marketplace install (source: "./plugin") does a filesystem copy of
+                                # this directory; keeping it isolated prevents src/, node_modules/, .claude/, .env,
+                                # .idea/, etc. from leaking into every user's plugin cache. The surface allowlist is
+                                # enforced by src/server/__tests__/pluginManifest.test.ts (#242).
+mcpb/                           # (repo root — Claude Desktop one-click bundle)
+├── manifest.json               # MCPB v0.3 manifest (mirrors TOOL_DEFINITIONS, version pinned to package.json)
+├── icon.png                    # 512×512 bundle icon
+├── staging/                    # gitignored — clean prod tree built by scripts/build-mcpb.mjs
+└── tech-debt-mcp-<version>.mcpb # gitignored artifact, attached to GitHub Releases
+docs/site/                      # (repo root — VitePress docs site for GitHub Pages)
+├── .vitepress/
+│   ├── config.mts              # Nav, sidebar, base = '/TechDebtMCP/', local search
+│   └── theme/                  # Custom slate palette + home-scoped --home-* vars
+├── public/                     # Static assets (icon.png + inverted icon-light.png)
+├── .showcase.json              # Pinned-SHA manifest consumed by scripts/scan-showcase.mjs (Gson, Serilog, Slim today)
+├── index.md                    # Landing hero
+├── install.md, languages.md, custom-rules.md, security.md, privacy.md
+├── examples/                   # gitignored — regenerated each build by scan-showcase.mjs
+└── tools/                      # gitignored — regenerated each build by gen-docs-tools.mjs
+scripts/
+├── build-mcpb.mjs              # `npm run mcpb:pack` driver — stages, runs `npm ci --omit=dev --ignore-scripts`, packs
+├── gen-docs-tools.mjs          # `npm run docs:gen-tools` — imports dist/server/tools.js TOOL_DEFINITIONS, emits docs/site/tools/*.md + mirrors of ARCHITECTURE/ROADMAP/CHANGELOG
+└── scan-showcase.mjs           # `npm run docs:scan-showcase` — clones repos in .showcase.json at their pinned SHAs, calls AnalysisEngine.analyzeProject() directly + handleCheckDependencies() tool handler, emits docs/site/examples/*.md as chat-style audit pages
 ```
+
+### Building the MCPB bundle
+
+```bash
+npm install --include=dev --ignore-scripts
+npm run mcpb:pack
+# -> mcpb/tech-debt-mcp-<version>.mcpb
+```
+
+The build script's `assertVersionsMatch()` asserts that `mcpb/manifest.json`, `plugin/.claude-plugin/plugin.json`, and `.claude-plugin/marketplace.json` (both top-level `version` and the plugin entry's `version`) all equal `package.json.version` — bump all four in lockstep at release time. `src/server/__tests__/mcpbManifest.test.ts` enforces the manifest's tool list matches `TOOL_DEFINITIONS`, so adding/removing a tool requires updating `mcpb/manifest.json` in the same PR.
+
+### Building the docs site
+
+```bash
+npm run docs:dev      # local dev server at http://localhost:5173/TechDebtMCP/
+npm run docs:build    # full build: tsc → gen-docs-tools.mjs → scan-showcase.mjs → vitepress build
+```
+
+`docs:build` runs `npm run build` first so `dist/` exists, then `scripts/gen-docs-tools.mjs` imports `TOOL_DEFINITIONS` directly (emits one Markdown page per tool plus mirrors of `ARCHITECTURE.md`, `ROADMAP.md`, and `CHANGELOG.md`), then `scripts/scan-showcase.mjs` clones the repos listed in `docs/site/.showcase.json` at their pinned SHAs and emits `docs/site/examples/*.md` as chat-style audit pages. SHAs are bumped manually at release time. The whole generated tree (`tools/`, `examples/`, the three mirrored MDs) is gitignored — root docs stay the canonical source. Deploys to GitHub Pages via `.github/workflows/docs.yml` on path-filtered pushes to `develop` (triggers on `docs/site/**`, `src/server/tools.ts`, `scripts/gen-docs-tools.mjs`, `scripts/scan-showcase.mjs`, `ARCHITECTURE.md`, `ROADMAP.md`, `CHANGELOG.md`, `package.json`, `package-lock.json`, and `.github/workflows/docs.yml`).
 
 ### Request flow
 
-**Tools:** `MCP client` → `handlers.ts` (`CallToolRequestSchema` switch) → `AnalysisEngine` → `createAnalyzer()` (per file language) → `[Language]Analyzer.performLanguageSpecificChecks()` → issues array (inline suppression applied per-line in `checkPattern`/`checkTodoComments`) → `applyRuleExclusions()` (filter by config globs) → `formatters.ts` → response.
+**Tools:** `MCP client` → `handlers.ts` (`CallToolRequestSchema` switch) → `AnalysisEngine` → per file, two independent branches run and their results are combined: **[built-in]** `createAnalyzer()` (per file language) → `[Language]Analyzer.performLanguageSpecificChecks()` → issues array (inline suppression applied per-line in `checkPattern`/`checkTodoComments`) → `applyRuleExclusions()` (filter by config globs) → `filterIssues()` (filter by requested severity/category); **[custom-patterns]** `CustomRulesEngine.executeRules()` (called once per file; internally iterates all `customPatterns` entries from `.techdebtrc.json`, applying inline suppression to each match) → `AnalysisEngine.applyCustomRuleExclusions()` (filter custom-pattern issues by `ruleExclusions` config globs) → `AnalysisEngine.applyCustomSeverityOverrides()` (apply per-rule severity overrides from `config.severity`) → `filterIssues()` (filter by requested severity/category); combined results → `formatters.ts` → response.
 
 **Resources:** `MCP client` → `resourceHandlers.ts` (via `McpServer.registerResource()`) → `AnalysisEngine.analyzeProject()` → JSON response.
 
@@ -177,7 +237,7 @@ Use this to prevent self-detection false positives in analyzer source files — 
 
 ## Adding a New MCP Tool
 
-1. Add the tool schema to `TOOL_DEFINITIONS` in `src/server/tools.ts`.
+1. Add the tool schema to `TOOL_DEFINITIONS` in `src/server/tools.ts`. Every tool **must** include an `annotations` object — set `readOnlyHint: true` for side-effect-free tools, or `destructiveHint: true` for tools that mutate server session state. The test suite (`src/server/__tests__/tools.test.ts`) enforces this and will fail CI if `annotations` is missing or unclassified.
 2. Add a `case 'tool_name':` in `handlers.ts` `CallToolRequestSchema` handler.
 3. Implement the handler function — in `handlers.ts` for core tools, or in a dedicated file (e.g., `configValidator.ts`, `dependencyHandlers.ts`) for domain-specific tools. Keep `handlers.ts` under 500 lines.
 4. Validate tool arguments using `inputParser.ts` helpers (`requireString`, `requireAbsolutePath`, `optionalAbsolutePath`, `requireRecord`, `optionalString`, `optionalNumber`, etc.) — never access `args` properties directly. Use `requireAbsolutePath`/`optionalAbsolutePath` for any path parameter.
@@ -217,7 +277,9 @@ See `.claude/rules/code-quality.md` for file length, function length, nesting, a
 
 ## Testing
 
-See `.claude/rules/testing.md` for test file conventions, TDD workflow, mock patterns, and Jest configuration.
+Run all: `npm test`. Run one suite: `npm test -- --testPathPatterns=src/analyzers`. Run one file: `npm test -- goAnalyzer.test.ts`.
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md#testing) for test file conventions, Jest configuration, and example test structure.
 
 ## Security
 

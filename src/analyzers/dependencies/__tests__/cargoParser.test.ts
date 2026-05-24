@@ -1,5 +1,4 @@
 import { CargoParser } from '../cargoParser.js';
-import { ParsedDependency } from '../baseParser.js';
 
 describe('CargoParser', () => {
   let parser: CargoParser;

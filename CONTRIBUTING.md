@@ -84,6 +84,51 @@ src/
     └── regexUtils.ts           # escapeRegExp() — safe RegExp construction helper
 ```
 
+## Claude Code Contributor Tooling
+
+The repository ships a small set of Claude Code automation files that improve the contributor workflow. The `.claude/` contributor automation is **excluded from all end-user distribution channels** (npm tarball, MCPB bundle, and Claude Code plugin marketplace sessions) — end users who install `tech-debt-mcp` via any of those channels are not affected. The Claude Code plugin marketplace install only copies the `plugin/` subdirectory (per `marketplace.json` `source: "./plugin"`), which contains the plugin manifest (`plugin/.claude-plugin/plugin.json`, wiring `mcpServers.tech-debt-mcp` to `npx -y tech-debt-mcp@latest`), the slash commands, the `proactive-analysis` skill, and the user-facing README — nothing else from the repo (no `.claude/`, no `src/`, no `node_modules/`) is copied. See TEC-242 for the structural enforcement.
+
+### Scoping
+
+| Distribution channel | Dev files included? | Mechanism |
+|---|---|---|
+| npm (`npm publish`) | No | `package.json` `files` allowlist (`dist/`, `README.md`, `LICENSE`) — deny-by-default; everything else is excluded |
+| MCPB bundle (`npm run mcpb:pack`) | No | `scripts/build-mcpb.mjs` only stages `package.json`, `package-lock.json`, `README.md`, `LICENSE`, `dist/`, and the MCPB manifest/icon |
+| Claude Code plugin marketplace | No | `marketplace.json` `source: "./plugin"` — only the `plugin/` subtree is copied to user caches (manifest, commands, skills, README). `.claude/`, `src/`, `node_modules/`, etc. never reach end users (TEC-242) |
+
+The following contributor-only and dev-only files are excluded from the npm package:
+
+- **`.claude/`** — Claude Code contributor automation (hooks, rules, skills, settings)
+- **`.claude-plugin/`** and **`plugin/`** — Claude Code marketplace manifest and plugin source tree (excluded from the npm tarball; the marketplace install copies `plugin/` directly from the repo)
+- **`CLAUDE.md`**, **`CONTRIBUTING.md`**, **`ARCHITECTURE.md`**, **`ROADMAP.md`**, **`TECH_DEBT_SCAN.md`**, **`CHANGELOG.md`**, **`RELEASE.md`**, **`QUICK_RELEASE.md`**, **`GITHUB_PACKAGES.md`**, **`CODE_OF_CONDUCT.md`**, **`SECURITY.md`**, **`PRIVACY.md`**
+- **`src/`** (TypeScript source — compiled output ships as `dist/`)
+- **`tests/`**, **`src/**/__tests__/`**, **`*.test.ts`** (test infrastructure)
+- **`scripts/`** — build helpers (`build-mcpb.mjs`, `gen-docs-tools.mjs`, `scan-showcase.mjs`)
+- **`docs/`** — VitePress docs site (served via GitHub Pages, not npm)
+- **`mcpb/`** — MCPB bundle source (separate distribution channel, not npm)
+- **`.github/`** — CI workflows and GitHub configuration
+- **`eslint.config.mjs`**, **`jest.config.js`**, **`tsconfig.json`** — dev tool configuration
+- **`.techdebtrc.json`** — project's own self-scan config (not useful to library consumers)
+- **`.env.example`**, **`npm-deps.txt`** — development helpers
+
+### Distributed files
+
+The following files are force-added (`git add -f`) so contributors get them on checkout:
+
+- **`.claude/settings.json`** — enables `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` (required for the multi-agent PR review and feature-dev automations used by maintainers) and registers the two hooks below.
+- **`.claude/hooks/block-npm-publish.sh`** — PreToolUse hook that hard-blocks any Bash tool call containing `npm publish` without `--dry-run`. Prevents accidental local publishes that would bypass the OIDC tag workflow.
+- **`.claude/hooks/check-tools-manifest-sync.sh`** — PostToolUse hook that warns when `src/server/tools.ts` is edited but `mcpb/manifest.json` has no pending changes, prompting you to keep them in sync.
+- **`.claude/skills/`** — contributor skills (`add-config-block`, `refresh-self-scan`) that encode project-specific procedures for Claude Code.
+- **`.claude/rules/git-workflow.md`, `.claude/rules/docs-maintenance.md`, `.claude/rules/code-quality.md`** — rule files referenced by the skills and loaded into Claude Code's context automatically.
+
+### Local-only (gitignored)
+
+The following remain personal/local and are never committed:
+
+- `.claude/settings.local.json` — personal overrides
+- `.claude/hookify.*.local.md` — personal hookify rules
+- `.claude/hooks/pre-pr-docs-check.sh` — personal pre-PR docs gate
+
 ## How to Contribute
 
 ### Types of Contributions
@@ -233,40 +278,23 @@ Fixes #45
 
 ### Branch Naming
 
-- Feature: `feature/issue-{number}-short-description`
-- Bug fix: `fix/issue-{number}-short-description`
-- Documentation: `docs/issue-{number}-short-description`
+- Primary: `feature/tec-{N}-short-description` or `fix/tec-{N}-...` where `TEC-N` is the Linear issue ID — this triggers Linear's two-way sync on PR merge
+- Fallback for issues without a Linear ticket: `feature/issue-{N}-...` or `fix/issue-{N}-...`
 
 Examples:
-- `feature/issue-7-rust-analyzer`
-- `fix/issue-45-complexity-calculation`
-- `docs/issue-2-contributing-guide`
+- `feature/tec-49-custom-patterns-wiring` (primary — Linear-tracked)
+- `fix/tec-58-language-overrides`
+- `feature/issue-203-rust-analyzer` (fallback — GitHub-only issue)
+
+### PR Target
+
+- Ongoing work targets `develop`
+- During an active release cycle, targets the `release/vX.Y.Z` branch
+- **Never target `main` directly** — main only receives back-merges from release branches
 
 ### PR Template
 
-```markdown
-## Description
-Brief description of what this PR does.
-
-## Changes
-- List of changes made
-- Another change
-
-## Related Issue
-Closes #123
-
-## Testing
-- [ ] Tests added/updated
-- [ ] All tests passing
-- [ ] Manual testing completed
-
-## Checklist
-- [ ] Code follows project style guidelines
-- [ ] Documentation updated
-- [ ] Commit messages follow convention
-- [ ] No TypeScript errors
-- [ ] Copilot review suggestions addressed
-```
+The PR template at [`.github/PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md) auto-populates when you open a PR. Fill in: Summary, Related issue, Type of change, the dev-loop checklist, and Test plan.
 
 ## Testing
 
@@ -312,23 +340,11 @@ describe('TypeScriptAnalyzer', () => {
 
 ## Reporting Issues
 
-### Bug Reports
+Open issues on GitHub — they're synced to Linear automatically.
 
-Use the bug report template and include:
-- **Description** — What's the bug?
-- **Steps to reproduce** — How to trigger it?
-- **Expected behavior** — What should happen?
-- **Actual behavior** — What actually happens?
-- **Environment** — Node version, OS, etc.
-- **Logs/Screenshots** — Any relevant output
-
-### Feature Requests
-
-Use the feature request template and include:
-- **Problem** — What problem does this solve?
-- **Proposed solution** — How should it work?
-- **Alternatives** — Other solutions considered?
-- **Additional context** — Use cases, examples, etc.
+- **Bugs:** [`.github/ISSUE_TEMPLATE/bug_report.yml`](.github/ISSUE_TEMPLATE/bug_report.yml) — required fields cover description, repro steps, version, Node version, OS, and MCP client.
+- **Features:** [`.github/ISSUE_TEMPLATE/feature_request.yml`](.github/ISSUE_TEMPLATE/feature_request.yml) — problem, proposed solution, alternatives, and scope.
+- **Security vulnerabilities:** do **not** file a public issue. Use [GitHub Security Advisories](https://github.com/PierreJanineh/TechDebtMCP/security/advisories/new) instead.
 
 ## Questions?
 

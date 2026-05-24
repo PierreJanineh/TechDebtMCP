@@ -64,6 +64,49 @@ jobs:
           fi
           echo "Version verified: $PKG_VERSION"
 
+      - name: Verify mcpb/manifest.json version matches package.json
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          MANIFEST_VERSION=$(node -p "require('./mcpb/manifest.json').version")
+          if [ "$PKG_VERSION" != "$MANIFEST_VERSION" ]; then
+            echo "Error: mcpb/manifest.json version ($MANIFEST_VERSION) does not match package.json version ($PKG_VERSION)"
+            exit 1
+          fi
+          echo "MCPB manifest version verified: $MANIFEST_VERSION"
+
+      - name: Build MCPB bundle
+        run: npm run mcpb:pack
+
+      - name: Verify MCPB artifact exists
+        id: mcpb
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          ARTIFACT="mcpb/tech-debt-mcp-${VERSION}.mcpb"
+          if [ ! -f "$ARTIFACT" ]; then
+            echo "Error: MCPB artifact not found at $ARTIFACT"
+            exit 1
+          fi
+          echo "ARTIFACT=$ARTIFACT" >> "$GITHUB_OUTPUT"
+          ls -la "$ARTIFACT"
+
+      - name: Upload MCPB as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tech-debt-mcp-${{ steps.version.outputs.VERSION }}.mcpb
+          path: ${{ steps.mcpb.outputs.ARTIFACT }}
+          if-no-files-found: error
+
+      - name: Detect prerelease tag
+        id: prerelease
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          case "$VERSION" in
+            *-*) echo "IS_PRERELEASE=true" >> "$GITHUB_OUTPUT" ;;
+            *)   echo "IS_PRERELEASE=false" >> "$GITHUB_OUTPUT" ;;
+          esac
+
       - name: Publish to npm with provenance
         run: npm publish --provenance --access public
 
@@ -76,14 +119,14 @@ jobs:
           release_name: Release ${{ steps.version.outputs.VERSION }}
           body: |
             ## Tech Debt MCP v${{ steps.version.outputs.VERSION }}
-            
+
             ### Installation Options
-            
+
             **From npm (recommended):**
             ```bash
             npm install -g tech-debt-mcp@${{ steps.version.outputs.VERSION }}
             ```
-            
+
             **From GitHub Packages:**
             First, create a `.npmrc` file in your home directory:
             ```
@@ -94,15 +137,22 @@ jobs:
             ```bash
             npm install -g @PierreJanineh/tech-debt-mcp@${{ steps.version.outputs.VERSION }}
             ```
-            
+
             ### Package Links
             - **npm Registry:** https://www.npmjs.com/package/tech-debt-mcp/v/${{ steps.version.outputs.VERSION }}
             - **GitHub Packages:** https://github.com/PierreJanineh/TechDebtMCP/packages
-            
+
             ### Documentation
             See [CHANGELOG.md](https://github.com/PierreJanineh/TechDebtMCP/blob/v${{ steps.version.outputs.VERSION }}/CHANGELOG.md) for detailed changes.
           draft: false
-          prerelease: false
+          prerelease: ${{ steps.prerelease.outputs.IS_PRERELEASE == 'true' }}
+
+      - name: Attach MCPB to GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: v${{ steps.version.outputs.VERSION }}
+          ARTIFACT: ${{ steps.mcpb.outputs.ARTIFACT }}
+        run: gh release upload "$TAG" "$ARTIFACT" --clobber
 
       - name: Notify success
         if: success()

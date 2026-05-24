@@ -1,0 +1,87 @@
+name: Release checklist
+description: Track a release cut from develop through tag, publish, and back-merge
+title: "Release: vX.Y.Z"
+labels: ["release"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Per-release tracker. For the actual commands, follow [`QUICK_RELEASE.md`](../../QUICK_RELEASE.md)
+        (short form) or [`RELEASE.md`](../../RELEASE.md) (full procedure). This issue tracks *what's done*;
+        the runbooks track *how to do it*.
+
+        Open this when cutting a `release/vX.Y.Z` branch; close after the back-merges to `develop` and `main` land.
+
+  - type: input
+    id: version
+    attributes:
+      label: Target version
+      placeholder: e.g., v2.3.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Release kind
+      description: "`patch` skips the regression run unless an analyzer changed; `minor` and `major` require both sanity + regression runs."
+      options:
+        - patch
+        - minor
+        - major
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: prep
+    attributes:
+      label: Prep
+      options:
+        - label: "`release/vX.Y.Z` branch cut from `develop`"
+        - label: "`package.json` version bumped to `X.Y.Z`"
+        - label: "`mcpb/manifest.json` version bumped to match `package.json` (build asserts equality)"
+        - label: "`CHANGELOG.md` entry added under `vX.Y.Z`"
+        - label: "`ROADMAP.md` phase status + Last Updated refreshed"
+        - label: "Self-scan metrics refreshed in `TECH_DEBT_SCAN.md` and mirrored to `README.md` / `ARCHITECTURE.md` / `CONTRIBUTING.md`"
+
+  - type: checkboxes
+    id: verify
+    attributes:
+      label: Verify
+      options:
+        - label: "`npm test` passes on the release branch"
+        - label: "`npm run build` succeeds"
+        - label: "`npm run mcpb:pack` produces `mcpb/tech-debt-mcp-<version>.mcpb`"
+        - label: "`npm run docs:build` succeeds"
+        - label: "Sanity run issue opened and completed (link below)"
+        - label: "Regression run issue opened and completed (minor/major only — link below)"
+
+  - type: input
+    id: sanity_run
+    attributes:
+      label: Sanity run issue
+      placeholder: "#"
+
+  - type: input
+    id: regression_run
+    attributes:
+      label: Regression run issue
+      placeholder: "# (or N/A for patch)"
+
+  - type: checkboxes
+    id: ship
+    attributes:
+      label: Ship
+      options:
+        - label: "Tag `vX.Y.Z` pushed on the release branch (CI validates tag matches `package.json` version)"
+        - label: "npm publish via OIDC succeeded (release workflow green)"
+        - label: "GitHub Release published with `.mcpb` artifact attached"
+        - label: "Back-merge `release/vX.Y.Z` → `develop` merged"
+        - label: "Back-merge `release/vX.Y.Z` → `main` merged"
+        - label: "`main` points at the tagged commit; `develop` contains it (possibly ahead with new work)"
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Issues hit during the cut, hotfix follow-ups, anything worth recording for the next release.

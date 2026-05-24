@@ -1,5 +1,4 @@
 import { PipParser } from '../pipParser.js';
-import { ParsedDependency } from '../baseParser.js';
 
 describe('PipParser', () => {
   let parser: PipParser;

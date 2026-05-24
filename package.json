@@ -1,6 +1,7 @@
 {
   "name": "tech-debt-mcp",
-  "version": "2.0.2",
+  "version": "2.1.0",
+  "mcpName": "io.github.PierreJanineh/tech-debt-mcp",
   "description": "MCP Server for analyzing technical debt across multiple programming languages",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,6 +17,12 @@
     "test": "jest",
     "lint": "eslint src/**/*.ts",
     "prepare": "npm run build",
+    "mcpb:pack": "node scripts/build-mcpb.mjs",
+    "docs:gen-tools": "node scripts/gen-docs-tools.mjs",
+    "docs:scan-showcase": "npm run build && node scripts/scan-showcase.mjs",
+    "docs:dev": "npm run build && npm run docs:gen-tools && node scripts/scan-showcase.mjs && vitepress dev docs/site",
+    "docs:build": "npm run build && npm run docs:gen-tools && node scripts/scan-showcase.mjs && vitepress build docs/site",
+    "docs:preview": "vitepress preview docs/site",
     "webhook": "PROJECT_ROOT=\"$(pwd)\"; if [ -z \"${PR_AUTOMATION_ROOT}\" ]; then echo 'Error: PR_AUTOMATION_ROOT is not set. Export it to the root of your pr-automation repo (containing scripts/webhook-listener.mjs).' >&2; exit 1; fi; node \"${PR_AUTOMATION_ROOT}/scripts/webhook-listener.mjs\""
   },
   "keywords": [
@@ -39,6 +46,11 @@
     "type": "git",
     "url": "https://github.com/PierreJanineh/TechDebtMCP.git"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -56,6 +68,7 @@
     "yaml": "^2.3.4"
   },
   "devDependencies": {
+    "@anthropic-ai/mcpb": "^2.1.2",
     "@types/jest": "^30.0.0",
     "@types/node": "^20.10.0",
     "@types/semver": "^7.5.6",
@@ -63,9 +76,13 @@
     "jest": "^30.2.0",
     "ts-jest": "^29.4.6",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.58.1"
+    "typescript-eslint": "^8.58.1",
+    "vitepress": "^1.6.4"
   },
   "engines": {
     "node": ">=20.19.0"
+  },
+  "overrides": {
+    "qs": "^6.15.2"
   }
 }

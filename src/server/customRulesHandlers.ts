@@ -6,6 +6,7 @@ import { basename } from 'node:path';
 import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
 import { CustomRulesEngine, MAX_FILE_SIZE_BYTES } from '../core/customRulesEngine.js';
 import { readFile, getFileStats } from '../utils/fileUtils.js';
+import { detectLanguageFromExtension } from '../config/languages.js';
 import { CustomPattern } from '../types/index.js';
 import {
   parseAddCustomRuleInput,
@@ -74,13 +75,23 @@ export function handleRemoveCustomRule(
 }
 
 /**
- * Handle list_custom_rules tool call.
+ * Handle list_session_custom_rules tool call. Only session-registered rules
+ * (added via add_custom_rule) are surfaced; .techdebtrc.json customPatterns
+ * are executed inside analyze_project but not listed here.
  */
-export function handleListCustomRules(customRulesEngine: CustomRulesEngine): ToolResponse {
+export function handleListSessionCustomRules(customRulesEngine: CustomRulesEngine): ToolResponse {
   const rules = customRulesEngine.getAllRules();
   const stats = customRulesEngine.getRuleStats();
   if (rules.length === 0) {
-    return { content: [{ type: 'text', text: 'No custom rules defined.' }] };
+    return {
+      content: [{
+        type: 'text',
+        text:
+          'No session custom rules defined. ' +
+          'Note: rules declared in .techdebtrc.json under customPatterns are not listed here; ' +
+          'they run inside analyze_project.',
+      }],
+    };
   }
 
   const rulesText = rules
@@ -108,7 +119,7 @@ export function handleListCustomRules(customRulesEngine: CustomRulesEngine): Too
     `Critical: ${stats.bySeverity.critical}\n` +
     `- **By Category:** \n${categoryStats}\n`;
 
-  return { content: [{ type: 'text', text: `# Custom Rules\n\n${rulesText}\n${statsText}` }] };
+  return { content: [{ type: 'text', text: `# Session Custom Rules\n\n${rulesText}\n${statsText}` }] };
 }
 
 /**
@@ -152,11 +163,12 @@ export async function handleExecuteCustomRules(
     throw new McpError(ErrorCode.InvalidParams, 'Could not read code from path or input');
   }
 
-  const filePath = path || 'inline-code';
-  const issues = customRulesEngine.executeRules(filePath, code, language);
+  const displayPath = path ? basename(path) : 'inline-code';
+  const effectiveLanguage = language ?? (path ? detectLanguageFromExtension(path) ?? undefined : undefined);
+  const issues = customRulesEngine.executeRules(displayPath, code, effectiveLanguage);
   if (issues.length === 0) {
     return {
-      content: [{ type: 'text', text: `✅ No custom rule violations found in ${filePath}.` }],
+      content: [{ type: 'text', text: `✅ No custom rule violations found in ${displayPath}.` }],
     };
   }
 
@@ -173,7 +185,7 @@ export async function handleExecuteCustomRules(
     .join('\n\n---\n\n');
 
   const formatted =
-    `# Custom Rule Violations in ${filePath}\n\n` +
+    `# Custom Rule Violations in ${displayPath}\n\n` +
     `Found ${issues.length} issue(s):\n\n` +
     issueLines;
 

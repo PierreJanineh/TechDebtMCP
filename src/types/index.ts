@@ -156,6 +156,17 @@ export interface VulnerabilityInfo {
   fixedIn?: string;
 }
 
+// Shared shape for rule threshold overrides — used by both TechDebtConfig.rules
+// and per-language overrides so both stay in sync when keys are added/renamed.
+export interface RulesConfig {
+  maxFileLines?: number;
+  maxFunctionLines?: number;
+  maxComplexity?: number;
+  maxParameters?: number;
+  maxNestingDepth?: number;
+  minCommentRatio?: number;
+}
+
 // Configuration file structure
 export interface TechDebtConfig {
   ignore?: string[];
@@ -163,20 +174,19 @@ export interface TechDebtConfig {
   severity?: {
     [rule: string]: Severity;
   };
-  rules?: {
-    maxFileLines?: number;
-    maxFunctionLines?: number;
-    maxComplexity?: number;
-    maxParameters?: number;
-    maxNestingDepth?: number;
-    minCommentRatio?: number;
-  };
+  rules?: RulesConfig;
   ruleExclusions?: {
     [rule: string]: string[];
   };
   customPatterns?: CustomPattern[];
   languageOverrides?: {
-    [lang: string]: Partial<LanguageConfig>;
+    [K in SupportedLanguage]?: {
+      extensions?: string[];
+      rules?: RulesConfig;
+      severity?: {
+        [rule: string]: Severity;
+      };
+    };
   };
 }
 

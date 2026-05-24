@@ -1,0 +1,50 @@
+name: Repo Analytics → Plausible
+
+# Daily snapshot of GitHub's /traffic/* endpoints, forwarded as custom events
+# to Plausible. GitHub only retains 14 days of traffic data; this gives us
+# longer history in Plausible without paying for GitHub's Insights add-ons.
+#
+# Plausible records events at receive-time (no backdating), so we run once per
+# day and send the *previous* UTC day's totals — multiple runs on the same
+# day will produce duplicate events.
+#
+# Plausible CE dashboard quirks (full notes in
+# scripts/forward-repo-analytics.mjs):
+#   - Goals must be registered BEFORE events arrive; pre-goal events stay
+#     invisible in the Goals widget. Register `Repo Daily Views`,
+#     `Repo Daily Clones`, `Repo Referrer`, `Repo Path` in Site Settings.
+#   - The dashboard date filter is receive-time, not the `date` event prop.
+#     Use "Today" / "Last 30 days" and break a goal down by the `date` prop
+#     to see historic per-day distribution.
+#
+# Note on injection safety: this workflow uses only `secrets.*` and
+# `github.repository` (a static org/repo string) — no untrusted event
+# payloads are interpolated into shell commands.
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # daily at 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: repo-analytics
+  cancel-in-progress: false
+
+jobs:
+  forward:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Forward yesterday's traffic to Plausible
+        env:
+          GH_TRAFFIC_TOKEN: ${{ secrets.GH_TRAFFIC_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PLAUSIBLE_DOMAIN: pierrejanineh.github.io
+          PLAUSIBLE_ENDPOINT: https://plausible.pierrejanineh.com/api/event
+        run: node scripts/forward-repo-analytics.mjs

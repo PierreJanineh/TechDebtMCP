@@ -140,10 +140,13 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 **Latest Release:** v2.0.2 (Security Patch) — pending npm publish (post-merge tag push)
 
 **Next Up:**
-- **Phase 3 (v2.1.0):** Snapshot & Trend Tracking — Issues #39-44 — Sprint 2-3
-- **Phase 4 (v2.2.0):** Complexity Metrics — Issues #45-49 — Sprint 4-5
+- **v2.1.0 — Distribution:** Claude Code plugin + MCPB bundle + GitHub Pages docs site + marketplace/directory submissions. Cycle 4 (2026-05-24 → 2026-06-07). Issues TEC-33–TEC-45 (GH #172–#184).
+- **v2.2.0 — Snapshot & Trend Tracking:** Deferred from former v2.1.0 slot. Target 2026-07-05. Design spec issues #39–#44.
+- **v2.3.0 — Complexity Metrics:** Deferred from former v2.2.0 slot. Target 2026-08-02. Design spec issues #45–#49.
 
-**Design Spec:** See `docs/superpowers/specs/2026-03-19-phases-3-4-6-design.md` for Phases 3 & 4 implementation details.
+**Rescope note (2026-05-22):** v2.1.0 was originally Snapshot & Trend Tracking with a 2026-05-16 target. Cycle 3 finished with zero progress on that scope while the distribution work crystallized into 13 well-defined tickets, so v2.1.0 was pivoted to Distribution and the original phase queue shifted by one slot.
+
+**Design Spec:** See `docs/superpowers/specs/2026-03-19-phases-3-4-6-design.md` for Snapshot/Trend and Complexity implementation details (now v2.2.0 and v2.3.0 respectively).
 
 **Project Management:** GitHub Issues — see [issues and milestones](https://github.com/PierreJanineh/TechDebtMCP/issues).
 
@@ -159,8 +162,9 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 | Phase 2 | v2.0.0 | ✅ Complete | Dependency analysis — 10 parsers, 3 MCP tools, index.ts refactor |
 | Phase 6 | v2.0.1 | ✅ Complete | MCP Resources (debt://summary, debt://issues) |
 | Security Patch | v2.0.2 | ✅ Complete | Security hardening, refactor merges, CI guardrails (#124–#130, #137–#140, #146, #164–#166) |
-| Phase 3 | v2.1.0 | 📋 Planned | Snapshot & trend tracking |
-| Phase 4 | v2.2.0 | 📋 Planned | Code complexity analysis |
+| Distribution | v2.1.0 | 📋 Planned | Claude Code plugin, MCPB bundle, docs site, marketplace + directory submissions |
+| Phase 3 | v2.2.0 | 📋 Planned | Snapshot & trend tracking (deferred from former v2.1.0) |
+| Phase 4 | v2.3.0 | 📋 Planned | Code complexity analysis (deferred from former v2.2.0) |
 
 ## Future Phases
 
@@ -260,9 +264,51 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 
 ---
 
-### Phase 3: Snapshot & Trend Tracking (v2.1.0)
+### Distribution Release (v2.1.0)
 
-**Status:** 📋 **PLANNED** — Issues #39-44
+**Status:** 📋 **PLANNED** — Linear project [v2.1.0 — Distribution](https://linear.app/techdebtmcp/project/v210-distribution-plugin-mcpb-docs-8d59f3bd1dcc); GitHub issues #172–#184; Linear TEC-33–TEC-45.
+
+**Objective:** Make TechDebtMCP installable in one click from Anthropic-native surfaces. No new analysis features — purely distribution, packaging, and discoverability.
+
+**Cycle:** 4 (2026-05-24 → 2026-06-07)
+
+#### Scope
+
+| Track | Linear | GitHub | Description |
+|-------|--------|--------|-------------|
+| Plugin epic | TEC-33 | #172 | Ship a Claude Code plugin under `.claude-plugin/`, listed via own marketplace then submitted to `anthropics/claude-plugins-official`. |
+| MCPB epic | TEC-40 | #179 | Ship an MCPB (MCP Bundle) for Claude Desktop with `manifest.json`, icon, CI packaging, and submission to the Anthropic MCP directory. |
+| Docs site | TEC-38 | #178 | Stand up a GitHub Pages docs site for canonical install, tool reference, security model, and privacy policy. |
+
+#### Cycle 4 starter set
+
+Four parallelizable tickets to begin the cycle:
+
+- **TEC-43 (#181)** — `readOnlyHint` / `destructiveHint` annotations on all tool schemas. Highest-leverage standalone; benefits planner behavior immediately and unblocks both submission tracks.
+- **TEC-35 (#175)** — Scaffold `.claude-plugin/` manifest + own marketplace entry. ✅ Landed: `.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json` (plugin runs `npx -y tech-debt-mcp@latest`, repo doubles as its own marketplace). Layout was restructured in TEC-242 — plugin manifest now lives at `plugin/.claude-plugin/plugin.json`, and `marketplace.json` `source` points at `./plugin` so only the plugin subtree is copied to user caches.
+- **TEC-42 (#182)** — Add `manifest.json` and `@anthropic-ai/mcpb` packaging tooling. ✅ Landed: `mcpb/manifest.json` + `mcpb/icon.png` + `npm run mcpb:pack` producing a 3.9 MB `.mcpb` bundle, manifest sync test in `mcpbManifest.test.ts`.
+- **TEC-38 (#178)** — Stand up the docs site scaffold (unblocks the privacy policy URL). ✅ Landed: VitePress site under `docs/site/` with generated tool reference from `TOOL_DEFINITIONS`, mirrored `ARCHITECTURE`/`ROADMAP`/`CHANGELOG`, and `.github/workflows/docs.yml` deploying to `pierrejanineh.github.io/TechDebtMCP` on path-filtered pushes to `develop` (triggers on changes to `docs/site/**`, `src/server/tools.ts`, `scripts/gen-docs-tools.mjs`, root docs, `package.json`, `package-lock.json`, and the workflow file itself).
+
+#### Acceptance Criteria
+
+- [ ] Plugin installable via `/plugin marketplace add PierreJanineh/TechDebtMCP` end-to-end.
+- [ ] `.mcpb` artifact attached to a tagged GitHub release.
+- [ ] Docs site live at `pierrejanineh.github.io/TechDebtMCP` (or custom domain).
+- [ ] Privacy policy hosted at a stable URL.
+- [ ] Submission filed to `claude-plugins-official` (TEC-39) and the Anthropic MCP directory (TEC-45), or formally deferred with stated reason.
+- [ ] No regressions to existing engine functionality.
+
+#### Effort Estimate
+
+**Size:** Medium (1 cycle, ~2 weeks)
+
+**Complexity:** Low-Medium (no new analyzer code; packaging, manifests, CI, and docs)
+
+---
+
+### Phase 3: Snapshot & Trend Tracking (v2.2.0)
+
+**Status:** 📋 **PLANNED** — Issues #39-44. Deferred from former v2.1.0 slot on 2026-05-22.
 
 **Objective:** Enable baseline snapshots and historical trend analysis to track technical debt changes over time.
 
@@ -326,9 +372,9 @@ The foundation release with multi-language support, SQALE metrics, and custom ru
 
 ---
 
-### Phase 4: Code Complexity Analysis (v2.2.0)
+### Phase 4: Code Complexity Analysis (v2.3.0)
 
-**Status:** 📋 **PLANNED** — Issues #45-49
+**Status:** 📋 **PLANNED** — Issues #45-49. Deferred from former v2.2.0 slot on 2026-05-22.
 
 **Objective:** Calculate cyclomatic and cognitive complexity to identify overly complex functions across all 14 languages.
 
@@ -499,8 +545,9 @@ Configure in GitHub repository settings (Settings → Secrets and variables → 
 
 **Planned Releases:**
 - v2.0.0 - Phase 2 (Dependency Analysis) - Breaking: New dependency types
-- v2.1.0 - Phase 3 (Snapshots) - Non-breaking: New MCP tools
-- v2.2.0 - Phase 4 (Complexity) - Non-breaking: New MCP tools
+- v2.1.0 - Distribution - Non-breaking: Plugin, MCPB bundle, docs site (no new engine features)
+- v2.2.0 - Phase 3 (Snapshots) - Non-breaking: New MCP tools
+- v2.3.0 - Phase 4 (Complexity) - Non-breaking: New MCP tools
 
 ---
 
@@ -538,5 +585,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
 
 ---
 
-**Last Updated:** 2026-04-11
+**Last Updated:** 2026-05-24
 

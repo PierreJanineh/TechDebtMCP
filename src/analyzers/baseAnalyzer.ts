@@ -19,6 +19,56 @@ const SUPPRESSION_BLOCK_START = /^\s*(?:\/\/|#)\s*techdebt-ignore-start(?:\s+(\S
 const SUPPRESSION_BLOCK_END = /^\s*(?:\/\/|#)\s*techdebt-ignore-end(?:\s+(\S+))?\s*$/;
 
 /**
+ * Check whether a single line is suppressed by inline suppression comments.
+ * Exported as a standalone function so non-analyzer consumers (e.g. CustomRulesEngine)
+ * can reuse the same suppression logic without extending BaseAnalyzer.
+ *
+ * @param lines - All lines of the file content
+ * @param lineIndex - Zero-based index of the line to check
+ * @param rule - Rule ID being tested (used for rule-specific suppression)
+ * @param blockMap - Optional pre-built block suppression map from {@link buildBlockSuppressionMap}
+ */
+export function isLineSuppressed(
+  lines: string[],
+  lineIndex: number,
+  rule: string,
+  blockMap?: Map<number, Set<string>>
+): boolean {
+  const line = lines[lineIndex];
+
+  // Skip suppression directive lines themselves — they are not code
+  if (
+    SUPPRESSION_NEXT_LINE.test(line) ||
+    SUPPRESSION_BLOCK_START.test(line) ||
+    SUPPRESSION_BLOCK_END.test(line)
+  ) {
+    return true;
+  }
+
+  // Check block suppression
+  if (blockMap) {
+    const suppressedRules = blockMap.get(lineIndex);
+    if (suppressedRules) {
+      if (suppressedRules.has('') || suppressedRules.has(rule)) {
+        return true;
+      }
+    }
+  }
+
+  // Check next-line suppression
+  if (lineIndex > 0) {
+    const prevLine = lines[lineIndex - 1];
+    const match = SUPPRESSION_NEXT_LINE.exec(prevLine);
+    if (match) {
+      const suppressedRule = match[1];
+      return !suppressedRule || suppressedRule === rule;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Build a set of line indices that fall within `techdebt-ignore-start/end` blocks.
  * Supports rule-specific blocks: only lines for the matching rule are suppressed.
  * Returns a Map from line index to the set of suppressed rules (empty string = all).
@@ -94,6 +144,9 @@ export abstract class BaseAnalyzer {
    * - `// techdebt-ignore-next-line [rule]` — suppresses the following line
    * - `// techdebt-ignore-start [rule]` / `// techdebt-ignore-end [rule]` — block suppression
    * - Lines that are suppression directives themselves are always suppressed
+   *
+   * Delegates to the exported {@link isLineSuppressed} standalone function so that
+   * non-analyzer consumers (e.g. CustomRulesEngine) can reuse the same logic.
    */
   protected isLineSuppressed(
     lines: string[],
@@ -101,39 +154,7 @@ export abstract class BaseAnalyzer {
     rule: string,
     blockMap?: Map<number, Set<string>>
   ): boolean {
-    const line = lines[lineIndex];
-
-    // Skip suppression directive lines themselves — they are not code
-    if (
-      SUPPRESSION_NEXT_LINE.test(line) ||
-      SUPPRESSION_BLOCK_START.test(line) ||
-      SUPPRESSION_BLOCK_END.test(line)
-    ) {
-      return true;
-    }
-
-    // Check block suppression
-    if (blockMap) {
-      const suppressedRules = blockMap.get(lineIndex);
-      if (suppressedRules) {
-        // Blanket suppression (empty string) or specific rule match
-        if (suppressedRules.has('') || suppressedRules.has(rule)) {
-          return true;
-        }
-      }
-    }
-
-    // Check next-line suppression
-    if (lineIndex > 0) {
-      const prevLine = lines[lineIndex - 1];
-      const match = SUPPRESSION_NEXT_LINE.exec(prevLine);
-      if (match) {
-        const suppressedRule = match[1];
-        return !suppressedRule || suppressedRule === rule;
-      }
-    }
-
-    return false;
+    return isLineSuppressed(lines, lineIndex, rule, blockMap);
   }
 
   /**
@@ -154,6 +175,9 @@ export abstract class BaseAnalyzer {
 
     // Apply rule exclusions
     const filteredIssues = this.applyRuleExclusions(filePath, issues);
+
+    // Apply severity overrides from config
+    this.applySeverityOverrides(filteredIssues);
 
     // Calculate metrics
     const metrics = this.calculateMetrics(content);
@@ -384,6 +408,23 @@ export abstract class BaseAnalyzer {
       }
       return !patterns.some(pattern => minimatch(normalizedPath, pattern));
     });
+  }
+
+  /**
+   * Apply severity overrides from `config.severity` to a list of issues in-place.
+   * Only overrides severity for rules explicitly listed in the config; unknown rules are unchanged.
+   */
+  private applySeverityOverrides(issues: TechDebtIssue[]): void {
+    const overrides = this.config.severity;
+    if (!overrides || Object.keys(overrides).length === 0) {
+      return;
+    }
+    for (const issue of issues) {
+      const override = overrides[issue.rule];
+      if (override !== undefined) {
+        issue.severity = override;
+      }
+    }
   }
 
   /**

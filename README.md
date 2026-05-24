@@ -1,9 +1,14 @@
-# Tech Debt MCP Server
+<p align="center">
+  <img src="mcpb/icon.png" alt="Tech Debt MCP" width="160" height="160" />
+</p>
+
+<h1 align="center">Tech Debt MCP Server</h1>
 
 [![npm version](https://img.shields.io/npm/v/tech-debt-mcp)](https://www.npmjs.com/package/tech-debt-mcp)
 [![Add to MCP](https://img.shields.io/badge/MCP-Install_Server-6f42c1)](#installation)
 [![SQALE Rating](https://img.shields.io/badge/SQALE-A_(0.7%25)-brightgreen)](#code-quality)
 [![CodeQL](https://github.com/PierreJanineh/TechDebtMCP/actions/workflows/codeql.yml/badge.svg)](https://github.com/PierreJanineh/TechDebtMCP/actions/workflows/codeql.yml)
+[![Documentation](https://img.shields.io/badge/docs-pierrejanineh.github.io%2FTechDebtMCP-4b5563)](https://pierrejanineh.github.io/TechDebtMCP/)
 
 **16 Tools** · **2 Resources** · **14 Languages** · **10 Dependency Ecosystems**
 
@@ -95,6 +100,37 @@ claude mcp add tech-debt-mcp -- npx -y tech-debt-mcp@latest
 </details>
 
 <details>
+<summary><img src="https://img.shields.io/badge/Claude_Code-Install%20as%20Plugin-d97757?logo=Claude&logoColor=f5f5f5" alt="Claude Code: Install as Plugin"></summary>
+
+**Claude Code plugin** — add this repo's marketplace, then install the plugin:
+
+```sh
+/plugin marketplace add PierreJanineh/TechDebtMCP
+/plugin install tech-debt-mcp@techdebtmcp
+```
+
+The plugin runs `npx -y tech-debt-mcp@latest` under the hood — no source bundling, always tracks the published npm release. See [`plugin/README.md`](plugin/README.md) for plugin-user-facing docs (install flow, example transcripts, security posture).
+
+</details>
+
+<details>
+<summary><img src="https://img.shields.io/badge/Claude_Desktop-Install%20MCPB%20Bundle-d97757?logo=Claude&logoColor=f5f5f5" alt="Claude Desktop: Install MCPB Bundle"></summary>
+
+**Claude Desktop MCPB bundle** — single-click install with bundled `node_modules` (no `npx`, no internet required at runtime).
+
+Download `tech-debt-mcp-<version>.mcpb` from the [latest GitHub Release](https://github.com/PierreJanineh/TechDebtMCP/releases/latest) and open it with Claude for macOS or Windows.
+
+To build the bundle locally:
+
+```sh
+npm install --include=dev --ignore-scripts
+npm run mcpb:pack
+# -> mcpb/tech-debt-mcp-<version>.mcpb
+```
+
+</details>
+
+<details>
 <summary><img src="https://img.shields.io/badge/Windsurf-Install%20Server-0B100F?logo=Windsurf&logoColor=f5f5f5" alt="Windsurf: Install Server"></summary>
 
 Add to your Windsurf MCP configuration (`~/.codeium/windsurf/mcp_config.json`):
@@ -167,24 +203,26 @@ For development: `npm run dev`
 
 ## Tools
 
-| Category | Tool | Description |
-|----------|------|-------------|
-| **Analysis** | `analyze_project` | Analyze entire project — filter by language, category, severity, maxFiles |
-| | `analyze_file` | Analyze a single file |
-| | `get_debt_summary` | Quick summary with health score and issue counts |
-| | `get_sqale_metrics` | SQALE rating, remediation time, debt ratio, breakdowns |
-| **Filtering** | `get_recommendations` | Prioritized fix suggestions (configurable limit) |
-| | `get_issues_by_severity` | Issues filtered by severity level |
-| | `get_issues_by_category` | Issues filtered by debt category |
-| | `list_supported_languages` | All languages with their checks |
-| **Custom Rules** | `add_custom_rule` | Add regex-based tech debt rule |
-| | `remove_custom_rule` | Remove a custom rule by ID |
-| | `list_custom_rules` | List active rules with stats |
-| | `execute_custom_rules` | Run custom rules against code or file |
-| | `validate_custom_pattern` | Test a pattern before adding it |
-| **Dependencies** | `check_dependencies` | Scan package manifests across 10 ecosystems |
-| | `get_vulnerability_report` | Offline dependency inventory for CVE review |
-| | `validate_config` | Validate `.techdebtrc.json` schema |
+Every tool declares a [tool annotation](https://modelcontextprotocol.io/specification/server/tools#tool-annotations) — `Read` tools are side-effect-free (`readOnlyHint: true`); `Write` tools mutate server session state (`destructiveHint: true`).
+
+| Category | Tool | Type | Description |
+|----------|------|------|-------------|
+| **Analysis** | `analyze_project` | Read | Analyze entire project — filter by language, category, severity, maxFiles |
+| | `analyze_file` | Read | Analyze a single file |
+| | `get_debt_summary` | Read | Quick summary with health score and issue counts |
+| | `get_sqale_metrics` | Read | SQALE rating, remediation time, debt ratio, breakdowns |
+| **Filtering** | `get_recommendations` | Read | Prioritized fix suggestions (configurable limit) |
+| | `get_issues_by_severity` | Read | Issues filtered by severity level |
+| | `get_issues_by_category` | Read | Issues filtered by debt category |
+| | `list_supported_languages` | Read | All languages with their checks |
+| **Custom Rules** | `add_custom_rule` | Write | Add regex-based tech debt rule |
+| | `remove_custom_rule` | Write | Remove a custom rule by ID |
+| | `list_session_custom_rules` | Read | List rules added via `add_custom_rule` this session (does not include `.techdebtrc.json` `customPatterns`) |
+| | `execute_custom_rules` | Read | Run custom rules against code or file |
+| | `validate_custom_pattern` | Read | Test a pattern before adding it |
+| **Dependencies** | `check_dependencies` | Read | Scan package manifests across 10 ecosystems |
+| | `get_vulnerability_report` | Read | Offline dependency inventory for CVE review |
+| | `validate_config` | Read | Validate `.techdebtrc.json` schema |
 
 **Debt categories used throughout:** `dependency` · `code-quality` · `architecture` · `documentation` · `testing` · `security` · `performance` · `maintainability`
 
@@ -236,10 +274,10 @@ For development: `npm run dev`
 | | `languages` | string[] | | | Restrict to specific languages |
 | | `flags` | string | | allowed: `d g i m s u v y`; `u` / `v` mutually exclusive | Regex flags |
 | `remove_custom_rule` | `id` | string | ✓ | | Rule ID to remove |
-| `list_custom_rules` | — | — | — | — | No parameters |
+| `list_session_custom_rules` | — | — | — | — | No parameters. Renamed from `list_custom_rules` (TEC-51) to clarify scope: only session-registered rules. |
 | `execute_custom_rules` | `path` | string | ◐ | absolute path, max 500,000 bytes | File to analyze |
 | | `code` | string | ◐ | 1-500,000 chars | Source code to analyze directly |
-| | `language` | string | | | Filter rules by language |
+| | `language` | string | | must be a supported language ID (same set as `list_supported_languages`) | Filter rules by language |
 | `validate_custom_pattern` | `id` | string | ✓ | | Unique rule identifier |
 | | `pattern` | string | ✓ | max 1,000 chars | Regex to validate |
 | | `message` | string | ✓ | | Issue title/message |
@@ -298,6 +336,7 @@ Create a `.techdebtrc.json` file in your project root:
 
 ```json
 {
+  "include": ["src/**", "lib/**"],
   "ignore": ["vendor/**", "generated/**"],
   "rules": {
     "maxFileLines": 500,
@@ -326,6 +365,36 @@ Create a `.techdebtrc.json` file in your project root:
   ]
 }
 ```
+
+### Language Overrides
+
+Override rules, severity, or file extensions on a per-language basis using `languageOverrides`. Keys must be valid [supported language](#supported-languages) identifiers.
+
+```json
+{
+  "languageOverrides": {
+    "typescript": {
+      "rules": {
+        "maxFileLines": 800,
+        "maxFunctionLines": 80
+      },
+      "severity": {
+        "todo-comment": "high"
+      }
+    },
+    "python": {
+      "extensions": [".pyx"],
+      "rules": {
+        "maxComplexity": 15
+      }
+    }
+  }
+}
+```
+
+- **`rules`** — per-language thresholds (override the top-level `rules` for matching files).
+- **`severity`** — per-language rule severity overrides.
+- **`extensions`** — additional file extensions (beyond the defaults) to attribute to this language.
 
 ### Rule Exclusions
 
@@ -358,6 +427,8 @@ issues.push(...this.checkPattern(filePath, content, /@ts-ignore/g, { ... }));
 Without a rule name, all rules are suppressed. Blocks can be nested. Suppression comments must appear on their own line.
 
 ### Example Custom Rules
+
+> **Scope note:** `customPatterns` defined in `.techdebtrc.json` are applied only by `analyze_project`, which loads the project config before scanning. `analyze_file` invokes the language analyzer directly without loading `.techdebtrc.json`, so config-defined patterns are not applied on that path. Use `add_custom_rule` at runtime (or call `execute_custom_rules` directly) to run custom patterns against a single file.
 
 Define patterns in `.techdebtrc.json` under `customPatterns`, or register them at runtime via the `add_custom_rule` MCP tool:
 
@@ -528,6 +599,12 @@ npm test           # Run tests
 - **[RELEASE.md](RELEASE.md)** - Release process and versioning guide
 - **[TECH_DEBT_SCAN.md](TECH_DEBT_SCAN.md)** - Self-scan results with before/after comparison
 - **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** - Community standards
+- **[PRIVACY.md](PRIVACY.md)** - Privacy policy (also hosted at <https://pierrejanineh.github.io/TechDebtMCP/privacy>)
+- **[plugin/README.md](plugin/README.md)** - Plugin-user-facing docs (install, example transcripts, security posture)
+
+## Privacy
+
+Tech Debt MCP runs entirely on your machine. Once installed, it reads files you pass it, returns issues to your MCP client over the local stdio transport, and does nothing else — the server itself makes no outbound network calls, has no telemetry, no analytics, and uses no third-party services. Installation via `npm`/`npx` does contact the npm registry as standard package-manager behavior; the MCPB bundle ships pre-installed and needs no further network access. See [`PRIVACY.md`](PRIVACY.md) or the hosted policy at <https://pierrejanineh.github.io/TechDebtMCP/privacy> for details.
 
 ## Contributing
 

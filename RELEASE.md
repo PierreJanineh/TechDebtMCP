@@ -37,17 +37,20 @@ This guide provides step-by-step instructions for releasing new versions of Tech
 
 ## Pre-Release Checklist
 
-Before starting the release process, ensure:
+Before tagging a release on a `release/vX.Y.Z` branch, ensure:
 
-- [ ] All planned features/fixes are merged to `develop` branch
-- [ ] All tests pass locally: `npm test`
-- [ ] Build succeeds locally: `npm run build`
-- [ ] CHANGELOG.md is updated with new version details
-- [ ] README.md reflects any new features or changes
-- [ ] ARCHITECTURE.md is updated if architecture changed
-- [ ] No uncommitted changes: `git status`
-- [ ] You're on the `develop` branch: `git branch --show-current`
-- [ ] Develop branch is up to date: `git pull origin develop`
+- [ ] All planned features/fixes are merged to `develop`, and the release branch is cut from develop
+- [ ] Lint clean: `npm run lint`
+- [ ] Typecheck clean: `npm run typecheck`
+- [ ] All tests pass: `npm test`
+- [ ] Build succeeds: `npm run build`
+- [ ] `package.json` version bumped on the release branch
+- [ ] `mcpb/manifest.json` version matches `package.json` (build asserts equality)
+- [ ] CHANGELOG.md `[Unreleased]` block moved to `[vX.Y.Z] - <date>`
+- [ ] TECH_DEBT_SCAN.md refreshed; README / ARCHITECTURE / CONTRIBUTING scan blocks mirror it
+- [ ] Tracker issue opened from `.github/ISSUE_TEMPLATE/release-checklist.yml`
+- [ ] Sanity-run issue (from `sanity-run.yml`) opened and fully checked
+- [ ] Regression-run issue (from `regression-run.yml`) opened and fully checked — minor/major only; skip on patch unless an analyzer changed
 
 ## Release Process
 
@@ -148,12 +151,65 @@ git push origin develop
    - ✅ Build TypeScript
    - ✅ Verify dist directory
    - ✅ Verify version matches tag
+   - ✅ Verify `mcpb/manifest.json` version matches `package.json`
+   - ✅ Build MCPB bundle (`npm run mcpb:pack`)
+   - ✅ Upload MCPB as workflow artifact
    - ✅ Publish to npm with provenance
    - ✅ Create GitHub Release
+   - ✅ Attach `tech-debt-mcp-<version>.mcpb` to the GitHub Release
 
 **Expected Duration:** 2-3 minutes
 
-### Step 6: Workflow Success
+### Step 6: Back-merge the release branch
+
+After the workflow completes successfully and the release is published, back-merge `release/vX.X.X` into **both** `develop` and `main`. `develop` absorbs the release-branch commits so ongoing integration work builds on top of the shipped state; `main` is the stable production pointer that only moves at release time.
+
+#### Back-merge into develop
+
+The default branch ruleset permits direct pushes to develop for release back-merges from a maintainer account, so this half can run as a plain local merge:
+
+```bash
+git checkout develop
+git pull origin develop
+git merge --no-ff release/v$VERSION -m "release: back-merge v$VERSION to develop"
+git push origin develop
+```
+
+#### Back-merge into main — two paths
+
+The `Main` repository ruleset (id `14953993`) gates direct pushes to `main` with codeowner review, last-push approval, thread resolution, CodeQL `high_or_higher` / `errors`, code-quality warnings, **and squash-only merge**. That means a `git push origin main` of a `--no-ff` merge commit will be rejected twice over: once by the direct-push restriction and once by the squash-only constraint. Pick Path A unless you have an explicit reason to bypass the ruleset.
+
+**Path A — PR-based back-merge (default, always correct):**
+
+```bash
+# Create a back-merge branch off main, not off develop.
+git fetch origin main
+git checkout -b release-backmerge-v$VERSION origin/main
+git merge --no-ff release/v$VERSION -m "release: back-merge v$VERSION to main"
+git push -u origin release-backmerge-v$VERSION
+
+# Open the PR with the bot token per .claude/rules/git-workflow.md.
+GH_TOKEN=$BOT_TOKEN gh pr create \
+  --base main \
+  --head release-backmerge-v$VERSION \
+  --title "release: back-merge v$VERSION to main" \
+  --body "Advances main to the v$VERSION tagged state per the two-trunk model."
+```
+
+The PR will satisfy the ruleset's codeowner / review / CodeQL / code-quality / thread-resolution gates normally, and the merge must be performed via the squash button (not a merge commit) because the ruleset only allows `squash` as the merge method. Squashing on the Main side is acceptable — the release-branch history is already preserved on the `release/v$VERSION` branch and on the develop back-merge.
+
+**Path B — admin-bypass direct push (only if explicitly authorized):**
+
+Requires an admin token with bypass entries for every rule listed above, including the squash-only rule. In practice this means `git push` rejects `--no-ff` merge commits even with admin bypass; you would need to squash locally via `git merge --squash` and then push, or reset main to a tagged commit. Path B is strictly more work than Path A and is documented here only for completeness — prefer Path A.
+
+#### Why this step?
+
+Per the two-trunk model in `.claude/rules/git-workflow.md`:
+
+- `develop` is the active integration trunk — it must absorb the release-branch commits (which contain the tagged commit) so ongoing work builds on top of the shipped state.
+- `main` is the stable production trunk — it only ever points at released/tagged commits. Every `vX.X.X` tag on the release branch must propagate to `main` so external readers can trust `main` as the source of truth for "what's currently released".
+
+### Step 7: Workflow Success
 
 Once the workflow completes successfully, you'll see:
 
@@ -162,6 +218,8 @@ Once the workflow completes successfully, you'll see:
 📦 Package: https://www.npmjs.com/package/tech-debt-mcp
 🎉 GitHub Release: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v2.0.0
 ```
+
+The GitHub Release will also include a `tech-debt-mcp-<version>.mcpb` asset — the Claude Desktop one-click bundle, built from a clean prod tree by `scripts/build-mcpb.mjs`. Users can download it from the Releases page and install via Claude Desktop's "Install from file" flow. The same artifact is uploaded as a workflow artifact for diagnostic retention.
 
 ## Post-Release Verification
 
@@ -360,42 +418,13 @@ Users will see a warning when installing the deprecated version.
 
 ## Release Checklist Template
 
-Copy this for each release:
+Per-release trackers live as GitHub issues, not inline here. For each release, open:
 
-```
-Release: v____.____.____
-Date: ________
+- `.github/ISSUE_TEMPLATE/release-checklist.yml` — overarching tracker (prep / verify / ship phases)
+- `.github/ISSUE_TEMPLATE/sanity-run.yml` — smoke pass (every release)
+- `.github/ISSUE_TEMPLATE/regression-run.yml` — broad manual pass (minor/major only)
 
-Pre-Release:
-- [ ] All features merged to develop
-- [ ] All tests pass: npm test
-- [ ] Build succeeds: npm run build
-- [ ] CHANGELOG.md updated
-- [ ] README.md updated
-- [ ] ARCHITECTURE.md updated (if needed)
-- [ ] On develop branch, up to date
-
-Release:
-- [ ] Version bumped: npm version [patch|minor|major]
-- [ ] CHANGELOG.md committed
-- [ ] Tag pushed: git push origin v____.____.____
-- [ ] Commits pushed: git push origin develop
-- [ ] GitHub Actions workflow succeeded
-- [ ] npm package published
-- [ ] GitHub Release created
-
-Post-Release:
-- [ ] npm package verified: npm view tech-debt-mcp
-- [ ] GitHub Release verified
-- [ ] Test installation: npm install -g tech-debt-mcp@____.____.____
-- [ ] Basic functionality tested
-- [ ] Provenance verified (optional)
-- [ ] Release announcement (optional)
-
-Notes:
-________________________________________________________________________________
-________________________________________________________________________________
-```
+The release-checklist issue links the other two. Both run issues must be fully checked before pushing the tag in [Step 4](#step-4-push-the-release).
 
 ## Best Practices
 
@@ -434,7 +463,7 @@ Follow [Semantic Versioning](https://semver.org/):
 
 ---
 
-**Last Updated:** 2026-04-11
+**Last Updated:** 2026-05-22
 
 For questions or issues, see [CONTRIBUTING.md](CONTRIBUTING.md) or open an issue.
 

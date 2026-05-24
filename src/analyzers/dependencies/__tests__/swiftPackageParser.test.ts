@@ -1,5 +1,4 @@
 import { SwiftPackageParser } from '../swiftPackageParser.js';
-import { ParsedDependency } from '../baseParser.js';
 
 describe('SwiftPackageParser', () => {
   let parser: SwiftPackageParser;

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://raw.githubusercontent.com/anthropics/mcpb/main/schemas/mcpb-manifest-latest.schema.json",
+  "manifest_version": "0.3",
+  "name": "tech-debt-mcp",
+  "display_name": "Tech Debt MCP",
+  "version": "2.1.0",
+  "description": "Static technical-debt analyzer for 14 languages, exposed as an MCP server.",
+  "long_description": "Tech Debt MCP scans source files across TypeScript, JavaScript, Python, Java, Kotlin, Swift, Go, Rust, C, C++, C#, Ruby, PHP, and Objective-C for code smells, SQALE metrics, dependency issues, and user-defined patterns. Exposes 16 MCP tools and 2 resource templates for use from Claude Desktop, Claude Code, and any MCP-compatible client.",
+  "author": {
+    "name": "Pierre Janineh",
+    "email": "techdebtmcp@pierrejanineh.com",
+    "url": "https://github.com/PierreJanineh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PierreJanineh/TechDebtMCP"
+  },
+  "homepage": "https://github.com/PierreJanineh/TechDebtMCP#readme",
+  "documentation": "https://github.com/PierreJanineh/TechDebtMCP#readme",
+  "support": "https://github.com/PierreJanineh/TechDebtMCP/issues",
+  "icon": "icon.png",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "tech-debt",
+    "static-analysis",
+    "code-quality",
+    "sqale"
+  ],
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/index.js"]
+    }
+  },
+  "compatibility": {
+    "runtimes": {
+      "node": ">=20.19.0"
+    }
+  },
+  "tools_generated": false,
+  "tools": [
+    { "name": "analyze_project", "description": "Analyze an entire project for technical debt." },
+    { "name": "analyze_file", "description": "Analyze a single file for technical debt issues." },
+    { "name": "get_debt_summary", "description": "Get a quick summary of technical debt in a project." },
+    { "name": "get_sqale_metrics", "description": "Get SQALE technical debt metrics including remediation time, debt ratio, and rating." },
+    { "name": "list_supported_languages", "description": "List all programming languages supported by the analyzer." },
+    { "name": "get_recommendations", "description": "Get prioritized recommendations for addressing technical debt." },
+    { "name": "get_issues_by_severity", "description": "Get all issues of a specific severity level." },
+    { "name": "get_issues_by_category", "description": "Get all issues of a specific category." },
+    { "name": "add_custom_rule", "description": "Add a custom pattern-based tech debt rule." },
+    { "name": "remove_custom_rule", "description": "Remove a custom rule by ID." },
+    { "name": "list_session_custom_rules", "description": "List custom rules registered in this server session via add_custom_rule. Does NOT include customPatterns declared in .techdebtrc.json (those run inside analyze_project via AnalysisEngine but are not surfaced here). Renamed from list_custom_rules (TEC-51) for clarity; the old name is no longer registered." },
+    { "name": "execute_custom_rules", "description": "Execute all custom rules against code or a file." },
+    { "name": "validate_custom_pattern", "description": "Validate a custom pattern before adding it as a rule." },
+    { "name": "check_dependencies", "description": "Analyze project dependencies across multiple package managers." },
+    { "name": "validate_config", "description": "Validate a .techdebtrc.json configuration file for syntax and schema correctness." },
+    { "name": "get_vulnerability_report", "description": "Generate an offline dependency report listing all project dependencies for vulnerability review." }
+  ]
+}
