@@ -74,6 +74,21 @@ describe('PhpAnalyzer', () => {
     );
   });
 
+  it('does not detect eval-usage inside longer PHP function names', async () => {
+    const code = `
+      <?php
+      function custom_eval($code) {
+        return $code;
+      }
+
+      $result = custom_eval($template);
+      $builder->safe_eval($template);
+    `;
+    const result = await analyzer.analyze('test.php', code);
+    const evalIssues = result.issues.filter(i => i.rule === 'eval-usage');
+    expect(evalIssues).toHaveLength(0);
+  });
+
   it('detects error suppression operator', async () => {
     const code = `
       <?php
@@ -167,4 +182,3 @@ describe('PhpAnalyzer', () => {
     expect(result.issues.length).toBeGreaterThan(4);
   });
 });
-
