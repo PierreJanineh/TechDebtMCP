@@ -134,6 +134,21 @@ describe('PhpAnalyzer', () => {
     );
   });
 
+  it('does not detect extract-usage inside longer PHP function names', async () => {
+    const code = `
+      <?php
+      function custom_extract($array) {
+        return $array;
+      }
+
+      $result = custom_extract($payload);
+      $builder->safe_extract($payload);
+    `;
+    const result = await analyzer.analyze('test.php', code);
+    const extractIssues = result.issues.filter(i => i.rule === 'extract-usage');
+    expect(extractIssues).toHaveLength(0);
+  });
+
   it('detects @phpcs:ignore comments', async () => {
     const code = `
       <?php
