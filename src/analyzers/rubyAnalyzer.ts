@@ -52,7 +52,7 @@ export class RubyAnalyzer extends BaseAnalyzer {
     }));
 
     // eval() usage (code execution)
-    issues.push(...this.checkPattern(filePath, content, /eval\s*\(/g, {
+    issues.push(...this.checkPattern(filePath, content, /(?<!\w)eval\s*\(/g, {
       category: 'security',
       severity: 'critical',
       title: 'eval() usage found',
@@ -102,4 +102,3 @@ export class RubyAnalyzer extends BaseAnalyzer {
     return issues;
   }
 }
-

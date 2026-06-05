@@ -61,6 +61,31 @@ describe('RubyAnalyzer', () => {
     );
   });
 
+  it('does not report Ruby metaprogramming eval methods as bare eval usage', async () => {
+    const code = `
+      instance_eval(&block)
+      class_eval("def generated_class_method; end")
+      module_eval("def generated; end")
+    `;
+    const result = await analyzer.analyze('test.rb', code);
+    const evalIssues = result.issues.filter(i => i.rule === 'eval-usage');
+    expect(evalIssues).toHaveLength(0);
+  });
+
+  it('detects qualified Kernel.eval() usage', async () => {
+    const code = `
+      code = "puts 'hello'"
+      Kernel.eval(code)
+    `;
+    const result = await analyzer.analyze('test.rb', code);
+    expect(result.issues).toContainEqual(
+      expect.objectContaining({
+        rule: 'eval-usage',
+        severity: 'critical',
+      })
+    );
+  });
+
   it('detects global variables', async () => {
     const code = `
       $global_var = 42
@@ -139,4 +164,3 @@ describe('RubyAnalyzer', () => {
     expect(result.issues.length).toBeGreaterThan(3);
   });
 });
-
