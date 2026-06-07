@@ -52,7 +52,7 @@ export class PhpAnalyzer extends BaseAnalyzer {
     }));
 
     // eval() usage (code execution)
-    issues.push(...this.checkPattern(filePath, content, /(?<!\w)eval\s*\(/g, {
+    issues.push(...this.checkPattern(filePath, content, /(?<![\w$])eval\s*\(/g, {
       category: 'security',
       severity: 'critical',
       title: 'eval() usage found',
@@ -88,7 +88,7 @@ export class PhpAnalyzer extends BaseAnalyzer {
     }));
 
     // extract() function
-    issues.push(...this.checkPattern(filePath, content, /(?<!\w)extract\s*\(/g, {
+    issues.push(...this.checkPattern(filePath, content, /(?<![\w$])extract\s*\(/g, {
       category: 'security',
       severity: 'high',
       title: 'extract() function found',

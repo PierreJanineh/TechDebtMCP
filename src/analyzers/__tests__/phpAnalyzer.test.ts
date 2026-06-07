@@ -89,6 +89,17 @@ describe('PhpAnalyzer', () => {
     expect(evalIssues).toHaveLength(0);
   });
 
+  it('does not detect eval-usage for PHP variable function calls', async () => {
+    const code = `
+      <?php
+      $eval = $callback;
+      $eval($template);
+    `;
+    const result = await analyzer.analyze('test.php', code);
+    const evalIssues = result.issues.filter(i => i.rule === 'eval-usage');
+    expect(evalIssues).toHaveLength(0);
+  });
+
   it('detects error suppression operator', async () => {
     const code = `
       <?php
@@ -143,6 +154,17 @@ describe('PhpAnalyzer', () => {
 
       $result = custom_extract($payload);
       $builder->safe_extract($payload);
+    `;
+    const result = await analyzer.analyze('test.php', code);
+    const extractIssues = result.issues.filter(i => i.rule === 'extract-usage');
+    expect(extractIssues).toHaveLength(0);
+  });
+
+  it('does not detect extract-usage for PHP variable function calls', async () => {
+    const code = `
+      <?php
+      $extract = $callback;
+      $extract($payload);
     `;
     const result = await analyzer.analyze('test.php', code);
     const extractIssues = result.issues.filter(i => i.rule === 'extract-usage');
