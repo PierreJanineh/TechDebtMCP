@@ -106,7 +106,7 @@ mcpb/                           # (repo root — Claude Desktop one-click bundle
 ├── staging/                    # gitignored — clean prod tree built by scripts/build-mcpb.mjs
 └── tech-debt-mcp-<version>.mcpb # gitignored artifact, attached to GitHub Releases
 server.json                     # (repo root — official MCP Registry manifest; reverse-DNS name io.github.PierreJanineh/tech-debt-mcp,
-                                # npm package + stdio transport. Carries version in two fields; bump per .claude/rules/version-bump.md)
+                                # npm package + stdio transport. Version in two fields, both enforced by assertVersionsMatch() + serverManifest.test.ts)
 docs/site/                      # (repo root — VitePress docs site for GitHub Pages)
 ├── .vitepress/
 │   ├── config.mts              # Nav, sidebar, base = '/TechDebtMCP/', local search
@@ -131,9 +131,9 @@ npm run mcpb:pack
 # -> mcpb/tech-debt-mcp-<version>.mcpb
 ```
 
-The build script's `assertVersionsMatch()` asserts that `mcpb/manifest.json`, `plugin/.claude-plugin/plugin.json`, and `.claude-plugin/marketplace.json` (both top-level `version` and the plugin entry's `version`) all equal `package.json.version` — bump all four in lockstep at release time. `src/server/__tests__/mcpbManifest.test.ts` enforces the manifest's tool list matches `TOOL_DEFINITIONS`, so adding/removing a tool requires updating `mcpb/manifest.json` in the same PR.
+The build script's `assertVersionsMatch()` asserts that `mcpb/manifest.json`, `plugin/.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` (both top-level `version` and the plugin entry's `version`), and `server.json` (both top-level `version` and `packages[0].version`) all equal `package.json.version` — bump all of them in lockstep at release time. `src/server/__tests__/mcpbManifest.test.ts` enforces the manifest's tool list matches `TOOL_DEFINITIONS`, so adding/removing a tool requires updating `mcpb/manifest.json` in the same PR.
 
-`server.json` (the official MCP Registry manifest at repo root) also carries the version in two fields (top-level `version` and `packages[0].version`) but is **not yet** covered by `assertVersionsMatch()` — bump it manually until it is wired in. See `.claude/rules/version-bump.md` for the full version-pinned-file checklist (auto-loaded when editing any of them).
+`server.json` (the official MCP Registry manifest at repo root) is now fully machine-enforced: `assertVersionsMatch()` checks both version fields and `src/server/__tests__/serverManifest.test.ts` locks its version, reverse-DNS `name` (= `package.json.mcpName`), `packages[0].identifier` (= npm name), and the registry's 100-char `description` cap. See `.claude/rules/version-bump.md` for the full version-pinned-file checklist (auto-loaded when editing any of them).
 
 ### Building the docs site
 

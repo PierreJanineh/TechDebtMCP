@@ -73,6 +73,16 @@ function assertVersionsMatch() {
         `Update .claude-plugin/marketplace.json before packing.`,
     );
   }
+  const server = readJson(join(REPO_ROOT, 'server.json'));
+  const serverPkgVersion = server.packages?.[0]?.version;
+  if (server.version !== pkg.version || serverPkgVersion !== pkg.version) {
+    throw new Error(
+      `Version mismatch: package.json=${pkg.version}, ` +
+        `server.json version=${server.version}, ` +
+        `server.json packages[0].version=${serverPkgVersion}. ` +
+        `Update both server.json version fields before packing.`,
+    );
+  }
   return pkg.version;
 }
 

@@ -6,12 +6,12 @@
     "url": "https://github.com/PierreJanineh/TechDebtMCP",
     "source": "github"
   },
-  "version": "2.0.2",
+  "version": "2.1.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "tech-debt-mcp",
-      "version": "2.0.2",
+      "version": "2.1.0",
       "transport": {
         "type": "stdio"
       }
