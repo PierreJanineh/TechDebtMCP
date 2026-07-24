@@ -4,19 +4,37 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    # Ignore list rationale: see .claude/rules/dependency-security.md for the full
+    # dev-only-CVE assessment policy and the reconciled triage table (TEC-76 / #248).
+    #
+    # Every entry below is a DEV-ONLY transitive whose only fix is a MAJOR bump that
+    # is locked behind a dev-tool parent (vitepress or the @anthropic-ai/mcpb bundler).
+    # None ship in the npm package (`files: ["dist", ...]`) and none are reachable at
+    # runtime (the server uses StdioServerTransport only — no HTTP/serve-static path).
+    # Regression guard: `npm audit --omit=dev` must stay at 0.
+    #
+    # NOTE: vitepress, external-editor, @inquirer/*, and @anthropic-ai/mcpb also appear
+    # in `npm audit` output, but ONLY as parents in the vulnerable path — they are echoes
+    # of the vite/esbuild/tmp advisories below, not independently-alertable packages.
+    # Dependabot keys alerts on the actual vulnerable package, so no separate ignore
+    # entries are needed for them. Version ranges below track the current GitHub Advisory
+    # ranges (not just the first advisory), so newly-disclosed CVEs on the same package
+    # stay covered until the dev-tool parent majors.
     ignore:
       # esbuild <=0.24.2 (GHSA-67mh-4wv8-2f99) — dev-only transitive via vitepress→vite→esbuild.
-      # The dev server is never exposed in production; `npm audit --omit=dev` reports 0 vulns.
-      # Upstream vitepress must release a patch before this can be bumped.
+      # The dev server is never exposed in production. Upstream vitepress must ship a vite
+      # major before this can be bumped.
       - dependency-name: "esbuild"
         versions: ["<=0.24.2"]
 
-      # vite <=6.4.1 (GHSA-67mh-4wv8-2f99, transitive via vitepress) — dev-only docs build tool.
-      # Not shipped in the npm package or invoked at runtime. Ignore until vitepress upgrades vite.
+      # vite <=6.4.2 (GHSA-67mh-4wv8-2f99, GHSA-v6wh-96g9-6wx3, GHSA-fx2h-pf6j-xcff) —
+      # dev-only docs build tool, transitive via vitepress. Not shipped or invoked at
+      # runtime. Fix is vite >=6.4.3, unreachable while vitepress 1.x pins vite ^5.
       - dependency-name: "vite"
-        versions: ["<=6.4.1"]
+        versions: ["<=6.4.2"]
 
-      # tmp <=0.2.3 (GHSA-52f5-9888-hmc6) — dev-only transitive via @anthropic-ai/mcpb bundler.
-      # The mcpb tool is only used locally to produce release artifacts; never runs in production.
+      # tmp <0.2.6 (GHSA-52f5-9888-hmc6, GHSA-ph9p-34f9-6g65) — dev-only transitive via the
+      # @anthropic-ai/mcpb bundler (→ @inquirer/prompts → @inquirer/editor → external-editor → tmp).
+      # The mcpb tool only runs locally to produce release artifacts; never runs in production.
       - dependency-name: "tmp"
-        versions: ["<=0.2.3"]
+        versions: ["<0.2.6"]

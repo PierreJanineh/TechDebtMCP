@@ -58,3 +58,12 @@ This repository runs the following automated scans:
 - **Dependabot alerts** — GitHub-managed, monitors runtime and dev dependencies for known CVEs
 
 Findings from these scans are reviewed by the maintainers. If you notice a scan result that looks like a genuine vulnerability, you can still file a private report via the Security Advisories flow — we'd rather have duplicates than miss something.
+
+### How dependency CVEs are triaged
+
+`npm audit` and Dependabot deliberately measure different things and often report
+different counts. Every alert is triaged to one of **upgrade**, **override**, or
+**ignore-with-rationale** — and a production-reachable CVE is never ignored
+(`npm audit --omit=dev` is kept at 0). The assessment policy, the reasons the two
+scanners disagree, and the current reconciled per-alert triage live in
+[`.claude/rules/dependency-security.md`](.claude/rules/dependency-security.md).
