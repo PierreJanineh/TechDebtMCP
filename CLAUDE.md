@@ -285,6 +285,8 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md#testing) for test file conventions, Jest
 
 **Automated scanning:** CodeQL SAST runs on every push to `develop`/`main`/`release/**` and every PR regardless of base branch via `.github/workflows/codeql.yml` (using `security-and-quality` queries). The sibling workflows `test.yml` and `docs-check.yml` use the same broadened triggers. See Issue #124 and PR #168.
 
+**Dependency CVEs:** `npm audit` and the Dependabot Security tab measure different things and often disagree — see `.claude/rules/dependency-security.md` for the assessment policy (upgrade / override / ignore-with-rationale), why they diverge, and the current reconciled triage. Key rule: `npm audit --omit=dev` must stay at 0 (a production-reachable CVE is never ignored), and the `.github/dependabot.yml` ignore list must agree with the triage table. See Issue #248 (TEC-76).
+
 When handling user input from MCP tool calls:
 
 - **Path arguments:** Use `requireAbsolutePath(args, 'path')` or `optionalAbsolutePath(args, 'path')` from `inputParser.ts` — these validate with `path.isAbsolute()` and normalize with `path.resolve()`. `optionalAbsolutePath` treats an empty string `""` the same as `undefined` (returns `undefined`). Never use `requireString` for path parameters. This applies to **all** handler files (`handlers.ts`, `configValidator.ts`, `dependencyHandlers.ts`, and any future domain handler). See Issues #125, #126, #137, #139.
