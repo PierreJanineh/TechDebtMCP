@@ -92,6 +92,8 @@ TechDebtMCP/
 │   └── scan-showcase.mjs        # Clones repos in docs/site/.showcase.json at pinned SHAs, calls AnalysisEngine.analyzeProject() directly (not the MCP tool handler), emits docs/site/examples/*.md chat-style pages
 ├── package.json
 ├── tsconfig.json
+├── server.json                 # Official MCP Registry manifest; published to registry.modelcontextprotocol.io by .github/workflows/publish.yml (GitHub OIDC, stable tags only — TEC-78)
+├── .github/workflows/publish.yml # Tag-triggered release: npm publish (OIDC provenance) → GitHub Release → MCPB artifact → MCP Registry publish
 ├── .github/copilot-instructions.md
 ├── CONTRIBUTING.md
 └── ARCHITECTURE.md              # This file

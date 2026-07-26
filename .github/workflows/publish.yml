@@ -154,9 +154,31 @@ jobs:
           ARTIFACT: ${{ steps.mcpb.outputs.ARTIFACT }}
         run: gh release upload "$TAG" "$ARTIFACT" --clobber
 
+      # --- Official MCP Registry (registry.modelcontextprotocol.io) ---
+      # Stable tags only. Namespace io.github.PierreJanineh/* is proven via GitHub
+      # OIDC (id-token: write above) — no secret required. The npm package is
+      # already published above; the registry validates it and its `mcpName` field.
+      # server.json's version is NOT rewritten here — it is committed and guarded
+      # against package.json/the tag by assertVersionsMatch() + serverManifest.test.ts.
+      - name: Install mcp-publisher
+        if: steps.prerelease.outputs.IS_PRERELEASE == 'false'
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+
+      - name: Authenticate to MCP Registry (GitHub OIDC)
+        if: steps.prerelease.outputs.IS_PRERELEASE == 'false'
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish server to MCP Registry
+        if: steps.prerelease.outputs.IS_PRERELEASE == 'false'
+        run: ./mcp-publisher publish
+
       - name: Notify success
         if: success()
         run: |
           echo "✅ Successfully published tech-debt-mcp@${{ steps.version.outputs.VERSION }} to npm"
           echo "📦 Package: https://www.npmjs.com/package/tech-debt-mcp"
           echo "🎉 GitHub Release: https://github.com/PierreJanineh/TechDebtMCP/releases/tag/v${{ steps.version.outputs.VERSION }}"
+          if [ "${{ steps.prerelease.outputs.IS_PRERELEASE }}" = "false" ]; then
+            echo "📚 MCP Registry: https://registry.modelcontextprotocol.io (search: tech-debt-mcp)"
+          fi
