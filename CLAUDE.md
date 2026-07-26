@@ -135,6 +135,8 @@ The build script's `assertVersionsMatch()` asserts that `mcpb/manifest.json`, `p
 
 `server.json` (the official MCP Registry manifest at repo root) is now fully machine-enforced: `assertVersionsMatch()` checks both version fields and `src/server/__tests__/serverManifest.test.ts` locks its version, reverse-DNS `name` (= `package.json.mcpName`), `packages[0].identifier` (= npm name), and the registry's 100-char `description` cap. See `.claude/rules/version-bump.md` for the full version-pinned-file checklist (auto-loaded when editing any of them).
 
+`server.json` is **published to the official MCP Registry** (`registry.modelcontextprotocol.io`) automatically by `.github/workflows/publish.yml` on every stable `vX.Y.Z` tag — after npm publish, via `mcp-publisher login github-oidc` + `mcp-publisher publish`. GitHub OIDC (`id-token: write`) proves ownership of the `io.github.PierreJanineh/*` namespace, so no secret is needed; the registry verifies npm ownership through the package's `mcpName` field. Prerelease tags are skipped. See `.claude/rules/github-workflows.md` → "Publish flow" for the full contract (TEC-78).
+
 ### Building the docs site
 
 ```bash

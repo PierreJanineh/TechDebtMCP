@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Automated publishing to the official MCP Registry** (TEC-78, #250) — `.github/workflows/publish.yml` now publishes `server.json` to `registry.modelcontextprotocol.io` after the npm publish + GitHub Release steps, on every stable `vX.Y.Z` tag. It installs `mcp-publisher` from the `modelcontextprotocol/registry` GitHub release — **pinned to a specific version and SHA-256-verified before execution** (supply-chain hardening, since this job also holds npm OIDC publish rights; never `latest`) — then `mcp-publisher login github-oidc` + `mcp-publisher publish`. GitHub OIDC (`id-token: write`, already present) proves ownership of the `io.github.PierreJanineh/*` namespace, so **no secret** is added; the registry verifies npm ownership via the package's `mcpName` field. All three steps are gated on `IS_PRERELEASE == 'false'`, so prerelease tags never reach the registry. The docs' optional `jq` "set version in server.json" step is deliberately **omitted** — `server.json`'s version is committed and guarded by `assertVersionsMatch()` + `serverManifest.test.ts` (TEC-77). The initial `2.1.0` publish is a one-time manual step (`mcp-publisher login github` + `publish`) since `v2.1.0` predates this automation; subsequent versions publish automatically on tag.
+
 ## [2.1.0] - 2026-05-24
 
 ### Changed (breaking)
